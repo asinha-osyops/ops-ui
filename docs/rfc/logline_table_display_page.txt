@@ -1,0 +1,169 @@
+  📋 Implementation Plan for /log/lines Page
+
+  Overview
+
+  Create a new page at /log/lines that allows querying and displaying log lines with filtering capabilities, showing type-specific fields based on the LogLineDto subclass.
+
+  ---
+  Phase 1: Type Definitions & API Client
+
+  1.1 Update API Client Types (lib/api-client.ts)
+
+  - Add event type enums: GoogleDriveEvent, GoogleMailEvent, GoogleTasksEvent, GoogleDeviceEvent
+  - Add document type enum: GoogleDriveDocumentType
+  - Create extended LogLine DTOs:
+    - GoogleDriveEventLogLineDto extends LogLineDto
+    - GoogleMailEventLogLineDto extends LogLineDto
+    - GoogleTasksEventLogLineDto extends LogLineDto
+    - GoogleMobileDeviceEventLogLineDto extends LogLineDto
+  - Create union type: ExtendedLogLineDto = GoogleDriveEventLogLineDto | GoogleMailEventLogLineDto | GoogleTasksEventLogLineDto | GoogleMobileDeviceEventLogLineDto
+
+  1.2 Add API Client Methods (lib/api-client.ts)
+
+  Add 9 new query methods:
+  - getLogLinesByLogId(logId: string): Promise<ExtendedLogLineDto[]>
+  - getLogLinesByActor(actor: string): Promise<ExtendedLogLineDto[]>
+  - getLogLinesByOwner(owner: string): Promise<ExtendedLogLineDto[]>
+  - getLogLinesByEvent(eventType: string): Promise<ExtendedLogLineDto[]>
+  - getLogLinesByDomain(domain: string): Promise<ExtendedLogLineDto[]>
+  - getLogLinesByIp(ipAddress: string): Promise<ExtendedLogLineDto[]>
+  - getLogLinesByDateRange(start: string, end: string): Promise<ExtendedLogLineDto[]>
+  - getLogLinesByUser(user: string): Promise<ExtendedLogLineDto[]>
+  - getLogLinesSharingDetection(owner: string): Promise<ExtendedLogLineDto[]>
+
+  ---
+  Phase 2: UI Components
+
+  2.1 Create Query Filter Component (components/log/LogLinesQueryPanel.tsx)
+
+  - Tabbed interface or dropdown to select query type:
+    - By Actor
+    - By Owner
+    - By Event Type
+    - By Domain
+    - By IP Address
+    - By Date Range
+    - By User
+    - Sharing Detection
+    - By Log ID
+  - Input fields for selected query type
+  - "Search" button to execute query
+  - Clear/Reset functionality
+
+  2.2 Create Enhanced Table Component (components/log/LogLinesQueryTable.tsx)
+
+  Features:
+  - Display all LogLineDto base fields as columns:
+    - Type (badge with color)
+    - Date
+    - Event Type
+    - Actor
+    - Owner
+    - Target
+    - Domain
+    - IP Address
+  - Color entire row based on LogLineType
+  - Add "Details" column that shows type-specific fields
+  - Expandable row or modal to show full details of type-specific fields
+  - Pagination support (client-side initially)
+  - Sort by column functionality
+  - Export to CSV/JSON functionality
+
+  2.3 Create Type-Specific Detail Views (components/log/details/)
+
+  Create 4 detail components for each subclass:
+  - GoogleDriveDetails.tsx - Shows all GoogleDriveEventLogLineDto fields
+  - GoogleMailDetails.tsx - Shows all GoogleMailEventLogLineDto fields
+  - GoogleTasksDetails.tsx - Shows all GoogleTasksEventLogLineDto fields
+  - GoogleDeviceDetails.tsx - Shows all GoogleMobileDeviceEventLogLineDto fields
+
+  Each should display fields in a clean, organized grid layout.
+
+  ---
+  Phase 3: Page Implementation
+
+  3.1 Create Page (app/log/lines/page.tsx)
+
+  Layout:
+  ┌─────────────────────────────────────────┐
+  │  PageHeader: "Log Lines Query"         │
+  └─────────────────────────────────────────┘
+  ┌─────────────────────────────────────────┐
+  │  LogLinesQueryPanel                     │
+  │  [Query Type Selector]                  │
+  │  [Input Fields]                         │
+  │  [Search Button] [Clear]                │
+  └─────────────────────────────────────────┘
+  ┌─────────────────────────────────────────┐
+  │  Results Summary:                       │
+  │  "Found 123 log lines"                  │
+  │  [Export CSV] [Export JSON]             │
+  └─────────────────────────────────────────┘
+  ┌─────────────────────────────────────────┐
+  │  LogLinesQueryTable                     │
+  │  [Sortable, colored rows, expandable]   │
+  └─────────────────────────────────────────┘
+
+  State Management:
+  - selectedQueryType - Current query type
+  - queryParams - Parameters for the query
+  - logLines - Query results
+  - loading - Loading state
+  - error - Error state
+  - expandedRowId - Currently expanded row
+
+  ---
+  Phase 4: Color Scheme for Row Coloring
+
+  Based on LogLineType, apply background color to entire row:
+  - GOOGLE_TASKS → bg-hunter-green/5 hover:bg-hunter-green/10
+  - GOOGLE_DEVICE → bg-burnt-umber/5 hover:bg-burnt-umber/10
+  - GOOGLE_DRIVE → bg-oxford-blue/5 hover:bg-oxford-blue/10
+  - GOOGLE_MAIL → bg-khaki/10 hover:bg-khaki/20
+
+  ---
+  Phase 5: Routes Update
+
+  Add route constant in lib/routes.ts:
+  LOG_LINES: '/log/lines' as const
+
+  Add navigation link from main log page to log lines page.
+
+  ---
+  Phase 6: Documentation
+
+  Update CLAUDE.md:
+  - Add /log/lines page documentation
+  - Document all 9 query endpoints
+  - Document extended LogLine DTOs
+  - Add usage examples
+
+  ---
+  File Structure Summary
+
+  New Files to Create:
+  app/log/lines/page.tsx
+  components/log/LogLinesQueryPanel.tsx
+  components/log/LogLinesQueryTable.tsx
+  components/log/details/GoogleDriveDetails.tsx
+  components/log/details/GoogleMailDetails.tsx
+  components/log/details/GoogleTasksDetails.tsx
+  components/log/details/GoogleDeviceDetails.tsx
+
+  Files to Modify:
+  lib/api-client.ts (add types + 9 methods)
+  lib/routes.ts (add LOG_LINES route)
+  CLAUDE.md (documentation)
+
+  ---
+  Implementation Priority
+
+  1. ✅ Phase 1: Types & API Client (foundation)
+  2. ✅ Phase 2.3: Type-specific detail components (needed for table)
+  3. ✅ Phase 2.2: Enhanced table component
+  4. ✅ Phase 2.1: Query filter panel
+  5. ✅ Phase 3: Main page assembly
+  6. ✅ Phase 5: Routes
+  7. ✅ Phase 6: Documentation
+
+  ---

@@ -1,0 +1,388 @@
+⏺ Now I have a complete picture. Let me create a plan to align the api-client with the latest OpenAPI spec. I can see several significant changes needed:
+
+⏺ Analysis of API Changes
+
+  Based on comparing the OpenAPI spec with the current api-client, here are the major differences I found:
+
+  Major Changes Needed:
+
+  1. Role Management - Completely new controller with CRUD operations
+    - New RoleDto interface with name, title (enum), description, responsibilities
+    - Endpoints: GET all, GET by ID, GET by title, POST create, PUT update, DELETE by ID, DELETE all
+  2. Employee Changes - Role is now a reference, not a string
+    - role field changed to roleId (UUID) + roleTitle (enum)
+    - All employee DTOs need updating
+  3. SOP Changes - Roles removed, Steps restructured
+    - SopDto no longer has roles array
+    - StepDto now has actorRoleId, actorRoleTitle, matchingEmployeesForRoleTitle[], stepOrder
+    - Removed old Role interface (conflicts with new RoleDto)
+  4. Company Update Endpoint - New PUT endpoint for updating companies
+    - New UpdateCompanyRequestDto interface
+  5. Employee Update Endpoint - New PUT endpoint for updating single employees
+    - New UpdateEmployeeRequestDto interface
+  6. Batch Employee DTOs - Renamed and restructured
+    - BatchCreateEmployeesRequestDto (was BulkCreateEmployeesRequest)
+    - BatchUpdateEmployeesRequestDto with EmployeeUpdateItem[] (was BulkUpdateEmployeesRequest)
+    - BatchEmployeeResponseDto with EmployeeResult[] (was BulkEmployeeResponse)
+  7. Log DTOs - New fields added
+    - LogDto now has driveLineCount, mailLineCount, tasksLineCount, deviceLineCount
+    - LogLineDto now has lineNumber, rawCsvLine, createdAt
+  8. Gemini Controller - New endpoint
+    - POST /api/gemini/generate with GenerateTextRequestDto and GenerateTextResponseDto
+  9. Request Wrappers - Some endpoints now use wrapper objects
+    - CreateCompanyRequestDto wraps CompanyDto in { company: CompanyDto }
+    - Already have CreateSopRequestDto and CreateLogRequestDto wrappers
+
+  Let me create a detailed implementation plan:
+
+⏺ Here's my detailed plan for aligning the api-client with the OpenAPI spec:
+
+  API Client Alignment Plan
+
+  1. Role Management (NEW)
+
+  Add new interfaces:
+  export enum RoleTitle {
+    CEO = 'CEO',
+    CFO = 'CFO',
+    // ... all 25 enum values from spec
+  }
+
+  export interface RoleDto {
+    id: string;
+    name: string;
+    title: RoleTitle;
+    description: string;
+    responsibilities: string;
+  }
+
+  Add new endpoints:
+  - GET /api/role - getAllRoles()
+  - GET /api/role/{id} - getRoleById(id)
+  - GET /api/role/title/{title} - getRolesByTitle(title)
+  - POST /api/role - createRole(roleDto)
+  - PUT /api/role/{id} - updateRole(id, roleDto)
+  - DELETE /api/role/{id} - deleteRole(id) [requires X-Delete-Password]
+  - DELETE /api/role - deleteAllRoles() [requires X-Delete-Password]
+
+  ---
+  2. SOP Schema Changes
+
+  Remove old Role interface (conflicts with RoleDto):
+  // DELETE THIS:
+  interface Role {
+    id: string;
+    title: string;
+    responsibilities: string;
+  }
+
+  Remove from Sop interface:
+  // Remove roles array
+  roles: Role[];  // DELETE
+
+  Update StepDto:
+  export interface StepDto {
+    id: string;
+    name: string;
+    details: string;
+    postStepDocumentation: string;
+    monitoringRequirements: string;  // was "monitoring"
+    stepOrder: number;  // NEW
+    actorRoleId: string | null;  // NEW
+    actorRoleTitle: string | null;  // NEW
+    matchingEmployeesForRoleTitle: EmployeeDto[];  // NEW
+  }
+
+  Update SopDto:
+  export interface SopDto {
+    id: string;
+    companyId: string;
+    companyName: string;
+    sopName: string;
+    basicDescription: string;
+    steps: StepDto[];  // no more roles
+    sopFile: SopFileDto | null;  // make nullable
+    geminiResponseFiles: GeminiResponseFileDto[];
+    createdAt: string;
+    // Remove: exportedAt
+  }
+
+  ---
+  3. Employee Schema Changes
+
+  Update EmployeeDto:
+  export interface EmployeeDto {
+    id: string;
+    companyId: string;
+    companyName: string;
+    name: string;
+    phoneNumber: string;
+    email: string;
+    roleId: string | null;  // was "role: string"
+    roleTitle: RoleTitle | null;  // NEW
+    managerId: string | null;
+    managerName: string | null;
+    createdAt: string;
+  }
+
+  Update CreateEmployeeDto:
+  export interface CreateEmployeeDto {
+    companyId: string;
+    name: string;
+    phoneNumber: string;
+    email: string;
+    roleId: string | null;  // was "role: string"
+    managerId: string | null;
+  }
+
+  Add UpdateEmployeeRequestDto:
+  export interface UpdateEmployeeRequestDto {
+    name: string;
+    phoneNumber: string;
+    email: string;
+    roleId: string | null;
+    managerId: string | null;
+  }
+
+  Add PUT endpoint:
+  - PUT /api/company/{companyId}/employee/{employeeId} - updateEmployee(companyId, employeeId, data)
+
+  ---
+  4. Company Schema Changes
+
+  Add UpdateCompanyRequestDto:
+  export interface UpdateCompanyRequestDto {
+    name: string;
+    address?: string;
+    phoneNumber: string;
+    email: string;
+    ceoId?: string | null;
+    pointOfContactId?: string | null;
+  }
+
+  Add PUT endpoint:
+  - PUT /api/company/{id} - updateCompany(id, data)
+
+  Update createCompany to use wrapper:
+  async createCompany(companyData: CompanyDto): Promise<void> {
+    // Wrap in { company: ... }
+    body: JSON.stringify({ company: companyData })
+  }
+
+  ---
+  5. Batch Employee Changes
+
+  Rename and update:
+  // Rename from BulkCreateEmployeesRequest
+  export interface BatchCreateEmployeesRequestDto {
+    employees: CreateEmployeeDto[];
+  }
+
+  // Rename from BulkUpdateEmployeesRequest
+  export interface BatchUpdateEmployeesRequestDto {
+    employees: EmployeeUpdateItem[];
+  }
+
+  export interface EmployeeUpdateItem {
+    id: string;
+    data: UpdateEmployeeRequestDto;
+  }
+
+  // Rename from BulkEmployeeResponse
+  export interface BatchEmployeeResponseDto {
+    totalRequested: number;
+    successCount: number;
+    failureCount: number;
+    results: EmployeeResult[];
+  }
+
+  // Rename from EmployeeBatchResult
+  export interface EmployeeResult {
+    index: number;
+    employeeId: string | null;
+    success: boolean;
+    errorMessage: string | null;
+  }
+
+  Update method names:
+  - batchCreateEmployees() - use BatchCreateEmployeesRequestDto
+  - batchUpdateEmployees() - use BatchUpdateEmployeesRequestDto
+
+  ---
+  6. Log Schema Changes
+
+  Update LogDto:
+  export interface LogDto {
+    // ... existing fields
+    driveLineCount: number;  // NEW
+    mailLineCount: number;  // NEW
+    tasksLineCount: number;  // NEW
+    deviceLineCount: number;  // NEW
+    createdAt: string;
+  }
+
+  Update LogLineDto:
+  export interface LogLineDto {
+    // ... existing fields
+    lineNumber: number;  // NEW
+    rawCsvLine: string;  // NEW
+    createdAt: string;  // NEW
+  }
+
+  ---
+  7. Gemini Controller (NEW)
+
+  Add interfaces:
+  export interface GenerateTextRequestDto {
+    prompt: string;
+  }
+
+  export interface GenerateTextResponseDto {
+    generatedText: string;
+  }
+
+  Add endpoint:
+  - POST /api/gemini/generate - generateText(prompt)
+
+  ---
+  8. Delete Password Headers
+
+  All delete endpoints now have optional X-Delete-Password header (spec shows required: false), but we should keep it required on client side for safety.
+
+  ---
+
+⏺ I've created a comprehensive alignment plan. Here's a summary of what needs to be updated:
+
+  Summary of Changes
+
+  Breaking Changes:
+
+  1. Employee role field - Changed from role: string to roleId: string | null + roleTitle: RoleTitle | null
+  2. SOP roles - Removed roles array from SopDto
+  3. Step schema - StepDto significantly restructured with role references
+  4. Batch DTOs - Renamed from Bulk* to Batch* with new structure
+
+  New Features:
+
+  1. Role Management - Full CRUD operations for roles with 25 standardized titles
+  2. Update Endpoints - PUT endpoints for Company and Employee
+  3. Gemini API - Direct text generation endpoint
+  4. Log Metadata - Line counts by type, raw CSV data
+
+  Files Affected:
+
+  - lib/api-client.ts - All interfaces and methods
+  - Any UI components using employee role field
+  - Any UI components using SOP roles array
+  - Any UI components using batch employee operations
+
+  Would you like me to proceed with implementing these changes to the api-client? This is a significant refactor that will require updating many components throughout the application.
+
+
+
+
+
+
+  ---------------------------------------------
+
+    Complete TODO List - UI Updates
+
+  Create Routes (5 files)
+
+  1. ✅ app/company/create/page.tsx - No changes needed (just builds plain object)
+  2. app/company/create/confirm/page.tsx - Update createCompany() call to handle void return
+  3. app/sop/create/page.tsx - Remove entire Role interface, state, UI sections, and test data
+  4. app/sop/create/confirm/page.tsx - Remove Role interface, state, sessionStorage, API call, and display UI
+  5. app/log/create/page.tsx - Update createLog() response handling to expect LogDto instead of { success, id }
+
+  Management Pages (1 file)
+
+  6. app/sop/page.tsx - Remove all sop.roles references, change step.monitoring to step.monitoringRequirements, update text formatter calls
+
+  Employee Components (5 files)
+
+  7. components/ui/AddEmployeeForm.tsx - Change role: string to roleId: string | null, add role dropdown/selector
+  8. components/ui/BulkEmployeeJsonEditor.tsx - Update imports (CreateEmployeeBatchDto → CreateEmployeeDto, UpdateEmployeeBatchDto → UpdateEmployeeRequestDto), change role to roleId in examples
+  9. components/ui/BulkEmployeeModal.tsx - Update imports (BulkEmployeeResponse → BatchEmployeeResponseDto, etc.)
+  10. components/ui/BulkEmployeeResults.tsx - Update import (BulkEmployeeResponse → BatchEmployeeResponseDto)
+  11. components/ui/BulkEmployeeTableEditor.tsx - Update imports, change role field to roleId
+  12. components/ui/EmployeeList.tsx - Display roleTitle instead of role, update text formatter call
+
+  Utilities (1 file)
+
+  13. lib/utils/text-formatters.ts - Update formatEmployeeAsText() to use roleTitle, update formatSopAsText() to remove roles section
+
+  ---
+  Summary by Priority:
+
+  High Priority (Breaking Changes):
+
+  - Company create confirm (void return)
+  - SOP create pages (remove roles entirely)
+  - Log create (response structure)
+  - Employee components (role → roleId + roleTitle)
+
+  Medium Priority:
+
+  - SOP management page (roles display, monitoring field name)
+  - Text formatters (roles section, role field)
+
+  ---
+  Total: 13 files to update
+
+  Should I proceed with updating these files in order?
+
+  ---------------------------------------
+
+  Summary of DTO Alignment Updates
+
+  I've successfully scanned and updated all SOP, Role, Step, and Employee related display components to match the new DTOs. Here's what was fixed:
+
+  Files Updated:
+
+  1. lib/api-client.ts
+
+  - Updated Step interface: monitoring → monitoringRequirements
+  - Updated SopAnalysisStepDto interface: Changed from stepNumber, associatedRole, action to stepOrder, name, details, actorRoleTitle, monitoringRequirements, postStepDocumentation
+  - Updated SopAnalysisDto interface: Removed roles field, kept only steps
+
+  2. components/analysis/SopAnalysisDisplay.tsx
+
+  - Removed entire "Roles" section that was accessing non-existent analysis.roles
+  - Updated step display to use new fields: stepOrder, actorRoleTitle, name, details, postStepDocumentation, monitoringRequirements
+  - Added conditional rendering for optional fields
+
+  3. app/sop/create/page.tsx
+
+  - Updated Step interface: monitoring → monitoringRequirements
+  - Updated input field label from "Monitoring" to "Monitoring Requirements"
+  - Updated all references in handlers, state initialization, and test data functions
+  - Fixed: handleMonitoringChange, addStep, clearAll, fillCustomerOnboardingData, fillServerMaintenanceData
+
+  4. app/sop/create/confirm/page.tsx
+
+  - Updated Step interface: monitoring → monitoringRequirements
+  - Updated display label from "Monitoring" to "Monitoring Requirements"
+  - Updated field reference in template
+
+  5. components/ui/BulkEmployeeJsonEditor.tsx
+
+  - Removed validation for role field (now optional roleId)
+  - Updated example format templates to show roleId instead of role
+  - Fixed error message to not mention role as required field
+
+  Key Changes:
+
+  - SOP Analysis: No longer displays roles, only steps with actor role titles embedded in each step
+  - Step Monitoring: Renamed from monitoring to monitoringRequirements throughout
+  - Employee Role: Changed from required role string to optional roleId UUID reference
+  - Validation: Removed role requirements from employee bulk operations
+
+  Verification:
+
+  ✅ TypeScript compilation passes with no errors
+  ✅ No references to analysis.roles remain
+  ✅ All monitoring references updated to monitoringRequirements
+  ✅ All role validations removed/updated to use roleId
+
+  The application is now fully aligned with the updated backend DTOs and should work correctly without runtime errors.

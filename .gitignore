@@ -1,0 +1,14 @@
+/.claude/
+/.next/
+
+node_modules/
+package-lock.json
+
+*.log
+
+# Environment variables
+.env*.local
+.env
+
+# prompt
+prompt.txt

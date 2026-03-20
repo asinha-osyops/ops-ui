@@ -1,0 +1,101 @@
+I've successfully built the new ActivityEvent and Analysis features for your ops-ui application. Here's what was implemented:
+
+  1. API Client Updates (lib/api-client.ts)
+
+  - ✅ Added ActivityEventDto interface with all required fields
+  - ✅ Added UpdateActivityEventRoleTitlesRequestDto and UpdateActivityEventLogLineTypesRequestDto interfaces
+  - ✅ Added ActivityEventAssociationsRequestDto, ActivityEventAssociationDto, and ActivityEventAssociationsResponseDto interfaces
+  - ✅ Implemented all ActivityEvent CRUD methods:
+    - createActivityEvent()
+    - getActivityEvents()
+    - getActivityEventById()
+    - updateActivityEvent()
+    - deleteActivityEvent()
+    - updateActivityEventRoleTitles()
+    - updateActivityEventLogLineTypes()
+  - ✅ Implemented analysis method:
+    - getActivityEventAssociations()
+
+  2. ActivityEvent Management (/activityevent)
+
+  - ✅ Created main ActivityEvent page at /activityevent
+  - ✅ Created ActivityEventList component with:
+    - Display of all activity events
+    - Shows associated role titles and log line types as badges
+    - Download as JSON/Text functionality
+    - Individual delete capability
+  - ✅ Created create page at /activityevent/create with:
+    - Name and description fields
+    - Multi-select dropdown for Role Titles (supports multiple selection)
+    - Multi-select dropdown for Log Line Types (supports multiple selection)
+    - Pre-filled examples (Security Incident, Onboarding, Data Access)
+    - Validation and error handling
+
+  3. Multi-Select Component (components/ui/MultiSelect.tsx)
+
+  - ✅ Reusable multi-select dropdown component
+  - ✅ Features:
+    - Checkbox-based selection
+    - Visual badges for selected items
+    - Easy removal of selected items
+    - Dropdown toggle functionality
+    - Type-safe generic implementation
+
+  4. Analysis Page (/analysis)
+
+  - ✅ Created analysis page at /analysis with:
+    - Company dropdown selector (single select)
+    - Activity Events multi-selector with checkboxes
+    - "Analyze" button to fetch associations
+    - Comprehensive results display showing:
+        - Activity event details
+      - Associated role titles and log line types
+      - Matching SOP steps (with details)
+      - Matching log lines (with type badges and dates)
+    - Clear functionality to reset the form
+
+  5. Supporting Updates
+
+  - ✅ Updated lib/routes.ts with new routes:
+    - ACTIVITY_EVENT_HOME
+    - ACTIVITY_EVENT_CREATE
+    - ANALYSIS_HOME
+  - ✅ Updated components/Header.tsx to add navigation links for:
+    - Activity Events
+    - Analysis
+  - ✅ Added formatActivityEventAsText() to lib/utils/text-formatters.ts for text export
+
+  6. Testing
+
+  - ✅ TypeScript compilation successful (no errors)
+  - ✅ Development server running at http://localhost:3000 (also accessible at http://0.0.0.0:3000)
+
+  How to Use
+
+  Creating Activity Events:
+
+  1. Navigate to Activity Events from the sidebar
+  2. Click Create New Activity Event
+  3. Fill in name and description
+  4. Select multiple Role Titles from the dropdown
+  5. Select multiple Log Line Types from the dropdown
+  6. Click Create Activity Event
+
+  Running Analysis:
+
+  1. Navigate to Analysis from the sidebar
+  2. Select a Company from the dropdown
+  3. Select one or more Activity Events using checkboxes
+  4. Click Analyze
+  5. View the results showing:
+    - Matching SOP steps that match the selected activity events' role titles
+    - Matching log lines that match the selected activity events' log line types
+
+  Next Steps
+
+  The application is now ready for testing with your backend API. You can:
+  1. Test creating activity events with different role title and log line type combinations
+  2. Test the analysis functionality with existing companies, SOPs, and logs
+  3. Verify that the associations correctly identify matching steps and log lines
+
+  All features follow the existing patterns in your codebase and maintain consistency with your design system (colors, components, layouts).

@@ -1,0 +1,2501 @@
+@import 'tailwindcss';
+
+@plugin "tailwindcss-animate";
+
+@custom-variant dark (&:is(.dark *));
+
+@layer base {
+  :root {
+    --radius: 0.65rem;
+    --background: oklch(1 0 0);
+    --foreground: oklch(0.141 0.005 285.823);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.141 0.005 285.823);
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.141 0.005 285.823);
+    --primary: oklch(0.646 0.222 41.116);
+    --primary-foreground: oklch(0.98 0.016 73.684);
+    --secondary: oklch(0.967 0.001 286.375);
+    --secondary-foreground: oklch(0.21 0.006 285.885);
+    --muted: oklch(0.967 0.001 286.375);
+    --muted-foreground: oklch(0.552 0.016 285.938);
+    --accent: oklch(0.967 0.001 286.375);
+    --accent-foreground: oklch(0.21 0.006 285.885);
+    --destructive: oklch(0.577 0.245 27.325);
+    --border: oklch(0.92 0.004 286.32);
+    --input: oklch(0.92 0.004 286.32);
+    --ring: oklch(0.75 0.183 55.934);
+    /* Blue */
+    --chart-blue-1: oklch(0.809 0.105 251.813);
+    --chart-blue-2: oklch(0.623 0.214 259.815);
+    --chart-blue-3: oklch(0.546 0.245 262.881);
+    --chart-blue-4: oklch(0.488 0.243 264.376);
+    --chart-blue-5: oklch(0.424 0.199 265.638);
+    /* Green */
+    --chart-green-1: oklch(0.871 0.15 154.449);
+    --chart-green-2: oklch(0.723 0.219 149.579);
+    --chart-green-3: oklch(0.627 0.194 149.214);
+    --chart-green-4: oklch(0.527 0.154 150.069);
+    --chart-green-5: oklch(0.448 0.119 151.328);
+    /* Primary / Neutral */
+    --chart-primary-1: oklch(0.488 0.243 264.376);
+    --chart-primary-2: oklch(0.696 0.17 162.48);
+    --chart-primary-3: oklch(0.769 0.188 70.08);
+    --chart-primary-4: oklch(0.627 0.265 303.9);
+    --chart-primary-5: oklch(0.645 0.246 16.439);
+    /* Orange */
+    --chart-orange-1: oklch(0.837 0.128 66.29);
+    --chart-orange-2: oklch(0.705 0.213 47.604);
+    --chart-orange-3: oklch(0.646 0.222 41.116);
+    --chart-orange-4: oklch(0.553 0.195 38.402);
+    --chart-orange-5: oklch(0.47 0.157 37.304);
+    /* Red */
+    --chart-red-1: oklch(0.808 0.114 19.571);
+    --chart-red-2: oklch(0.637 0.237 25.331);
+    --chart-red-3: oklch(0.577 0.245 27.325);
+    --chart-red-4: oklch(0.505 0.213 27.518);
+    --chart-red-5: oklch(0.444 0.177 26.899);
+    /* Rose */
+    --chart-rose-1: oklch(0.81 0.117 11.638);
+    --chart-rose-2: oklch(0.645 0.246 16.439);
+    --chart-rose-3: oklch(0.586 0.253 17.585);
+    --chart-rose-4: oklch(0.514 0.222 16.935);
+    --chart-rose-5: oklch(0.455 0.188 13.697);
+    /* Violet */
+    --chart-violet-1: oklch(0.811 0.111 293.571);
+    --chart-violet-2: oklch(0.606 0.25 292.717);
+    --chart-violet-3: oklch(0.541 0.281 293.009);
+    --chart-violet-4: oklch(0.491 0.27 292.581);
+    --chart-violet-5: oklch(0.432 0.232 292.759);
+    /* Yellow */
+    --chart-yellow-1: oklch(0.905 0.182 98.111);
+    --chart-yellow-2: oklch(0.795 0.184 86.047);
+    --chart-yellow-3: oklch(0.681 0.162 75.834);
+    --chart-yellow-4: oklch(0.554 0.135 66.442);
+    --chart-yellow-5: oklch(0.476 0.114 61.907);
+    --sidebar: oklch(0.985 0 0);
+    --sidebar-foreground: oklch(0.141 0.005 285.823);
+    --sidebar-primary: oklch(0.646 0.222 41.116);
+    --sidebar-primary-foreground: oklch(0.98 0.016 73.684);
+    --sidebar-accent: oklch(0.967 0.001 286.375);
+    --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
+    --sidebar-border: oklch(0.92 0.004 286.32);
+    --sidebar-ring: oklch(0.75 0.183 55.934);
+    --enum-1: oklch(0.505 0.213 27.518);
+    --enum-2: oklch(0.527 0.154 150.069);
+    --enum-3: oklch(0.553 0.195 38.402);
+    --enum-4: oklch(0.488 0.243 264.376);
+    --enum-5: oklch(0.514 0.222 16.935);
+    --enum-6: oklch(0.491 0.27 292.581);
+    --enum-7: oklch(0.554 0.135 66.442);
+    --enum-8: oklch(0.905 0.182 98.111);
+    --enum-9: oklch(0.808 0.114 19.571);
+    --enum-10: oklch(0.871 0.15 154.449);
+    --enum-11: oklch(0.809 0.105 251.813);
+    --enum-12: oklch(0.811 0.111 293.571);
+    /* Responsive Spacing Scale - Mobile Base */
+    --spacing-xs: 0.5rem; /* 8px */
+    --spacing-sm: 0.75rem; /* 12px */
+    --spacing-md: 1rem; /* 16px */
+    --spacing-lg: 1.5rem; /* 24px */
+    --spacing-xl: 2rem; /* 32px */
+    /* Responsive Typography Scale - Mobile Base */
+    --text-xs: 0.75rem; /* 12px */
+    --text-sm: 0.875rem; /* 14px */
+    --text-base: 1rem; /* 16px */
+    --text-lg: 1.125rem; /* 18px */
+    --text-xl: 1.25rem; /* 20px */
+    --text-2xl: 1.5rem; /* 24px */
+    --text-3xl: 1.875rem; /* 30px */
+  }
+
+  .dark {
+    --background: oklch(0.141 0.005 285.823);
+    --foreground: oklch(0.985 0 0);
+    --card: oklch(0.21 0.006 285.885);
+    --card-foreground: oklch(0.985 0 0);
+    --popover: oklch(0.21 0.006 285.885);
+    --popover-foreground: oklch(0.985 0 0);
+    --primary: oklch(0.553 0.195 38.402);
+    --primary-foreground: oklch(0.98 0.016 73.684);
+    --secondary: oklch(0.274 0.006 286.033);
+    --secondary-foreground: oklch(0.985 0 0);
+    --muted: oklch(0.274 0.006 286.033);
+    --muted-foreground: oklch(0.705 0.015 286.067);
+    --accent: oklch(0.274 0.006 286.033);
+    --accent-foreground: oklch(0.985 0 0);
+    --destructive: oklch(0.505 0.213 27.518);
+    --border: oklch(1 0 0 / 10%);
+    --input: oklch(1 0 0 / 15%);
+    --ring: oklch(0.408 0.123 38.172);
+    /* Blue */
+    --chart-blue-1: oklch(0.809 0.105 251.813);
+    --chart-blue-2: oklch(0.623 0.214 259.815);
+    --chart-blue-3: oklch(0.546 0.245 262.881);
+    --chart-blue-4: oklch(0.488 0.243 264.376);
+    --chart-blue-5: oklch(0.424 0.199 265.638);
+    /* Green */
+    --chart-green-1: oklch(0.871 0.15 154.449);
+    --chart-green-2: oklch(0.723 0.219 149.579);
+    --chart-green-3: oklch(0.627 0.194 149.214);
+    --chart-green-4: oklch(0.527 0.154 150.069);
+    --chart-green-5: oklch(0.448 0.119 151.328);
+    /* Primary / Neutral */
+    --chart-primary-1: oklch(0.488 0.243 264.376);
+    --chart-primary-2: oklch(0.696 0.17 162.48);
+    --chart-primary-3: oklch(0.769 0.188 70.08);
+    --chart-primary-4: oklch(0.627 0.265 303.9);
+    --chart-primary-5: oklch(0.645 0.246 16.439);
+    /* Orange */
+    --chart-orange-1: oklch(0.837 0.128 66.29);
+    --chart-orange-2: oklch(0.705 0.213 47.604);
+    --chart-orange-3: oklch(0.646 0.222 41.116);
+    --chart-orange-4: oklch(0.553 0.195 38.402);
+    --chart-orange-5: oklch(0.47 0.157 37.304);
+    /* Red */
+    --chart-red-1: oklch(0.808 0.114 19.571);
+    --chart-red-2: oklch(0.637 0.237 25.331);
+    --chart-red-3: oklch(0.577 0.245 27.325);
+    --chart-red-4: oklch(0.505 0.213 27.518);
+    --chart-red-5: oklch(0.444 0.177 26.899);
+    /* Rose */
+    --chart-rose-1: oklch(0.81 0.117 11.638);
+    --chart-rose-2: oklch(0.645 0.246 16.439);
+    --chart-rose-3: oklch(0.586 0.253 17.585);
+    --chart-rose-4: oklch(0.514 0.222 16.935);
+    --chart-rose-5: oklch(0.455 0.188 13.697);
+    /* Violet */
+    --chart-violet-1: oklch(0.811 0.111 293.571);
+    --chart-violet-2: oklch(0.606 0.25 292.717);
+    --chart-violet-3: oklch(0.541 0.281 293.009);
+    --chart-violet-4: oklch(0.491 0.27 292.581);
+    --chart-violet-5: oklch(0.432 0.232 292.759);
+    /* Yellow */
+    --chart-yellow-1: oklch(0.905 0.182 98.111);
+    --chart-yellow-2: oklch(0.795 0.184 86.047);
+    --chart-yellow-3: oklch(0.681 0.162 75.834);
+    --chart-yellow-4: oklch(0.554 0.135 66.442);
+    --chart-yellow-5: oklch(0.476 0.114 61.907);
+    --sidebar: oklch(0.21 0.006 285.885);
+    --sidebar-foreground: oklch(0.985 0 0);
+    --sidebar-primary: oklch(0.553 0.195 38.402);
+    --sidebar-primary-foreground: oklch(0.98 0.016 73.684);
+    --sidebar-accent: oklch(0.274 0.006 286.033);
+    --sidebar-accent-foreground: oklch(0.985 0 0);
+    --sidebar-border: oklch(1 0 0 / 10%);
+    --sidebar-ring: oklch(0.408 0.123 38.172);
+    --enum-1: oklch(0.505 0.213 27.518);
+    --enum-2: oklch(0.527 0.154 150.069);
+    --enum-3: oklch(0.553 0.195 38.402);
+    --enum-4: oklch(0.488 0.243 264.376);
+    --enum-5: oklch(0.514 0.222 16.935);
+    --enum-6: oklch(0.491 0.27 292.581);
+    --enum-7: oklch(0.554 0.135 66.442);
+    --enum-8: oklch(0.905 0.182 98.111);
+    --enum-9: oklch(0.808 0.114 19.571);
+    --enum-10: oklch(0.871 0.15 154.449);
+    --enum-11: oklch(0.809 0.105 251.813);
+    --enum-12: oklch(0.811 0.111 293.571);
+  }
+
+  /* Desktop: Scale up spacing and typography */
+  @media (min-width: 768px) {
+    :root {
+      --spacing-xs: 0.75rem; /* 12px */
+      --spacing-sm: 1rem; /* 16px */
+      --spacing-md: 1.25rem; /* 20px */
+      --spacing-lg: 1.75rem; /* 28px */
+      --spacing-xl: 2.5rem; /* 40px */
+
+      --text-xs: 0.875rem; /* 14px */
+      --text-sm: 1rem; /* 16px */
+      --text-base: 1.125rem; /* 18px */
+      --text-lg: 1.25rem; /* 20px */
+      --text-xl: 1.5rem; /* 24px */
+      --text-2xl: 1.875rem; /* 30px */
+      --text-3xl: 2.25rem; /* 36px */
+    }
+  }
+
+  /* Large Desktop: Further scale */
+  @media (min-width: 1024px) {
+    :root {
+      --spacing-xl: 3rem; /* 48px */
+      --text-3xl: 2.5rem; /* 40px */
+    }
+  }
+
+  * {
+    border-color: var(--border);
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+  }
+}
+
+@layer utilities {
+  /* Text Color Utilities */
+  .text-foreground {
+    color: var(--foreground);
+  }
+  .text-primary {
+    color: var(--primary);
+  }
+  .text-primary-foreground {
+    color: var(--primary-foreground);
+  }
+  .text-secondary {
+    color: var(--secondary);
+  }
+  .text-secondary-foreground {
+    color: var(--secondary-foreground);
+  }
+  .text-muted {
+    color: var(--muted);
+  }
+  .text-muted-foreground {
+    color: var(--muted-foreground);
+  }
+  .text-accent {
+    color: var(--accent);
+  }
+  .text-accent-foreground {
+    color: var(--accent-foreground);
+  }
+  .text-destructive {
+    color: var(--destructive);
+  }
+  .text-destructive-foreground {
+    color: var(--destructive-foreground);
+  }
+  .text-card-foreground {
+    color: var(--card-foreground);
+  }
+
+  /* Background Color Utilities */
+  .bg-background {
+    background-color: var(--background);
+  }
+  .bg-foreground {
+    background-color: var(--foreground);
+  }
+  .bg-card {
+    background-color: var(--card);
+  }
+  .bg-primary {
+    background-color: var(--primary);
+  }
+  .bg-primary-foreground {
+    background-color: var(--primary-foreground);
+  }
+  .bg-secondary {
+    background-color: var(--secondary);
+  }
+  .bg-secondary-foreground {
+    background-color: var(--secondary-foreground);
+  }
+  .bg-muted {
+    background-color: var(--muted);
+  }
+  .bg-muted-foreground {
+    background-color: var(--muted-foreground);
+  }
+  .bg-accent {
+    background-color: var(--accent);
+  }
+  .bg-accent-foreground {
+    background-color: var(--accent-foreground);
+  }
+  .bg-destructive {
+    background-color: var(--destructive);
+  }
+  .bg-destructive-foreground {
+    background-color: var(--destructive-foreground);
+  }
+
+  /* Border Color Utilities */
+  .border-border {
+    border-color: var(--border);
+  }
+  .border-input {
+    border-color: var(--input);
+  }
+  .border-primary {
+    border-color: var(--primary);
+  }
+  .border-secondary {
+    border-color: var(--secondary);
+  }
+  .border-muted {
+    border-color: var(--muted);
+  }
+  .border-accent {
+    border-color: var(--accent);
+  }
+  .border-destructive {
+    border-color: var(--destructive);
+  }
+
+  /* Ring Color Utilities */
+  .ring-ring {
+    --tw-ring-color: var(--ring);
+  }
+  .ring-primary {
+    --tw-ring-color: var(--primary);
+  }
+
+  /* Opacity Variants for Primary Color */
+  .text-primary\/90 {
+    color: color-mix(in oklch, var(--primary), transparent 10%);
+  }
+  .text-primary\/80 {
+    color: color-mix(in oklch, var(--primary), transparent 20%);
+  }
+  .text-primary\/50 {
+    color: color-mix(in oklch, var(--primary), transparent 50%);
+  }
+  .text-primary\/20 {
+    color: color-mix(in oklch, var(--primary), transparent 80%);
+  }
+  .text-primary\/10 {
+    color: color-mix(in oklch, var(--primary), transparent 90%);
+  }
+  .text-primary\/5 {
+    color: color-mix(in oklch, var(--primary), transparent 95%);
+  }
+
+  .bg-primary\/90 {
+    background-color: color-mix(in oklch, var(--primary), transparent 10%);
+  }
+  .bg-primary\/80 {
+    background-color: color-mix(in oklch, var(--primary), transparent 20%);
+  }
+  .bg-primary\/50 {
+    background-color: color-mix(in oklch, var(--primary), transparent 50%);
+  }
+  .bg-primary\/20 {
+    background-color: color-mix(in oklch, var(--primary), transparent 80%);
+  }
+  .bg-primary\/10 {
+    background-color: color-mix(in oklch, var(--primary), transparent 90%);
+  }
+  .bg-primary\/5 {
+    background-color: color-mix(in oklch, var(--primary), transparent 95%);
+  }
+
+  .border-primary\/90 {
+    border-color: color-mix(in oklch, var(--primary), transparent 10%);
+  }
+  .border-primary\/50 {
+    border-color: color-mix(in oklch, var(--primary), transparent 50%);
+  }
+  .border-primary\/20 {
+    border-color: color-mix(in oklch, var(--primary), transparent 80%);
+  }
+
+  /* Opacity Variants for Secondary Color */
+  .bg-secondary\/50 {
+    background-color: color-mix(in oklch, var(--secondary), transparent 50%);
+  }
+  .bg-secondary\/20 {
+    background-color: color-mix(in oklch, var(--secondary), transparent 80%);
+  }
+  .bg-secondary\/10 {
+    background-color: color-mix(in oklch, var(--secondary), transparent 90%);
+  }
+
+  /* Opacity Variants for Muted Color */
+  .bg-muted\/50 {
+    background-color: color-mix(in oklch, var(--muted), transparent 50%);
+  }
+  .bg-muted\/20 {
+    background-color: color-mix(in oklch, var(--muted), transparent 80%);
+  }
+  .bg-muted\/10 {
+    background-color: color-mix(in oklch, var(--muted), transparent 90%);
+  }
+
+  /* Opacity Variants for Accent Color */
+  .bg-accent\/50 {
+    background-color: color-mix(in oklch, var(--accent), transparent 50%);
+  }
+  .bg-accent\/20 {
+    background-color: color-mix(in oklch, var(--accent), transparent 80%);
+  }
+  .bg-accent\/10 {
+    background-color: color-mix(in oklch, var(--accent), transparent 90%);
+  }
+  .bg-accent\/5 {
+    background-color: color-mix(in oklch, var(--accent), transparent 95%);
+  }
+
+  /* Opacity Variants for Destructive Color */
+  .bg-destructive\/50 {
+    background-color: color-mix(in oklch, var(--destructive), transparent 50%);
+  }
+  .bg-destructive\/20 {
+    background-color: color-mix(in oklch, var(--destructive), transparent 80%);
+  }
+  .bg-destructive\/10 {
+    background-color: color-mix(in oklch, var(--destructive), transparent 90%);
+  }
+  .bg-destructive\/5 {
+    background-color: color-mix(in oklch, var(--destructive), transparent 95%);
+  }
+
+  .text-destructive\/90 {
+    color: color-mix(in oklch, var(--destructive), transparent 10%);
+  }
+  .text-destructive\/50 {
+    color: color-mix(in oklch, var(--destructive), transparent 50%);
+  }
+
+  /* Opacity Variants for Border */
+  .border-border\/50 {
+    border-color: color-mix(in oklch, var(--border), transparent 50%);
+  }
+  .border-border\/20 {
+    border-color: color-mix(in oklch, var(--border), transparent 80%);
+  }
+
+  /* Hover State Utilities */
+  .hover\:text-primary\/90:hover {
+    color: color-mix(in oklch, var(--primary), transparent 10%);
+  }
+  .hover\:text-primary:hover {
+    color: var(--primary);
+  }
+  .hover\:bg-primary\/10:hover {
+    background-color: color-mix(in oklch, var(--primary), transparent 90%);
+  }
+  .hover\:bg-primary\/5:hover {
+    background-color: color-mix(in oklch, var(--primary), transparent 95%);
+  }
+  .hover\:bg-secondary:hover {
+    background-color: var(--secondary);
+  }
+  .hover\:bg-muted\/50:hover {
+    background-color: color-mix(in oklch, var(--muted), transparent 50%);
+  }
+  .hover\:bg-accent\/10:hover {
+    background-color: color-mix(in oklch, var(--accent), transparent 90%);
+  }
+  .hover\:bg-destructive\/10:hover {
+    background-color: color-mix(in oklch, var(--destructive), transparent 90%);
+  }
+
+  /* Chart Color Utilities - Blue */
+  .text-chart-blue-1 {
+    color: var(--chart-blue-1);
+  }
+  .text-chart-blue-2 {
+    color: var(--chart-blue-2);
+  }
+  .text-chart-blue-3 {
+    color: var(--chart-blue-3);
+  }
+  .text-chart-blue-4 {
+    color: var(--chart-blue-4);
+  }
+  .text-chart-blue-5 {
+    color: var(--chart-blue-5);
+  }
+
+  .bg-chart-blue-1 {
+    background-color: var(--chart-blue-1);
+  }
+  .bg-chart-blue-2 {
+    background-color: var(--chart-blue-2);
+  }
+  .bg-chart-blue-3 {
+    background-color: var(--chart-blue-3);
+  }
+  .bg-chart-blue-4 {
+    background-color: var(--chart-blue-4);
+  }
+  .bg-chart-blue-5 {
+    background-color: var(--chart-blue-5);
+  }
+
+  .border-chart-blue-1 {
+    border-color: var(--chart-blue-1);
+  }
+  .border-chart-blue-2 {
+    border-color: var(--chart-blue-2);
+  }
+  .border-chart-blue-3 {
+    border-color: var(--chart-blue-3);
+  }
+  .border-chart-blue-4 {
+    border-color: var(--chart-blue-4);
+  }
+  .border-chart-blue-5 {
+    border-color: var(--chart-blue-5);
+  }
+
+  /* Chart Color Utilities - Green */
+  .text-chart-green-1 {
+    color: var(--chart-green-1);
+  }
+  .text-chart-green-2 {
+    color: var(--chart-green-2);
+  }
+  .text-chart-green-3 {
+    color: var(--chart-green-3);
+  }
+  .text-chart-green-4 {
+    color: var(--chart-green-4);
+  }
+  .text-chart-green-5 {
+    color: var(--chart-green-5);
+  }
+
+  .bg-chart-green-1 {
+    background-color: var(--chart-green-1);
+  }
+  .bg-chart-green-2 {
+    background-color: var(--chart-green-2);
+  }
+  .bg-chart-green-3 {
+    background-color: var(--chart-green-3);
+  }
+  .bg-chart-green-4 {
+    background-color: var(--chart-green-4);
+  }
+  .bg-chart-green-5 {
+    background-color: var(--chart-green-5);
+  }
+
+  .border-chart-green-1 {
+    border-color: var(--chart-green-1);
+  }
+  .border-chart-green-2 {
+    border-color: var(--chart-green-2);
+  }
+  .border-chart-green-3 {
+    border-color: var(--chart-green-3);
+  }
+  .border-chart-green-4 {
+    border-color: var(--chart-green-4);
+  }
+  .border-chart-green-5 {
+    border-color: var(--chart-green-5);
+  }
+
+  /* Chart Color Utilities - Primary */
+  .text-chart-primary-1 {
+    color: var(--chart-primary-1);
+  }
+  .text-chart-primary-2 {
+    color: var(--chart-primary-2);
+  }
+  .text-chart-primary-3 {
+    color: var(--chart-primary-3);
+  }
+  .text-chart-primary-4 {
+    color: var(--chart-primary-4);
+  }
+  .text-chart-primary-5 {
+    color: var(--chart-primary-5);
+  }
+
+  .bg-chart-primary-1 {
+    background-color: var(--chart-primary-1);
+  }
+  .bg-chart-primary-2 {
+    background-color: var(--chart-primary-2);
+  }
+  .bg-chart-primary-3 {
+    background-color: var(--chart-primary-3);
+  }
+  .bg-chart-primary-4 {
+    background-color: var(--chart-primary-4);
+  }
+  .bg-chart-primary-5 {
+    background-color: var(--chart-primary-5);
+  }
+
+  .border-chart-primary-1 {
+    border-color: var(--chart-primary-1);
+  }
+  .border-chart-primary-2 {
+    border-color: var(--chart-primary-2);
+  }
+  .border-chart-primary-3 {
+    border-color: var(--chart-primary-3);
+  }
+  .border-chart-primary-4 {
+    border-color: var(--chart-primary-4);
+  }
+  .border-chart-primary-5 {
+    border-color: var(--chart-primary-5);
+  }
+
+  /* Chart Color Utilities - Orange */
+  .text-chart-orange-1 {
+    color: var(--chart-orange-1);
+  }
+  .text-chart-orange-2 {
+    color: var(--chart-orange-2);
+  }
+  .text-chart-orange-3 {
+    color: var(--chart-orange-3);
+  }
+  .text-chart-orange-4 {
+    color: var(--chart-orange-4);
+  }
+  .text-chart-orange-5 {
+    color: var(--chart-orange-5);
+  }
+
+  .bg-chart-orange-1 {
+    background-color: var(--chart-orange-1);
+  }
+  .bg-chart-orange-2 {
+    background-color: var(--chart-orange-2);
+  }
+  .bg-chart-orange-3 {
+    background-color: var(--chart-orange-3);
+  }
+  .bg-chart-orange-4 {
+    background-color: var(--chart-orange-4);
+  }
+  .bg-chart-orange-5 {
+    background-color: var(--chart-orange-5);
+  }
+
+  .border-chart-orange-1 {
+    border-color: var(--chart-orange-1);
+  }
+  .border-chart-orange-2 {
+    border-color: var(--chart-orange-2);
+  }
+  .border-chart-orange-3 {
+    border-color: var(--chart-orange-3);
+  }
+  .border-chart-orange-4 {
+    border-color: var(--chart-orange-4);
+  }
+  .border-chart-orange-5 {
+    border-color: var(--chart-orange-5);
+  }
+
+  /* Chart Color Utilities - Red */
+  .text-chart-red-1 {
+    color: var(--chart-red-1);
+  }
+  .text-chart-red-2 {
+    color: var(--chart-red-2);
+  }
+  .text-chart-red-3 {
+    color: var(--chart-red-3);
+  }
+  .text-chart-red-4 {
+    color: var(--chart-red-4);
+  }
+  .text-chart-red-5 {
+    color: var(--chart-red-5);
+  }
+
+  .bg-chart-red-1 {
+    background-color: var(--chart-red-1);
+  }
+  .bg-chart-red-2 {
+    background-color: var(--chart-red-2);
+  }
+  .bg-chart-red-3 {
+    background-color: var(--chart-red-3);
+  }
+  .bg-chart-red-4 {
+    background-color: var(--chart-red-4);
+  }
+  .bg-chart-red-5 {
+    background-color: var(--chart-red-5);
+  }
+
+  .border-chart-red-1 {
+    border-color: var(--chart-red-1);
+  }
+  .border-chart-red-2 {
+    border-color: var(--chart-red-2);
+  }
+  .border-chart-red-3 {
+    border-color: var(--chart-red-3);
+  }
+  .border-chart-red-4 {
+    border-color: var(--chart-red-4);
+  }
+  .border-chart-red-5 {
+    border-color: var(--chart-red-5);
+  }
+
+  /* Chart Color Utilities - Rose */
+  .text-chart-rose-1 {
+    color: var(--chart-rose-1);
+  }
+  .text-chart-rose-2 {
+    color: var(--chart-rose-2);
+  }
+  .text-chart-rose-3 {
+    color: var(--chart-rose-3);
+  }
+  .text-chart-rose-4 {
+    color: var(--chart-rose-4);
+  }
+  .text-chart-rose-5 {
+    color: var(--chart-rose-5);
+  }
+
+  .bg-chart-rose-1 {
+    background-color: var(--chart-rose-1);
+  }
+  .bg-chart-rose-2 {
+    background-color: var(--chart-rose-2);
+  }
+  .bg-chart-rose-3 {
+    background-color: var(--chart-rose-3);
+  }
+  .bg-chart-rose-4 {
+    background-color: var(--chart-rose-4);
+  }
+  .bg-chart-rose-5 {
+    background-color: var(--chart-rose-5);
+  }
+
+  .border-chart-rose-1 {
+    border-color: var(--chart-rose-1);
+  }
+  .border-chart-rose-2 {
+    border-color: var(--chart-rose-2);
+  }
+  .border-chart-rose-3 {
+    border-color: var(--chart-rose-3);
+  }
+  .border-chart-rose-4 {
+    border-color: var(--chart-rose-4);
+  }
+  .border-chart-rose-5 {
+    border-color: var(--chart-rose-5);
+  }
+
+  /* Chart Color Utilities - Violet */
+  .text-chart-violet-1 {
+    color: var(--chart-violet-1);
+  }
+  .text-chart-violet-2 {
+    color: var(--chart-violet-2);
+  }
+  .text-chart-violet-3 {
+    color: var(--chart-violet-3);
+  }
+  .text-chart-violet-4 {
+    color: var(--chart-violet-4);
+  }
+  .text-chart-violet-5 {
+    color: var(--chart-violet-5);
+  }
+
+  .bg-chart-violet-1 {
+    background-color: var(--chart-violet-1);
+  }
+  .bg-chart-violet-2 {
+    background-color: var(--chart-violet-2);
+  }
+  .bg-chart-violet-3 {
+    background-color: var(--chart-violet-3);
+  }
+  .bg-chart-violet-4 {
+    background-color: var(--chart-violet-4);
+  }
+  .bg-chart-violet-5 {
+    background-color: var(--chart-violet-5);
+  }
+
+  .border-chart-violet-1 {
+    border-color: var(--chart-violet-1);
+  }
+  .border-chart-violet-2 {
+    border-color: var(--chart-violet-2);
+  }
+  .border-chart-violet-3 {
+    border-color: var(--chart-violet-3);
+  }
+  .border-chart-violet-4 {
+    border-color: var(--chart-violet-4);
+  }
+  .border-chart-violet-5 {
+    border-color: var(--chart-violet-5);
+  }
+
+  /* Chart Color Utilities - Yellow */
+  .text-chart-yellow-1 {
+    color: var(--chart-yellow-1);
+  }
+  .text-chart-yellow-2 {
+    color: var(--chart-yellow-2);
+  }
+  .text-chart-yellow-3 {
+    color: var(--chart-yellow-3);
+  }
+  .text-chart-yellow-4 {
+    color: var(--chart-yellow-4);
+  }
+  .text-chart-yellow-5 {
+    color: var(--chart-yellow-5);
+  }
+
+  .bg-chart-yellow-1 {
+    background-color: var(--chart-yellow-1);
+  }
+  .bg-chart-yellow-2 {
+    background-color: var(--chart-yellow-2);
+  }
+  .bg-chart-yellow-3 {
+    background-color: var(--chart-yellow-3);
+  }
+  .bg-chart-yellow-4 {
+    background-color: var(--chart-yellow-4);
+  }
+  .bg-chart-yellow-5 {
+    background-color: var(--chart-yellow-5);
+  }
+
+  .border-chart-yellow-1 {
+    border-color: var(--chart-yellow-1);
+  }
+  .border-chart-yellow-2 {
+    border-color: var(--chart-yellow-2);
+  }
+  .border-chart-yellow-3 {
+    border-color: var(--chart-yellow-3);
+  }
+  .border-chart-yellow-4 {
+    border-color: var(--chart-yellow-4);
+  }
+  .border-chart-yellow-5 {
+    border-color: var(--chart-yellow-5);
+  }
+
+  /* Chart Color Opacity Variants - Blue */
+  .bg-chart-blue-1\/5 {
+    background-color: color-mix(in oklch, var(--chart-blue-1), transparent 95%);
+  }
+  .bg-chart-blue-1\/10 {
+    background-color: color-mix(in oklch, var(--chart-blue-1), transparent 90%);
+  }
+  .bg-chart-blue-1\/20 {
+    background-color: color-mix(in oklch, var(--chart-blue-1), transparent 80%);
+  }
+  .bg-chart-blue-2\/5 {
+    background-color: color-mix(in oklch, var(--chart-blue-2), transparent 95%);
+  }
+  .bg-chart-blue-2\/10 {
+    background-color: color-mix(in oklch, var(--chart-blue-2), transparent 90%);
+  }
+  .bg-chart-blue-2\/20 {
+    background-color: color-mix(in oklch, var(--chart-blue-2), transparent 80%);
+  }
+  .bg-chart-blue-3\/5 {
+    background-color: color-mix(in oklch, var(--chart-blue-3), transparent 95%);
+  }
+  .bg-chart-blue-3\/10 {
+    background-color: color-mix(in oklch, var(--chart-blue-3), transparent 90%);
+  }
+  .bg-chart-blue-3\/20 {
+    background-color: color-mix(in oklch, var(--chart-blue-3), transparent 80%);
+  }
+  .bg-chart-blue-4\/5 {
+    background-color: color-mix(in oklch, var(--chart-blue-4), transparent 95%);
+  }
+  .bg-chart-blue-4\/10 {
+    background-color: color-mix(in oklch, var(--chart-blue-4), transparent 90%);
+  }
+  .bg-chart-blue-4\/20 {
+    background-color: color-mix(in oklch, var(--chart-blue-4), transparent 80%);
+  }
+  .bg-chart-blue-5\/5 {
+    background-color: color-mix(in oklch, var(--chart-blue-5), transparent 95%);
+  }
+  .bg-chart-blue-5\/10 {
+    background-color: color-mix(in oklch, var(--chart-blue-5), transparent 90%);
+  }
+  .bg-chart-blue-5\/20 {
+    background-color: color-mix(in oklch, var(--chart-blue-5), transparent 80%);
+  }
+  .border-chart-blue-1\/20 {
+    border-color: color-mix(in oklch, var(--chart-blue-1), transparent 80%);
+  }
+  .border-chart-blue-2\/20 {
+    border-color: color-mix(in oklch, var(--chart-blue-2), transparent 80%);
+  }
+  .border-chart-blue-3\/20 {
+    border-color: color-mix(in oklch, var(--chart-blue-3), transparent 80%);
+  }
+  .border-chart-blue-4\/20 {
+    border-color: color-mix(in oklch, var(--chart-blue-4), transparent 80%);
+  }
+  .border-chart-blue-5\/20 {
+    border-color: color-mix(in oklch, var(--chart-blue-5), transparent 80%);
+  }
+  .hover\:bg-chart-blue-1\/10:hover {
+    background-color: color-mix(in oklch, var(--chart-blue-1), transparent 90%);
+  }
+  .hover\:bg-chart-blue-2\/10:hover {
+    background-color: color-mix(in oklch, var(--chart-blue-2), transparent 90%);
+  }
+  .hover\:bg-chart-blue-3\/10:hover {
+    background-color: color-mix(in oklch, var(--chart-blue-3), transparent 90%);
+  }
+  .hover\:bg-chart-blue-4\/10:hover {
+    background-color: color-mix(in oklch, var(--chart-blue-4), transparent 90%);
+  }
+  .hover\:bg-chart-blue-5\/10:hover {
+    background-color: color-mix(in oklch, var(--chart-blue-5), transparent 90%);
+  }
+
+  /* Chart Color Opacity Variants - Green */
+  .bg-chart-green-1\/5 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-green-1),
+      transparent 95%
+    );
+  }
+  .bg-chart-green-1\/10 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-green-1),
+      transparent 90%
+    );
+  }
+  .bg-chart-green-1\/20 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-green-1),
+      transparent 80%
+    );
+  }
+  .bg-chart-green-2\/5 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-green-2),
+      transparent 95%
+    );
+  }
+  .bg-chart-green-2\/10 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-green-2),
+      transparent 90%
+    );
+  }
+  .bg-chart-green-2\/20 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-green-2),
+      transparent 80%
+    );
+  }
+  .bg-chart-green-3\/5 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-green-3),
+      transparent 95%
+    );
+  }
+  .bg-chart-green-3\/10 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-green-3),
+      transparent 90%
+    );
+  }
+  .bg-chart-green-3\/20 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-green-3),
+      transparent 80%
+    );
+  }
+  .bg-chart-green-4\/5 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-green-4),
+      transparent 95%
+    );
+  }
+  .bg-chart-green-4\/10 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-green-4),
+      transparent 90%
+    );
+  }
+  .bg-chart-green-4\/20 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-green-4),
+      transparent 80%
+    );
+  }
+  .bg-chart-green-5\/5 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-green-5),
+      transparent 95%
+    );
+  }
+  .bg-chart-green-5\/10 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-green-5),
+      transparent 90%
+    );
+  }
+  .bg-chart-green-5\/20 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-green-5),
+      transparent 80%
+    );
+  }
+  .border-chart-green-1\/20 {
+    border-color: color-mix(in oklch, var(--chart-green-1), transparent 80%);
+  }
+  .border-chart-green-2\/20 {
+    border-color: color-mix(in oklch, var(--chart-green-2), transparent 80%);
+  }
+  .border-chart-green-3\/20 {
+    border-color: color-mix(in oklch, var(--chart-green-3), transparent 80%);
+  }
+  .border-chart-green-4\/20 {
+    border-color: color-mix(in oklch, var(--chart-green-4), transparent 80%);
+  }
+  .border-chart-green-5\/20 {
+    border-color: color-mix(in oklch, var(--chart-green-5), transparent 80%);
+  }
+  .hover\:bg-chart-green-1\/10:hover {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-green-1),
+      transparent 90%
+    );
+  }
+  .hover\:bg-chart-green-2\/10:hover {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-green-2),
+      transparent 90%
+    );
+  }
+  .hover\:bg-chart-green-3\/10:hover {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-green-3),
+      transparent 90%
+    );
+  }
+  .hover\:bg-chart-green-4\/10:hover {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-green-4),
+      transparent 90%
+    );
+  }
+  .hover\:bg-chart-green-5\/10:hover {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-green-5),
+      transparent 90%
+    );
+  }
+
+  /* Chart Color Opacity Variants - Orange */
+  .bg-chart-orange-1\/5 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-orange-1),
+      transparent 95%
+    );
+  }
+  .bg-chart-orange-1\/10 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-orange-1),
+      transparent 90%
+    );
+  }
+  .bg-chart-orange-1\/20 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-orange-1),
+      transparent 80%
+    );
+  }
+  .bg-chart-orange-2\/5 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-orange-2),
+      transparent 95%
+    );
+  }
+  .bg-chart-orange-2\/10 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-orange-2),
+      transparent 90%
+    );
+  }
+  .bg-chart-orange-2\/20 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-orange-2),
+      transparent 80%
+    );
+  }
+  .bg-chart-orange-3\/5 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-orange-3),
+      transparent 95%
+    );
+  }
+  .bg-chart-orange-3\/10 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-orange-3),
+      transparent 90%
+    );
+  }
+  .bg-chart-orange-3\/20 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-orange-3),
+      transparent 80%
+    );
+  }
+  .bg-chart-orange-4\/5 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-orange-4),
+      transparent 95%
+    );
+  }
+  .bg-chart-orange-4\/10 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-orange-4),
+      transparent 90%
+    );
+  }
+  .bg-chart-orange-4\/20 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-orange-4),
+      transparent 80%
+    );
+  }
+  .bg-chart-orange-5\/5 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-orange-5),
+      transparent 95%
+    );
+  }
+  .bg-chart-orange-5\/10 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-orange-5),
+      transparent 90%
+    );
+  }
+  .bg-chart-orange-5\/20 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-orange-5),
+      transparent 80%
+    );
+  }
+  .border-chart-orange-1\/20 {
+    border-color: color-mix(in oklch, var(--chart-orange-1), transparent 80%);
+  }
+  .border-chart-orange-2\/20 {
+    border-color: color-mix(in oklch, var(--chart-orange-2), transparent 80%);
+  }
+  .border-chart-orange-3\/20 {
+    border-color: color-mix(in oklch, var(--chart-orange-3), transparent 80%);
+  }
+  .border-chart-orange-4\/20 {
+    border-color: color-mix(in oklch, var(--chart-orange-4), transparent 80%);
+  }
+  .border-chart-orange-5\/20 {
+    border-color: color-mix(in oklch, var(--chart-orange-5), transparent 80%);
+  }
+  .hover\:bg-chart-orange-1\/10:hover {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-orange-1),
+      transparent 90%
+    );
+  }
+  .hover\:bg-chart-orange-2\/10:hover {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-orange-2),
+      transparent 90%
+    );
+  }
+  .hover\:bg-chart-orange-3\/10:hover {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-orange-3),
+      transparent 90%
+    );
+  }
+  .hover\:bg-chart-orange-4\/10:hover {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-orange-4),
+      transparent 90%
+    );
+  }
+  .hover\:bg-chart-orange-5\/10:hover {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-orange-5),
+      transparent 90%
+    );
+  }
+
+  /* Chart Color Opacity Variants - Red */
+  .bg-chart-red-1\/5 {
+    background-color: color-mix(in oklch, var(--chart-red-1), transparent 95%);
+  }
+  .bg-chart-red-1\/10 {
+    background-color: color-mix(in oklch, var(--chart-red-1), transparent 90%);
+  }
+  .bg-chart-red-1\/20 {
+    background-color: color-mix(in oklch, var(--chart-red-1), transparent 80%);
+  }
+  .bg-chart-red-2\/5 {
+    background-color: color-mix(in oklch, var(--chart-red-2), transparent 95%);
+  }
+  .bg-chart-red-2\/10 {
+    background-color: color-mix(in oklch, var(--chart-red-2), transparent 90%);
+  }
+  .bg-chart-red-2\/20 {
+    background-color: color-mix(in oklch, var(--chart-red-2), transparent 80%);
+  }
+  .bg-chart-red-3\/5 {
+    background-color: color-mix(in oklch, var(--chart-red-3), transparent 95%);
+  }
+  .bg-chart-red-3\/10 {
+    background-color: color-mix(in oklch, var(--chart-red-3), transparent 90%);
+  }
+  .bg-chart-red-3\/20 {
+    background-color: color-mix(in oklch, var(--chart-red-3), transparent 80%);
+  }
+  .bg-chart-red-4\/5 {
+    background-color: color-mix(in oklch, var(--chart-red-4), transparent 95%);
+  }
+  .bg-chart-red-4\/10 {
+    background-color: color-mix(in oklch, var(--chart-red-4), transparent 90%);
+  }
+  .bg-chart-red-4\/20 {
+    background-color: color-mix(in oklch, var(--chart-red-4), transparent 80%);
+  }
+  .bg-chart-red-5\/5 {
+    background-color: color-mix(in oklch, var(--chart-red-5), transparent 95%);
+  }
+  .bg-chart-red-5\/10 {
+    background-color: color-mix(in oklch, var(--chart-red-5), transparent 90%);
+  }
+  .bg-chart-red-5\/20 {
+    background-color: color-mix(in oklch, var(--chart-red-5), transparent 80%);
+  }
+  .border-chart-red-1\/20 {
+    border-color: color-mix(in oklch, var(--chart-red-1), transparent 80%);
+  }
+  .border-chart-red-2\/20 {
+    border-color: color-mix(in oklch, var(--chart-red-2), transparent 80%);
+  }
+  .border-chart-red-3\/20 {
+    border-color: color-mix(in oklch, var(--chart-red-3), transparent 80%);
+  }
+  .border-chart-red-4\/20 {
+    border-color: color-mix(in oklch, var(--chart-red-4), transparent 80%);
+  }
+  .border-chart-red-5\/20 {
+    border-color: color-mix(in oklch, var(--chart-red-5), transparent 80%);
+  }
+  .hover\:bg-chart-red-1\/10:hover {
+    background-color: color-mix(in oklch, var(--chart-red-1), transparent 90%);
+  }
+  .hover\:bg-chart-red-2\/10:hover {
+    background-color: color-mix(in oklch, var(--chart-red-2), transparent 90%);
+  }
+  .hover\:bg-chart-red-3\/10:hover {
+    background-color: color-mix(in oklch, var(--chart-red-3), transparent 90%);
+  }
+  .hover\:bg-chart-red-4\/10:hover {
+    background-color: color-mix(in oklch, var(--chart-red-4), transparent 90%);
+  }
+  .hover\:bg-chart-red-5\/10:hover {
+    background-color: color-mix(in oklch, var(--chart-red-5), transparent 90%);
+  }
+
+  /* Chart Color Opacity Variants - Rose */
+  .bg-chart-rose-1\/5 {
+    background-color: color-mix(in oklch, var(--chart-rose-1), transparent 95%);
+  }
+  .bg-chart-rose-1\/10 {
+    background-color: color-mix(in oklch, var(--chart-rose-1), transparent 90%);
+  }
+  .bg-chart-rose-1\/20 {
+    background-color: color-mix(in oklch, var(--chart-rose-1), transparent 80%);
+  }
+  .bg-chart-rose-2\/5 {
+    background-color: color-mix(in oklch, var(--chart-rose-2), transparent 95%);
+  }
+  .bg-chart-rose-2\/10 {
+    background-color: color-mix(in oklch, var(--chart-rose-2), transparent 90%);
+  }
+  .bg-chart-rose-2\/20 {
+    background-color: color-mix(in oklch, var(--chart-rose-2), transparent 80%);
+  }
+  .bg-chart-rose-3\/5 {
+    background-color: color-mix(in oklch, var(--chart-rose-3), transparent 95%);
+  }
+  .bg-chart-rose-3\/10 {
+    background-color: color-mix(in oklch, var(--chart-rose-3), transparent 90%);
+  }
+  .bg-chart-rose-3\/20 {
+    background-color: color-mix(in oklch, var(--chart-rose-3), transparent 80%);
+  }
+  .bg-chart-rose-4\/5 {
+    background-color: color-mix(in oklch, var(--chart-rose-4), transparent 95%);
+  }
+  .bg-chart-rose-4\/10 {
+    background-color: color-mix(in oklch, var(--chart-rose-4), transparent 90%);
+  }
+  .bg-chart-rose-4\/20 {
+    background-color: color-mix(in oklch, var(--chart-rose-4), transparent 80%);
+  }
+  .bg-chart-rose-5\/5 {
+    background-color: color-mix(in oklch, var(--chart-rose-5), transparent 95%);
+  }
+  .bg-chart-rose-5\/10 {
+    background-color: color-mix(in oklch, var(--chart-rose-5), transparent 90%);
+  }
+  .bg-chart-rose-5\/20 {
+    background-color: color-mix(in oklch, var(--chart-rose-5), transparent 80%);
+  }
+  .border-chart-rose-1\/20 {
+    border-color: color-mix(in oklch, var(--chart-rose-1), transparent 80%);
+  }
+  .border-chart-rose-2\/20 {
+    border-color: color-mix(in oklch, var(--chart-rose-2), transparent 80%);
+  }
+  .border-chart-rose-3\/20 {
+    border-color: color-mix(in oklch, var(--chart-rose-3), transparent 80%);
+  }
+  .border-chart-rose-4\/20 {
+    border-color: color-mix(in oklch, var(--chart-rose-4), transparent 80%);
+  }
+  .border-chart-rose-5\/20 {
+    border-color: color-mix(in oklch, var(--chart-rose-5), transparent 80%);
+  }
+  .hover\:bg-chart-rose-1\/10:hover {
+    background-color: color-mix(in oklch, var(--chart-rose-1), transparent 90%);
+  }
+  .hover\:bg-chart-rose-2\/10:hover {
+    background-color: color-mix(in oklch, var(--chart-rose-2), transparent 90%);
+  }
+  .hover\:bg-chart-rose-3\/10:hover {
+    background-color: color-mix(in oklch, var(--chart-rose-3), transparent 90%);
+  }
+  .hover\:bg-chart-rose-4\/10:hover {
+    background-color: color-mix(in oklch, var(--chart-rose-4), transparent 90%);
+  }
+  .hover\:bg-chart-rose-5\/10:hover {
+    background-color: color-mix(in oklch, var(--chart-rose-5), transparent 90%);
+  }
+
+  /* Chart Color Opacity Variants - Violet */
+  .bg-chart-violet-1\/5 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-violet-1),
+      transparent 95%
+    );
+  }
+  .bg-chart-violet-1\/10 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-violet-1),
+      transparent 90%
+    );
+  }
+  .bg-chart-violet-1\/20 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-violet-1),
+      transparent 80%
+    );
+  }
+  .bg-chart-violet-2\/5 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-violet-2),
+      transparent 95%
+    );
+  }
+  .bg-chart-violet-2\/10 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-violet-2),
+      transparent 90%
+    );
+  }
+  .bg-chart-violet-2\/20 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-violet-2),
+      transparent 80%
+    );
+  }
+  .bg-chart-violet-3\/5 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-violet-3),
+      transparent 95%
+    );
+  }
+  .bg-chart-violet-3\/10 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-violet-3),
+      transparent 90%
+    );
+  }
+  .bg-chart-violet-3\/20 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-violet-3),
+      transparent 80%
+    );
+  }
+  .bg-chart-violet-4\/5 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-violet-4),
+      transparent 95%
+    );
+  }
+  .bg-chart-violet-4\/10 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-violet-4),
+      transparent 90%
+    );
+  }
+  .bg-chart-violet-4\/20 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-violet-4),
+      transparent 80%
+    );
+  }
+  .bg-chart-violet-5\/5 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-violet-5),
+      transparent 95%
+    );
+  }
+  .bg-chart-violet-5\/10 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-violet-5),
+      transparent 90%
+    );
+  }
+  .bg-chart-violet-5\/20 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-violet-5),
+      transparent 80%
+    );
+  }
+  .border-chart-violet-1\/20 {
+    border-color: color-mix(in oklch, var(--chart-violet-1), transparent 80%);
+  }
+  .border-chart-violet-2\/20 {
+    border-color: color-mix(in oklch, var(--chart-violet-2), transparent 80%);
+  }
+  .border-chart-violet-3\/20 {
+    border-color: color-mix(in oklch, var(--chart-violet-3), transparent 80%);
+  }
+  .border-chart-violet-4\/20 {
+    border-color: color-mix(in oklch, var(--chart-violet-4), transparent 80%);
+  }
+  .border-chart-violet-5\/20 {
+    border-color: color-mix(in oklch, var(--chart-violet-5), transparent 80%);
+  }
+  .hover\:bg-chart-violet-1\/10:hover {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-violet-1),
+      transparent 90%
+    );
+  }
+  .hover\:bg-chart-violet-2\/10:hover {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-violet-2),
+      transparent 90%
+    );
+  }
+  .hover\:bg-chart-violet-3\/10:hover {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-violet-3),
+      transparent 90%
+    );
+  }
+  .hover\:bg-chart-violet-4\/10:hover {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-violet-4),
+      transparent 90%
+    );
+  }
+  .hover\:bg-chart-violet-5\/10:hover {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-violet-5),
+      transparent 90%
+    );
+  }
+
+  /* Chart Color Opacity Variants - Yellow */
+  .bg-chart-yellow-1\/5 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-yellow-1),
+      transparent 95%
+    );
+  }
+  .bg-chart-yellow-1\/10 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-yellow-1),
+      transparent 90%
+    );
+  }
+  .bg-chart-yellow-1\/20 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-yellow-1),
+      transparent 80%
+    );
+  }
+  .bg-chart-yellow-2\/5 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-yellow-2),
+      transparent 95%
+    );
+  }
+  .bg-chart-yellow-2\/10 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-yellow-2),
+      transparent 90%
+    );
+  }
+  .bg-chart-yellow-2\/20 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-yellow-2),
+      transparent 80%
+    );
+  }
+  .bg-chart-yellow-3\/5 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-yellow-3),
+      transparent 95%
+    );
+  }
+  .bg-chart-yellow-3\/10 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-yellow-3),
+      transparent 90%
+    );
+  }
+  .bg-chart-yellow-3\/20 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-yellow-3),
+      transparent 80%
+    );
+  }
+  .bg-chart-yellow-4\/5 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-yellow-4),
+      transparent 95%
+    );
+  }
+  .bg-chart-yellow-4\/10 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-yellow-4),
+      transparent 90%
+    );
+  }
+  .bg-chart-yellow-4\/20 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-yellow-4),
+      transparent 80%
+    );
+  }
+  .bg-chart-yellow-5\/5 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-yellow-5),
+      transparent 95%
+    );
+  }
+  .bg-chart-yellow-5\/10 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-yellow-5),
+      transparent 90%
+    );
+  }
+  .bg-chart-yellow-5\/20 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-yellow-5),
+      transparent 80%
+    );
+  }
+  .border-chart-yellow-1\/20 {
+    border-color: color-mix(in oklch, var(--chart-yellow-1), transparent 80%);
+  }
+  .border-chart-yellow-2\/20 {
+    border-color: color-mix(in oklch, var(--chart-yellow-2), transparent 80%);
+  }
+  .border-chart-yellow-3\/20 {
+    border-color: color-mix(in oklch, var(--chart-yellow-3), transparent 80%);
+  }
+  .border-chart-yellow-4\/20 {
+    border-color: color-mix(in oklch, var(--chart-yellow-4), transparent 80%);
+  }
+  .border-chart-yellow-5\/20 {
+    border-color: color-mix(in oklch, var(--chart-yellow-5), transparent 80%);
+  }
+  .hover\:bg-chart-yellow-1\/10:hover {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-yellow-1),
+      transparent 90%
+    );
+  }
+  .hover\:bg-chart-yellow-2\/10:hover {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-yellow-2),
+      transparent 90%
+    );
+  }
+  .hover\:bg-chart-yellow-3\/10:hover {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-yellow-3),
+      transparent 90%
+    );
+  }
+  .hover\:bg-chart-yellow-4\/10:hover {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-yellow-4),
+      transparent 90%
+    );
+  }
+  .hover\:bg-chart-yellow-5\/10:hover {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-yellow-5),
+      transparent 90%
+    );
+  }
+
+  /* Chart Color Opacity Variants - Primary */
+  .bg-chart-primary-1\/5 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-primary-1),
+      transparent 95%
+    );
+  }
+  .bg-chart-primary-1\/10 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-primary-1),
+      transparent 90%
+    );
+  }
+  .bg-chart-primary-1\/20 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-primary-1),
+      transparent 80%
+    );
+  }
+  .bg-chart-primary-2\/5 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-primary-2),
+      transparent 95%
+    );
+  }
+  .bg-chart-primary-2\/10 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-primary-2),
+      transparent 90%
+    );
+  }
+  .bg-chart-primary-2\/20 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-primary-2),
+      transparent 80%
+    );
+  }
+  .bg-chart-primary-3\/5 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-primary-3),
+      transparent 95%
+    );
+  }
+  .bg-chart-primary-3\/10 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-primary-3),
+      transparent 90%
+    );
+  }
+  .bg-chart-primary-3\/20 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-primary-3),
+      transparent 80%
+    );
+  }
+  .bg-chart-primary-4\/5 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-primary-4),
+      transparent 95%
+    );
+  }
+  .bg-chart-primary-4\/10 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-primary-4),
+      transparent 90%
+    );
+  }
+  .bg-chart-primary-4\/20 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-primary-4),
+      transparent 80%
+    );
+  }
+  .bg-chart-primary-5\/5 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-primary-5),
+      transparent 95%
+    );
+  }
+  .bg-chart-primary-5\/10 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-primary-5),
+      transparent 90%
+    );
+  }
+  .bg-chart-primary-5\/20 {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-primary-5),
+      transparent 80%
+    );
+  }
+  .border-chart-primary-1\/20 {
+    border-color: color-mix(in oklch, var(--chart-primary-1), transparent 80%);
+  }
+  .border-chart-primary-2\/20 {
+    border-color: color-mix(in oklch, var(--chart-primary-2), transparent 80%);
+  }
+  .border-chart-primary-3\/20 {
+    border-color: color-mix(in oklch, var(--chart-primary-3), transparent 80%);
+  }
+  .border-chart-primary-4\/20 {
+    border-color: color-mix(in oklch, var(--chart-primary-4), transparent 80%);
+  }
+  .border-chart-primary-5\/20 {
+    border-color: color-mix(in oklch, var(--chart-primary-5), transparent 80%);
+  }
+  .hover\:bg-chart-primary-1\/10:hover {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-primary-1),
+      transparent 90%
+    );
+  }
+  .hover\:bg-chart-primary-2\/10:hover {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-primary-2),
+      transparent 90%
+    );
+  }
+  .hover\:bg-chart-primary-3\/10:hover {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-primary-3),
+      transparent 90%
+    );
+  }
+  .hover\:bg-chart-primary-4\/10:hover {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-primary-4),
+      transparent 90%
+    );
+  }
+  .hover\:bg-chart-primary-5\/10:hover {
+    background-color: color-mix(
+      in oklch,
+      var(--chart-primary-5),
+      transparent 90%
+    );
+  }
+
+  /* Chart Color Border-Left Utilities - Blue */
+  .border-l-chart-blue-1 {
+    border-left-color: var(--chart-blue-1);
+  }
+  .border-l-chart-blue-2 {
+    border-left-color: var(--chart-blue-2);
+  }
+  .border-l-chart-blue-3 {
+    border-left-color: var(--chart-blue-3);
+  }
+  .border-l-chart-blue-4 {
+    border-left-color: var(--chart-blue-4);
+  }
+  .border-l-chart-blue-5 {
+    border-left-color: var(--chart-blue-5);
+  }
+
+  /* Chart Color Border-Left Utilities - Green */
+  .border-l-chart-green-1 {
+    border-left-color: var(--chart-green-1);
+  }
+  .border-l-chart-green-2 {
+    border-left-color: var(--chart-green-2);
+  }
+  .border-l-chart-green-3 {
+    border-left-color: var(--chart-green-3);
+  }
+  .border-l-chart-green-4 {
+    border-left-color: var(--chart-green-4);
+  }
+  .border-l-chart-green-5 {
+    border-left-color: var(--chart-green-5);
+  }
+
+  /* Chart Color Border-Left Utilities - Orange */
+  .border-l-chart-orange-1 {
+    border-left-color: var(--chart-orange-1);
+  }
+  .border-l-chart-orange-2 {
+    border-left-color: var(--chart-orange-2);
+  }
+  .border-l-chart-orange-3 {
+    border-left-color: var(--chart-orange-3);
+  }
+  .border-l-chart-orange-4 {
+    border-left-color: var(--chart-orange-4);
+  }
+  .border-l-chart-orange-5 {
+    border-left-color: var(--chart-orange-5);
+  }
+
+  /* Chart Color Border-Left Utilities - Red */
+  .border-l-chart-red-1 {
+    border-left-color: var(--chart-red-1);
+  }
+  .border-l-chart-red-2 {
+    border-left-color: var(--chart-red-2);
+  }
+  .border-l-chart-red-3 {
+    border-left-color: var(--chart-red-3);
+  }
+  .border-l-chart-red-4 {
+    border-left-color: var(--chart-red-4);
+  }
+  .border-l-chart-red-5 {
+    border-left-color: var(--chart-red-5);
+  }
+
+  /* Chart Color Border-Left Utilities - Rose */
+  .border-l-chart-rose-1 {
+    border-left-color: var(--chart-rose-1);
+  }
+  .border-l-chart-rose-2 {
+    border-left-color: var(--chart-rose-2);
+  }
+  .border-l-chart-rose-3 {
+    border-left-color: var(--chart-rose-3);
+  }
+  .border-l-chart-rose-4 {
+    border-left-color: var(--chart-rose-4);
+  }
+  .border-l-chart-rose-5 {
+    border-left-color: var(--chart-rose-5);
+  }
+
+  /* Chart Color Border-Left Utilities - Violet */
+  .border-l-chart-violet-1 {
+    border-left-color: var(--chart-violet-1);
+  }
+  .border-l-chart-violet-2 {
+    border-left-color: var(--chart-violet-2);
+  }
+  .border-l-chart-violet-3 {
+    border-left-color: var(--chart-violet-3);
+  }
+  .border-l-chart-violet-4 {
+    border-left-color: var(--chart-violet-4);
+  }
+  .border-l-chart-violet-5 {
+    border-left-color: var(--chart-violet-5);
+  }
+
+  /* Chart Color Border-Left Utilities - Yellow */
+  .border-l-chart-yellow-1 {
+    border-left-color: var(--chart-yellow-1);
+  }
+  .border-l-chart-yellow-2 {
+    border-left-color: var(--chart-yellow-2);
+  }
+  .border-l-chart-yellow-3 {
+    border-left-color: var(--chart-yellow-3);
+  }
+  .border-l-chart-yellow-4 {
+    border-left-color: var(--chart-yellow-4);
+  }
+  .border-l-chart-yellow-5 {
+    border-left-color: var(--chart-yellow-5);
+  }
+
+  /* Chart Color Border-Left Utilities - Primary */
+  .border-l-chart-primary-1 {
+    border-left-color: var(--chart-primary-1);
+  }
+  .border-l-chart-primary-2 {
+    border-left-color: var(--chart-primary-2);
+  }
+  .border-l-chart-primary-3 {
+    border-left-color: var(--chart-primary-3);
+  }
+  .border-l-chart-primary-4 {
+    border-left-color: var(--chart-primary-4);
+  }
+  .border-l-chart-primary-5 {
+    border-left-color: var(--chart-primary-5);
+  }
+
+  /* Enum Color Utilities */
+  .text-enum-1 {
+    color: var(--enum-1);
+  }
+  .text-enum-2 {
+    color: var(--enum-2);
+  }
+  .text-enum-3 {
+    color: var(--enum-3);
+  }
+  .text-enum-4 {
+    color: var(--enum-4);
+  }
+  .text-enum-5 {
+    color: var(--enum-5);
+  }
+  .text-enum-6 {
+    color: var(--enum-6);
+  }
+  .text-enum-7 {
+    color: var(--enum-7);
+  }
+  .text-enum-8 {
+    color: var(--enum-8);
+  }
+  .text-enum-9 {
+    color: var(--enum-9);
+  }
+  .text-enum-10 {
+    color: var(--enum-10);
+  }
+  .text-enum-11 {
+    color: var(--enum-11);
+  }
+  .text-enum-12 {
+    color: var(--enum-12);
+  }
+
+  .bg-enum-1 {
+    background-color: var(--enum-1);
+  }
+  .bg-enum-2 {
+    background-color: var(--enum-2);
+  }
+  .bg-enum-3 {
+    background-color: var(--enum-3);
+  }
+  .bg-enum-4 {
+    background-color: var(--enum-4);
+  }
+  .bg-enum-5 {
+    background-color: var(--enum-5);
+  }
+  .bg-enum-6 {
+    background-color: var(--enum-6);
+  }
+  .bg-enum-7 {
+    background-color: var(--enum-7);
+  }
+  .bg-enum-8 {
+    background-color: var(--enum-8);
+  }
+  .bg-enum-9 {
+    background-color: var(--enum-9);
+  }
+  .bg-enum-10 {
+    background-color: var(--enum-10);
+  }
+  .bg-enum-11 {
+    background-color: var(--enum-11);
+  }
+  .bg-enum-12 {
+    background-color: var(--enum-12);
+  }
+
+  .bg-enum-1\/10 {
+    background-color: color-mix(in oklch, var(--enum-1), transparent 90%);
+  }
+  .bg-enum-1\/5 {
+    background-color: color-mix(in oklch, var(--enum-1), transparent 95%);
+  }
+  .bg-enum-2\/10 {
+    background-color: color-mix(in oklch, var(--enum-2), transparent 90%);
+  }
+  .bg-enum-2\/5 {
+    background-color: color-mix(in oklch, var(--enum-2), transparent 95%);
+  }
+  .bg-enum-3\/10 {
+    background-color: color-mix(in oklch, var(--enum-3), transparent 90%);
+  }
+  .bg-enum-3\/5 {
+    background-color: color-mix(in oklch, var(--enum-3), transparent 95%);
+  }
+  .bg-enum-4\/10 {
+    background-color: color-mix(in oklch, var(--enum-4), transparent 90%);
+  }
+  .bg-enum-4\/5 {
+    background-color: color-mix(in oklch, var(--enum-4), transparent 95%);
+  }
+
+  .border-enum-1 {
+    border-color: var(--enum-1);
+  }
+  .border-enum-2 {
+    border-color: var(--enum-2);
+  }
+  .border-enum-3 {
+    border-color: var(--enum-3);
+  }
+  .border-enum-4 {
+    border-color: var(--enum-4);
+  }
+
+  .border-enum-1\/20 {
+    border-color: color-mix(in oklch, var(--enum-1), transparent 80%);
+  }
+  .border-enum-2\/20 {
+    border-color: color-mix(in oklch, var(--enum-2), transparent 80%);
+  }
+  .border-enum-3\/20 {
+    border-color: color-mix(in oklch, var(--enum-3), transparent 80%);
+  }
+  .border-enum-4\/20 {
+    border-color: color-mix(in oklch, var(--enum-4), transparent 80%);
+  }
+
+  .hover\:bg-enum-1\/10:hover {
+    background-color: color-mix(in oklch, var(--enum-1), transparent 90%);
+  }
+  .hover\:bg-enum-2\/10:hover {
+    background-color: color-mix(in oklch, var(--enum-2), transparent 90%);
+  }
+  .hover\:bg-enum-3\/10:hover {
+    background-color: color-mix(in oklch, var(--enum-3), transparent 90%);
+  }
+  .hover\:bg-enum-4\/10:hover {
+    background-color: color-mix(in oklch, var(--enum-4), transparent 90%);
+  }
+
+  /* Shadow Utilities with Accent Colors */
+  .shadow-primary {
+    box-shadow:
+      0 1px 3px 0 color-mix(in oklch, var(--primary), transparent 90%),
+      0 1px 2px -1px color-mix(in oklch, var(--primary), transparent 90%);
+  }
+  .shadow-primary-md {
+    box-shadow:
+      0 4px 6px -1px color-mix(in oklch, var(--primary), transparent 90%),
+      0 2px 4px -2px color-mix(in oklch, var(--primary), transparent 90%);
+  }
+  .shadow-primary-lg {
+    box-shadow:
+      0 10px 15px -3px color-mix(in oklch, var(--primary), transparent 90%),
+      0 4px 6px -4px color-mix(in oklch, var(--primary), transparent 90%);
+  }
+
+  .shadow-accent {
+    box-shadow:
+      0 1px 3px 0 color-mix(in oklch, var(--accent), transparent 80%),
+      0 1px 2px -1px color-mix(in oklch, var(--accent), transparent 80%);
+  }
+  .shadow-accent-md {
+    box-shadow:
+      0 4px 6px -1px color-mix(in oklch, var(--accent), transparent 80%),
+      0 2px 4px -2px color-mix(in oklch, var(--accent), transparent 80%);
+  }
+  .shadow-accent-lg {
+    box-shadow:
+      0 10px 15px -3px color-mix(in oklch, var(--accent), transparent 85%),
+      0 4px 6px -4px color-mix(in oklch, var(--accent), transparent 85%);
+  }
+
+  .hover\:shadow-primary-md:hover {
+    box-shadow:
+      0 4px 6px -1px color-mix(in oklch, var(--primary), transparent 90%),
+      0 2px 4px -2px color-mix(in oklch, var(--primary), transparent 90%);
+  }
+  .hover\:shadow-accent-md:hover {
+    box-shadow:
+      0 4px 6px -1px color-mix(in oklch, var(--accent), transparent 80%),
+      0 2px 4px -2px color-mix(in oklch, var(--accent), transparent 80%);
+  }
+
+  /* Ring Offset Utilities */
+  .ring-offset-primary {
+    --tw-ring-offset-color: var(--primary);
+  }
+  .ring-offset-accent {
+    --tw-ring-offset-color: var(--accent);
+  }
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-blue-1: var(--chart-blue-1);
+  --color-chart-blue-2: var(--chart-blue-2);
+  --color-chart-blue-3: var(--chart-blue-3);
+  --color-chart-blue-4: var(--chart-blue-4);
+  --color-chart-blue-5: var(--chart-blue-5);
+  --color-chart-green-1: var(--chart-green-1);
+  --color-chart-green-2: var(--chart-green-2);
+  --color-chart-green-3: var(--chart-green-3);
+  --color-chart-green-4: var(--chart-green-4);
+  --color-chart-green-5: var(--chart-green-5);
+  --color-chart-primary-1: var(--chart-primary-1);
+  --color-chart-primary-2: var(--chart-primary-2);
+  --color-chart-primary-3: var(--chart-primary-3);
+  --color-chart-primary-4: var(--chart-primary-4);
+  --color-chart-primary-5: var(--chart-primary-5);
+  --color-chart-orange-1: var(--chart-orange-1);
+  --color-chart-orange-2: var(--chart-orange-2);
+  --color-chart-orange-3: var(--chart-orange-3);
+  --color-chart-orange-4: var(--chart-orange-4);
+  --color-chart-orange-5: var(--chart-orange-5);
+  --color-chart-red-1: var(--chart-red-1);
+  --color-chart-red-2: var(--chart-red-2);
+  --color-chart-red-3: var(--chart-red-3);
+  --color-chart-red-4: var(--chart-red-4);
+  --color-chart-red-5: var(--chart-red-5);
+  --color-chart-rose-1: var(--chart-rose-1);
+  --color-chart-rose-2: var(--chart-rose-2);
+  --color-chart-rose-3: var(--chart-rose-3);
+  --color-chart-rose-4: var(--chart-rose-4);
+  --color-chart-rose-5: var(--chart-rose-5);
+  --color-chart-violet-1: var(--chart-violet-1);
+  --color-chart-violet-2: var(--chart-violet-2);
+  --color-chart-violet-3: var(--chart-violet-3);
+  --color-chart-violet-4: var(--chart-violet-4);
+  --color-chart-violet-5: var(--chart-violet-5);
+  --color-chart-yellow-1: var(--chart-yellow-1);
+  --color-chart-yellow-2: var(--chart-yellow-2);
+  --color-chart-yellow-3: var(--chart-yellow-3);
+  --color-chart-yellow-4: var(--chart-yellow-4);
+  --color-chart-yellow-5: var(--chart-yellow-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--radix-accordion-content-height);
+    }
+  }
+
+  @keyframes accordion-up {
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+    to {
+      height: 0;
+    }
+  }
+}
+
+/* ReactFlow Custom Styles */
+.react-flow {
+  background-color: var(--background);
+}
+
+.react-flow__node {
+  font-family: inherit;
+}
+
+.react-flow__edge-path {
+  stroke: var(--foreground);
+}
+
+/* ReactFlow marker (arrowhead) styling */
+.react-flow__arrowhead {
+  fill: var(--foreground) !important;
+}
+
+.react-flow__controls {
+  background-color: var(--card);
+  border-color: var(--border);
+}
+
+.react-flow__controls-button {
+  background-color: var(--card);
+  border-color: var(--border);
+  color: var(--foreground);
+}
+
+.react-flow__controls-button:hover {
+  background-color: var(--accent);
+}
+
+.react-flow__minimap {
+  background-color: var(--card);
+  border-color: var(--border);
+}
+
+.react-flow__attribution {
+  background-color: var(--card);
+  color: var(--muted-foreground);
+}
+
+/* Dark mode adjustments */
+.dark .react-flow__edge-path {
+  stroke: var(--foreground);
+}
+
+.dark .react-flow__arrowhead {
+  fill: var(--foreground) !important;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* ===== Landing Page Styles ===== */
+
+/* Bento Box - Fluid Spacing */
+:root {
+  --bento-row-gap: clamp(2.5rem, 10vw, 20rem);
+  --bento-row-padding: clamp(2rem, 5vw, 6rem);
+  --bento-card-height: clamp(120px, 18vw, 200px);
+  --bento-card-width: min(calc(100vw - 2rem), clamp(260px, 35vw, 448px));
+  --bento-shape-offset: calc(var(--bento-card-height) / 2);
+  --bento-line-first: 300px;
+  --bento-line-between: clamp(100px, 14vw, 200px);
+  --theme-orange-dark: oklch(0.304 0.128 66.29);
+}
+
+/* Smooth scroll for landing page */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Dot pattern background */
+.dot-pattern {
+  background-image: radial-gradient(
+    circle,
+    color-mix(in oklch, var(--muted-foreground), transparent 50%) 1px,
+    transparent 1px
+  );
+  background-size: 30px 30px;
+}
+
+/* Orange hero background */
+.hero-orange-bg {
+  background-color: var(--chart-orange-1);
+}
+
+.dark .hero-orange-bg {
+  background-color: var(--theme-orange-dark);
+}
+
+/* Header background */
+.header-orange-bg {
+  background-color: var(--chart-orange-1);
+}
+
+.dark .header-orange-bg {
+  background-color: var(--theme-orange-dark);
+}
+
+/* Orange accent utilities */
+.text-orange-accent {
+  color: var(--chart-orange-3);
+}
+
+.dark .text-orange-accent {
+  color: var(--chart-orange-4);
+}
+
+.border-orange-accent {
+  border-color: var(--chart-orange-3);
+}
+
+.dark .border-orange-accent {
+  border-color: var(--chart-orange-4);
+}
+
+.bg-orange-accent {
+  background-color: var(--chart-orange-3);
+}
+
+.dark .bg-orange-accent {
+  background-color: var(--chart-orange-4);
+}
+
+/* Hero curve SVG fill colors */
+.hero-curve-fill {
+  fill: var(--chart-orange-1);
+}
+
+.dark .hero-curve-fill {
+  fill: var(--theme-orange-dark);
+}
+
+.hero-curve-stroke {
+  stroke: var(--foreground);
+}
+
+.hero-curve-line {
+  stroke: var(--foreground);
+  visibility: hidden;
+}
+
+@media (min-width: 768px) {
+  .hero-curve-line {
+    visibility: visible;
+  }
+}
+
+/* Divider shape styles */
+.divider-shape-bg {
+  fill: var(--background);
+  stroke: none;
+}
+
+.divider-shape {
+  stroke: var(--foreground);
+  fill: var(--chart-orange-1);
+}
+
+.dark .divider-shape {
+  fill: var(--theme-orange-dark);
+}
+
+.divider-line {
+  stroke: var(--foreground);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
