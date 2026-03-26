@@ -1,0 +1,190 @@
+'use client'
+
+import { useState, useMemo, useCallback } from 'react'
+import ReactFlow, {
+  Background,
+  BackgroundVariant,
+  type NodeTypes,
+  type EdgeTypes,
+  type NodeMouseHandler,
+} from 'reactflow'
+import 'reactflow/dist/style.css'
+import { ArrowDownUp } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { AccessibleGraphControls } from '@/components/graph-nodes/AccessibleGraphControls'
+import { StartNode } from './nodes/StartNode'
+import { StepNode } from './nodes/StepNode'
+import { EndNode } from './nodes/EndNode'
+import { NodeHoverCard } from './nodes/NodeHoverCard'
+import { AnimatedEdge } from './edges/AnimatedEdge'
+import { useSopGraphLayout } from './hooks/useSopGraphLayout'
+import { useNodeHover } from './hooks/useNodeHover'
+import type { SopDto, StepDto } from '@/lib/api-client'
+import type { LayoutDirection } from '@/lib/hooks/useDagLayoutGeneric'
+import { REACTFLOW_FIT_VIEW_OPTIONS } from '@/lib/constants/graph-config'
+
+// Module-level constants to avoid ReactFlow nodeTypes recreation warning
+const nodeTypes: NodeTypes = {
+  sopGraphNewNode: ({ data, selected, ...rest }: any) => {
+    const step = data.step as StepDto
+    switch (step.nodeType) {
+      case 'START':
+        return <StartNode data={data} selected={selected} {...rest} />
+      case 'END':
+        return <EndNode data={data} selected={selected} {...rest} />
+      default:
+        return <StepNode data={data} selected={selected} {...rest} />
+    }
+  },
+}
+
+const edgeTypes: EdgeTypes = {
+  animated: AnimatedEdge,
+}
+
+interface SopGraphNewContentProps {
+  sop: SopDto
+  className?: string
+  graphHeight?: string
+}
+
+export function SopGraphNewContent({
+  sop,
+  className,
+  graphHeight = 'h-[600px]',
+}: SopGraphNewContentProps) {
+  const [selectedStepId, setSelectedStepId] = useState<string | null>(null)
+  const [direction, setDirection] = useState<LayoutDirection>('TB')
+  const { hoveredNodeId, onNodeMouseEnter, onNodeMouseLeave } = useNodeHover()
+
+  const { nodes, edges } = useSopGraphLayout(
+    sop.steps,
+    sop.edges,
+    selectedStepId,
+    direction
+  )
+
+  // Add edge labels (step order)
+  const labeledEdges = useMemo(
+    () =>
+      edges.map((edge, index) => ({
+        ...edge,
+        type: 'animated',
+        data: { ...edge.data, label: `${index + 1}` },
+      })),
+    [edges]
+  )
+
+  const onNodeClick: NodeMouseHandler = useCallback((_event, node) => {
+    setSelectedStepId((prev) => (prev === node.id ? null : node.id))
+  }, [])
+
+  const handleNodeMouseEnter: NodeMouseHandler = useCallback(
+    (_event, node) => {
+      onNodeMouseEnter(node.id)
+    },
+    [onNodeMouseEnter]
+  )
+
+  const handleNodeMouseLeave: NodeMouseHandler = useCallback(() => {
+    onNodeMouseLeave()
+  }, [onNodeMouseLeave])
+
+  // Find hovered node position for the hover card
+  const hoveredNode = useMemo(() => {
+    if (!hoveredNodeId) return null
+    const node = nodes.find((n) => n.id === hoveredNodeId)
+    if (!node) return null
+    return {
+      step: node.data.step,
+      x: (node.position?.x ?? 0) + 270,
+      y: node.position?.y ?? 0,
+    }
+  }, [hoveredNodeId, nodes])
+
+  const toggleDirection = useCallback(() => {
+    setDirection((d) => (d === 'TB' ? 'LR' : 'TB'))
+  }, [])
+
+  // Stats
+  const stepCount = sop.steps.length
+  const edgeCount = sop.edges.length
+  const forkCount = sop.steps.filter((s) => s.isFork).length
+  const joinCount = sop.steps.filter((s) => s.isJoin).length
+
+  return (
+    <div className={className}>
+      {/* Toolbar */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <Badge variant="secondary" className="text-xs">
+            {stepCount} step{stepCount !== 1 ? 's' : ''}
+          </Badge>
+          <Badge variant="secondary" className="text-xs">
+            {edgeCount} edge{edgeCount !== 1 ? 's' : ''}
+          </Badge>
+          {forkCount > 0 && (
+            <Badge variant="outline" className="text-xs">
+              {forkCount} fork{forkCount !== 1 ? 's' : ''}
+            </Badge>
+          )}
+          {joinCount > 0 && (
+            <Badge variant="outline" className="text-xs">
+              {joinCount} join{joinCount !== 1 ? 's' : ''}
+            </Badge>
+          )}
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={toggleDirection}
+          className="gap-1.5"
+        >
+          <ArrowDownUp className="h-3.5 w-3.5" />
+          {direction === 'TB' ? 'Top-Down' : 'Left-Right'}
+        </Button>
+      </div>
+
+      {/* Graph */}
+      <div
+        className={`${graphHeight} rounded-lg border border-border bg-background overflow-hidden`}
+      >
+        <ReactFlow
+          nodes={nodes}
+          edges={labeledEdges}
+          nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
+          onNodeClick={onNodeClick}
+          onNodeMouseEnter={handleNodeMouseEnter}
+          onNodeMouseLeave={handleNodeMouseLeave}
+          fitView
+          fitViewOptions={REACTFLOW_FIT_VIEW_OPTIONS}
+          minZoom={0.1}
+          maxZoom={2}
+          proOptions={{ hideAttribution: true }}
+          nodesDraggable={false}
+          nodesConnectable={false}
+          elementsSelectable={true}
+        >
+          <Background
+            variant={BackgroundVariant.Dots}
+            gap={20}
+            size={1}
+            color="hsl(var(--muted-foreground) / 0.15)"
+          />
+          <AccessibleGraphControls position="bottom-right" />
+
+          {/* Hover card rendered inside ReactFlow viewport */}
+          {hoveredNode && (
+            <NodeHoverCard
+              step={hoveredNode.step}
+              x={hoveredNode.x}
+              y={hoveredNode.y}
+            />
+          )}
+        </ReactFlow>
+      </div>
+    </div>
+  )
+}

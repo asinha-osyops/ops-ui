@@ -48,6 +48,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { SopEditModal } from '@/components/sop/SopEditModal'
 import { SopGraphView } from '@/components/sop/SopGraphView'
+import { SopGraphNew } from '@/components/sop-graph-new/SopGraphNew'
 import { AddStepModal } from '@/components/sop/AddStepModal'
 import { useTaskPolling } from '@/hooks/use-task-polling'
 import {
@@ -490,6 +491,7 @@ export default function SopDetailPage() {
           <TabsList className="mb-4">
             <TabsTrigger value="steps">Steps ({sop.steps.length})</TabsTrigger>
             <TabsTrigger value="graph">Graph View</TabsTrigger>
+            <TabsTrigger value="graph-new">Graph (New)</TabsTrigger>
           </TabsList>
 
           {/* Steps Tab */}
@@ -729,6 +731,11 @@ export default function SopDetailPage() {
           {/* Graph View Tab */}
           <TabsContent value="graph">
             <SopGraphView sop={sop} isEditable={true} onSopUpdate={fetchSop} />
+          </TabsContent>
+
+          {/* New Graph View */}
+          <TabsContent value="graph-new">
+            <SopGraphNew sop={sop} />
           </TabsContent>
         </Tabs>
 
