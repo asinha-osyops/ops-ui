@@ -181,6 +181,7 @@ export function AppSidebar() {
               onClick={handleLogout}
               className="flex items-center justify-center size-10 rounded-md hover:bg-sidebar-accent text-sidebar-foreground"
               title={`Logout (${user?.email})`}
+              aria-label={`Logout (${user?.email})`}
             >
               <User className="size-5" />
             </button>

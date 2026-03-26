@@ -1,7 +1,5 @@
 'use client'
 
-export const dynamic = 'force-dynamic'
-
 export default function AboutPage() {
   return (
     <main className="bg-cream flex-1 font-primary py-8 px-4">

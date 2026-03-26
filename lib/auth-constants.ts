@@ -1,6 +1,10 @@
 /**
  * Centralized authentication constants
  * Single source of truth for auth-related keys, endpoints, and headers
+ *
+ * TODO: Backend should set auth tokens via httpOnly cookies instead of
+ * returning them in response bodies. This would eliminate the XSS risk
+ * of storing tokens in localStorage. See security audit issue #1.
  */
 
 /**

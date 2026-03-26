@@ -156,20 +156,22 @@ export function LogPageContent() {
     'Log'
   )
 
-  const { confirmAndDelete: confirmAndDeleteLog } =
-    useDeleteConfirmation<LogDto>({
-      onDelete: async (log) => {
-        return await apiClient.deleteLog(log.id)
-      },
-      onSuccess: async () => {
-        await refreshLogs()
-        toast.success('Log deleted successfully')
-      },
-      onError: (message) => {
-        toast.error(`Delete failed: ${message}`)
-      },
-      getConfirmMessage: (log) => CONFIRMATIONS.deleteEntity('log', log.name),
-    })
+  const {
+    confirmAndDelete: confirmAndDeleteLog,
+    confirmDialog: deleteConfirmDialog,
+  } = useDeleteConfirmation<LogDto>({
+    onDelete: async (log) => {
+      return await apiClient.deleteLog(log.id)
+    },
+    onSuccess: async () => {
+      await refreshLogs()
+      toast.success('Log deleted successfully')
+    },
+    onError: (message) => {
+      toast.error(`Delete failed: ${message}`)
+    },
+    getConfirmMessage: (log) => CONFIRMATIONS.deleteEntity('log', log.name),
+  })
 
   // Analyze handler - memoized for use in table rows
   const handleAnalyze = useCallback(
@@ -202,71 +204,81 @@ export function LogPageContent() {
   }
 
   return (
-    <PageLayout
-      title="Log Management"
-      titleClassName={logClasses.text}
-      breadcrumbs={Breadcrumbs.log.home}
-      headerActions={
-        <Button variant="outline" onClick={() => router.push(Route.LOG_LINES)}>
-          Query Log Lines
-        </Button>
-      }
-    >
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-          <CardTitle className="text-xl font-semibold">Uploaded Logs</CardTitle>
+    <>
+      {deleteConfirmDialog}
+      <PageLayout
+        title="Log Management"
+        titleClassName={logClasses.text}
+        breadcrumbs={Breadcrumbs.log.home}
+        headerActions={
           <Button
-            onClick={() => router.push(Route.LOG_CREATE)}
-            className={logButtonClasses}
+            variant="outline"
+            onClick={() => router.push(Route.LOG_LINES)}
           >
-            Create New
+            Query Log Lines
           </Button>
-        </CardHeader>
-        <CardContent>
-          <LoadableContent
-            loading={loadingLogs}
-            loadingMessage="Loading logs..."
-            isEmpty={logs.length === 0}
-            emptyTitle="No logs found"
-            emptyDescription="Create a log to get started."
-            useSkeleton={true}
-            skeletonRows={5}
-          >
-            <div className="rounded-lg border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead className="hidden sm:table-cell">
-                      Source
-                    </TableHead>
-                    <TableHead className="hidden md:table-cell">
-                      Lines
-                    </TableHead>
-                    <TableHead className="hidden lg:table-cell">File</TableHead>
-                    <TableHead className="hidden md:table-cell">
-                      Created
-                    </TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {logs.map((log) => (
-                    <LogTableRowMemo
-                      key={log.id}
-                      log={log}
-                      isAnalyzing={analyzingIds.has(log.id)}
-                      onRowClick={handleRowClick}
-                      onAnalyze={handleAnalyze}
-                      onDelete={confirmAndDeleteLog}
-                    />
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </LoadableContent>
-        </CardContent>
-      </Card>
-    </PageLayout>
+        }
+      >
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+            <CardTitle className="text-xl font-semibold">
+              Uploaded Logs
+            </CardTitle>
+            <Button
+              onClick={() => router.push(Route.LOG_CREATE)}
+              className={logButtonClasses}
+            >
+              Create New
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <LoadableContent
+              loading={loadingLogs}
+              loadingMessage="Loading logs..."
+              isEmpty={logs.length === 0}
+              emptyTitle="No logs found"
+              emptyDescription="Create a log to get started."
+              useSkeleton={true}
+              skeletonRows={5}
+            >
+              <div className="rounded-lg border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead className="hidden sm:table-cell">
+                        Source
+                      </TableHead>
+                      <TableHead className="hidden md:table-cell">
+                        Lines
+                      </TableHead>
+                      <TableHead className="hidden lg:table-cell">
+                        File
+                      </TableHead>
+                      <TableHead className="hidden md:table-cell">
+                        Created
+                      </TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {logs.map((log) => (
+                      <LogTableRowMemo
+                        key={log.id}
+                        log={log}
+                        isAnalyzing={analyzingIds.has(log.id)}
+                        onRowClick={handleRowClick}
+                        onAnalyze={handleAnalyze}
+                        onDelete={confirmAndDeleteLog}
+                      />
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </LoadableContent>
+          </CardContent>
+        </Card>
+      </PageLayout>
+    </>
   )
 }

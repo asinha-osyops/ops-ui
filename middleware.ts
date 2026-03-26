@@ -3,51 +3,27 @@ import type { NextRequest } from 'next/server'
 import { AUTH_COOKIE_NAME, PUBLIC_PATHS } from './lib/auth-constants'
 
 /**
- * Static file extensions to skip (files served from public/)
+ * Check if a JWT token is expired by decoding the payload.
+ * Does NOT verify signature (no secret available in middleware).
  */
-const STATIC_FILE_EXTENSIONS = [
-  '.png',
-  '.jpg',
-  '.jpeg',
-  '.gif',
-  '.svg',
-  '.ico',
-  '.webp',
-  '.css',
-  '.js',
-  '.json',
-  '.xml',
-  '.txt',
-  '.pdf',
-  '.woff',
-  '.woff2',
-  '.ttf',
-  '.eot',
-]
+function isTokenExpired(token: string): boolean {
+  try {
+    const parts = token.split('.')
+    if (parts.length !== 3) return true
 
-/**
- * Static file patterns to skip middleware
- */
-const SKIP_PATTERNS = [
-  '/_next',
-  '/favicon.ico',
-  '/api', // Skip API routes (handled by API itself)
-  '/.well-known',
-]
+    // Decode base64url payload
+    const payload = JSON.parse(
+      atob(parts[1].replace(/-/g, '+').replace(/_/g, '/'))
+    )
 
-/**
- * Check if a path should skip middleware
- */
-function shouldSkipMiddleware(pathname: string): boolean {
-  // Skip known patterns
-  if (SKIP_PATTERNS.some((pattern) => pathname.startsWith(pattern))) {
-    return true
+    if (!payload.exp) return false // No expiry claim — don't block
+
+    // exp is in seconds, Date.now() in ms. 5s buffer for clock skew.
+    return payload.exp * 1000 < Date.now() - 5000
+  } catch {
+    // Can't decode — let the request through, client-side will handle
+    return false
   }
-  // Skip static files (from public/ folder)
-  if (STATIC_FILE_EXTENSIONS.some((ext) => pathname.endsWith(ext))) {
-    return true
-  }
-  return false
 }
 
 /**
@@ -68,8 +44,8 @@ function isPublicPath(pathname: string): boolean {
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Skip middleware for static files and API routes
-  if (shouldSkipMiddleware(pathname)) {
+  // Skip API routes and .well-known (not covered by config.matcher)
+  if (pathname.startsWith('/api') || pathname.startsWith('/.well-known')) {
     return NextResponse.next()
   }
 
@@ -88,9 +64,17 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl)
   }
 
-  // Token exists - allow the request
-  // Note: Token validity is checked client-side by getCurrentUser()
-  // The middleware only checks for token presence for performance
+  // Check if token is expired
+  if (isTokenExpired(token)) {
+    const loginUrl = new URL('/login', request.url)
+    loginUrl.searchParams.set('expired', 'true')
+    loginUrl.searchParams.set('redirect', pathname + request.nextUrl.search)
+    const response = NextResponse.redirect(loginUrl)
+    response.cookies.delete(AUTH_COOKIE_NAME)
+    return response
+  }
+
+  // Token exists and is not expired - allow the request
   return NextResponse.next()
 }
 

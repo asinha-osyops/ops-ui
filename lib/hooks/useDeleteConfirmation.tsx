@@ -1,11 +1,13 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { extractErrorMessage } from '@/lib/utils/error-handling'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 
 interface UseDeleteConfirmationOptions<T> {
   onDelete: (item: T) => Promise<{ success: boolean; message?: string }>
   onSuccess?: () => void
   onError?: (message: string) => void
   getConfirmMessage: (item: T) => string
+  title?: string
 }
 
 export function useDeleteConfirmation<T>({
@@ -13,20 +15,22 @@ export function useDeleteConfirmation<T>({
   onSuccess,
   onError,
   getConfirmMessage,
+  title = 'Confirm Delete',
 }: UseDeleteConfirmationOptions<T>) {
   const [deleting, setDeleting] = useState(false)
+  const [pendingItem, setPendingItem] = useState<T | null>(null)
 
-  const confirmAndDelete = async (item: T) => {
-    const confirmed = window.confirm(getConfirmMessage(item))
+  const requestDelete = (item: T) => {
+    setPendingItem(item)
+  }
 
-    if (!confirmed) {
-      return
-    }
-
+  const handleConfirm = async () => {
+    if (!pendingItem) return
+    setPendingItem(null)
     setDeleting(true)
 
     try {
-      const response = await onDelete(item)
+      const response = await onDelete(pendingItem)
 
       if (response.success) {
         onSuccess?.()
@@ -44,9 +48,25 @@ export function useDeleteConfirmation<T>({
     }
   }
 
+  const confirmDialog: ReactNode = pendingItem ? (
+    <ConfirmDialog
+      open={!!pendingItem}
+      onOpenChange={(open) => {
+        if (!open) setPendingItem(null)
+      }}
+      title={title}
+      description={getConfirmMessage(pendingItem)}
+      onConfirm={handleConfirm}
+      destructive
+    />
+  ) : null
+
   return {
-    confirmAndDelete,
+    requestDelete,
+    /** @deprecated Use requestDelete instead */
+    confirmAndDelete: requestDelete,
     deleting,
+    confirmDialog,
   }
 }
 
@@ -55,6 +75,7 @@ interface UseBulkDeleteConfirmationOptions {
   onSuccess?: () => void
   onError?: (message: string) => void
   getConfirmMessage: (count: number) => string
+  title?: string
 }
 
 export function useBulkDeleteConfirmation({
@@ -62,16 +83,17 @@ export function useBulkDeleteConfirmation({
   onSuccess,
   onError,
   getConfirmMessage,
+  title = 'Confirm Bulk Delete',
 }: UseBulkDeleteConfirmationOptions) {
   const [deleting, setDeleting] = useState(false)
+  const [pendingCount, setPendingCount] = useState<number | null>(null)
 
-  const confirmAndDeleteAll = async (count: number) => {
-    const confirmed = window.confirm(getConfirmMessage(count))
+  const requestDeleteAll = (count: number) => {
+    setPendingCount(count)
+  }
 
-    if (!confirmed) {
-      return
-    }
-
+  const handleConfirm = async () => {
+    setPendingCount(null)
     setDeleting(true)
 
     try {
@@ -93,8 +115,25 @@ export function useBulkDeleteConfirmation({
     }
   }
 
+  const confirmDialog: ReactNode =
+    pendingCount !== null ? (
+      <ConfirmDialog
+        open={pendingCount !== null}
+        onOpenChange={(open) => {
+          if (!open) setPendingCount(null)
+        }}
+        title={title}
+        description={getConfirmMessage(pendingCount)}
+        onConfirm={handleConfirm}
+        destructive
+      />
+    ) : null
+
   return {
-    confirmAndDeleteAll,
+    requestDeleteAll,
+    /** @deprecated Use requestDeleteAll instead */
+    confirmAndDeleteAll: requestDeleteAll,
     deleting,
+    confirmDialog,
   }
 }

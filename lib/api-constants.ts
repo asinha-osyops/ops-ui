@@ -1,15 +1,16 @@
+// Delete password — configurable via env var
+export const DELETE_PASSWORD =
+  process.env.NEXT_PUBLIC_DELETE_PASSWORD || 'delete'
+
 // API Headers
 export const API_HEADERS = {
   JSON: { 'Content-Type': 'application/json' } as const,
-  DELETE: { 'X-Delete-Password': 'delete' } as const,
+  DELETE: { 'X-Delete-Password': DELETE_PASSWORD },
   JSON_WITH_DELETE: {
     'Content-Type': 'application/json',
-    'X-Delete-Password': 'delete',
-  } as const,
+    'X-Delete-Password': DELETE_PASSWORD,
+  },
 } as const
-
-// Delete password
-export const DELETE_PASSWORD = 'delete'
 
 // File upload accepted types
 export const ACCEPTED_FILE_TYPES = {

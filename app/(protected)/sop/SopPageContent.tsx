@@ -242,20 +242,22 @@ export function SopPageContent() {
     }
   }, [allComplete, analyzingTasks.size, taskStatuses, refreshSops])
 
-  const { confirmAndDelete: confirmAndDeleteSop } =
-    useDeleteConfirmation<SopDto>({
-      onDelete: async (sop) => {
-        return await apiClient.deleteSop(sop.id)
-      },
-      onSuccess: async () => {
-        await refreshSops()
-        toast.success('SOP deleted successfully')
-      },
-      onError: (message) => {
-        toast.error(`Delete failed: ${message}`)
-      },
-      getConfirmMessage: (sop) => CONFIRMATIONS.deleteEntity('SOP', sop.name),
-    })
+  const {
+    confirmAndDelete: confirmAndDeleteSop,
+    confirmDialog: deleteConfirmDialog,
+  } = useDeleteConfirmation<SopDto>({
+    onDelete: async (sop) => {
+      return await apiClient.deleteSop(sop.id)
+    },
+    onSuccess: async () => {
+      await refreshSops()
+      toast.success('SOP deleted successfully')
+    },
+    onError: (message) => {
+      toast.error(`Delete failed: ${message}`)
+    },
+    getConfirmMessage: (sop) => CONFIRMATIONS.deleteEntity('SOP', sop.name),
+  })
 
   // Helper to check if SOP is currently being analyzed
   const isAnalyzing = (sopId: string) => {
@@ -278,77 +280,84 @@ export function SopPageContent() {
   }
 
   return (
-    <PageLayout
-      title="SOP Management"
-      titleClassName={sopClasses.text}
-      breadcrumbs={Breadcrumbs.sop.home}
-    >
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-          <CardTitle className="text-xl font-semibold">Uploaded SOPs</CardTitle>
-          <Button
-            onClick={() => router.push(Route.SOP_CREATE)}
-            className={sopButtonClasses}
-          >
-            Create New
-          </Button>
-        </CardHeader>
-        <CardContent>
-          <LoadableContent
-            loading={loadingSops}
-            loadingMessage="Loading SOPs..."
-            isEmpty={sops.length === 0}
-            emptyTitle="No SOPs found"
-            emptyDescription="Create your first SOP to get started."
-            useSkeleton={true}
-            skeletonRows={5}
-          >
-            <div className="rounded-lg border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead className="hidden md:table-cell">
-                      Description
-                    </TableHead>
-                    <TableHead className="hidden sm:table-cell">
-                      Steps
-                    </TableHead>
-                    <TableHead className="hidden sm:table-cell">
-                      Status
-                    </TableHead>
-                    <TableHead className="hidden lg:table-cell">File</TableHead>
-                    <TableHead className="hidden md:table-cell">
-                      Created
-                    </TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {sops.map((sop) => (
-                    <SopTableRowMemo
-                      key={sop.id}
-                      sop={sop}
-                      isAnalyzing={!!isAnalyzing(sop.id)}
-                      onRowClick={handleRowClick}
-                      onEdit={handleEdit}
-                      onDelete={confirmAndDeleteSop}
-                    />
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </LoadableContent>
-        </CardContent>
-      </Card>
+    <>
+      {deleteConfirmDialog}
+      <PageLayout
+        title="SOP Management"
+        titleClassName={sopClasses.text}
+        breadcrumbs={Breadcrumbs.sop.home}
+      >
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+            <CardTitle className="text-xl font-semibold">
+              Uploaded SOPs
+            </CardTitle>
+            <Button
+              onClick={() => router.push(Route.SOP_CREATE)}
+              className={sopButtonClasses}
+            >
+              Create New
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <LoadableContent
+              loading={loadingSops}
+              loadingMessage="Loading SOPs..."
+              isEmpty={sops.length === 0}
+              emptyTitle="No SOPs found"
+              emptyDescription="Create your first SOP to get started."
+              useSkeleton={true}
+              skeletonRows={5}
+            >
+              <div className="rounded-lg border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead className="hidden md:table-cell">
+                        Description
+                      </TableHead>
+                      <TableHead className="hidden sm:table-cell">
+                        Steps
+                      </TableHead>
+                      <TableHead className="hidden sm:table-cell">
+                        Status
+                      </TableHead>
+                      <TableHead className="hidden lg:table-cell">
+                        File
+                      </TableHead>
+                      <TableHead className="hidden md:table-cell">
+                        Created
+                      </TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {sops.map((sop) => (
+                      <SopTableRowMemo
+                        key={sop.id}
+                        sop={sop}
+                        isAnalyzing={!!isAnalyzing(sop.id)}
+                        onRowClick={handleRowClick}
+                        onEdit={handleEdit}
+                        onDelete={confirmAndDeleteSop}
+                      />
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </LoadableContent>
+          </CardContent>
+        </Card>
 
-      {/* Edit Modal */}
-      <SopEditModal
-        sop={editingSop}
-        open={editingSop !== null}
-        onOpenChange={(open) => !open && setEditingSop(null)}
-        onSuccess={handleEditSuccess}
-      />
-    </PageLayout>
+        {/* Edit Modal */}
+        <SopEditModal
+          sop={editingSop}
+          open={editingSop !== null}
+          onOpenChange={(open) => !open && setEditingSop(null)}
+          onSuccess={handleEditSuccess}
+        />
+      </PageLayout>
+    </>
   )
 }

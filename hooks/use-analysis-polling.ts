@@ -99,6 +99,12 @@ export function useAnalysisPolling(
   const poll = useCallback(async () => {
     if (!session) return
 
+    // Abort previous in-flight request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+    }
+    abortControllerRef.current = new AbortController()
+
     try {
       const result = await apiClient.getAnalysisAggregateResult(
         session.correlationId,
@@ -123,6 +129,8 @@ export function useAnalysisPolling(
 
       return false // Continue polling
     } catch (err) {
+      // Suppress abort errors
+      if (err instanceof DOMException && err.name === 'AbortError') return false
       console.error('[useAnalysisPolling] Poll error:', err)
       setError(err instanceof Error ? err.message : 'Polling failed')
       setIsPolling(false)

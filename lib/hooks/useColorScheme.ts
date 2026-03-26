@@ -8,6 +8,682 @@ import {
   EventCategory,
 } from '@/lib/api-client'
 
+/**
+ * Static lookup map for chart color utility classes.
+ * Tailwind's JIT compiler can only detect class names that appear as
+ * complete string literals in source code. Dynamic template strings like
+ * `text-chart-${color}` are NOT detected and get purged in production.
+ *
+ * This map ensures all chart color classes are statically analyzable.
+ */
+/* eslint-disable @typescript-eslint/no-unused-vars -- Keys are used as Tailwind class references */
+const CHART_CLASSES: Record<
+  ChartColor,
+  {
+    text: string
+    bg: string
+    border: string
+    borderL: string
+    borderT: string
+    textOpacity: string
+    textHover: string
+    bgHover: string
+    bgOpacity10: string
+    bgOpacity20: string
+    bgHover90: string
+    bgHover5: string
+    bgHover10: string
+    borderOpacity20: string
+  }
+> = {
+  'blue-1': {
+    text: 'text-chart-blue-1',
+    bg: 'bg-chart-blue-1',
+    border: 'border-chart-blue-1',
+    borderL: 'border-l-chart-blue-1',
+    borderT: 'border-t-chart-blue-1',
+    textOpacity: 'text-chart-blue-1/50',
+    textHover: 'hover:text-chart-blue-1/90',
+    bgHover: 'hover:bg-chart-blue-1/5',
+    bgOpacity10: 'bg-chart-blue-1/10',
+    bgOpacity20: 'bg-chart-blue-1/20',
+    bgHover90: 'hover:bg-chart-blue-1/90',
+    bgHover5: 'hover:bg-chart-blue-1/5',
+    bgHover10: 'hover:bg-chart-blue-1/10',
+    borderOpacity20: 'border-chart-blue-1/20',
+  },
+  'blue-2': {
+    text: 'text-chart-blue-2',
+    bg: 'bg-chart-blue-2',
+    border: 'border-chart-blue-2',
+    borderL: 'border-l-chart-blue-2',
+    borderT: 'border-t-chart-blue-2',
+    textOpacity: 'text-chart-blue-2/50',
+    textHover: 'hover:text-chart-blue-2/90',
+    bgHover: 'hover:bg-chart-blue-2/5',
+    bgOpacity10: 'bg-chart-blue-2/10',
+    bgOpacity20: 'bg-chart-blue-2/20',
+    bgHover90: 'hover:bg-chart-blue-2/90',
+    bgHover5: 'hover:bg-chart-blue-2/5',
+    bgHover10: 'hover:bg-chart-blue-2/10',
+    borderOpacity20: 'border-chart-blue-2/20',
+  },
+  'blue-3': {
+    text: 'text-chart-blue-3',
+    bg: 'bg-chart-blue-3',
+    border: 'border-chart-blue-3',
+    borderL: 'border-l-chart-blue-3',
+    borderT: 'border-t-chart-blue-3',
+    textOpacity: 'text-chart-blue-3/50',
+    textHover: 'hover:text-chart-blue-3/90',
+    bgHover: 'hover:bg-chart-blue-3/5',
+    bgOpacity10: 'bg-chart-blue-3/10',
+    bgOpacity20: 'bg-chart-blue-3/20',
+    bgHover90: 'hover:bg-chart-blue-3/90',
+    bgHover5: 'hover:bg-chart-blue-3/5',
+    bgHover10: 'hover:bg-chart-blue-3/10',
+    borderOpacity20: 'border-chart-blue-3/20',
+  },
+  'blue-4': {
+    text: 'text-chart-blue-4',
+    bg: 'bg-chart-blue-4',
+    border: 'border-chart-blue-4',
+    borderL: 'border-l-chart-blue-4',
+    borderT: 'border-t-chart-blue-4',
+    textOpacity: 'text-chart-blue-4/50',
+    textHover: 'hover:text-chart-blue-4/90',
+    bgHover: 'hover:bg-chart-blue-4/5',
+    bgOpacity10: 'bg-chart-blue-4/10',
+    bgOpacity20: 'bg-chart-blue-4/20',
+    bgHover90: 'hover:bg-chart-blue-4/90',
+    bgHover5: 'hover:bg-chart-blue-4/5',
+    bgHover10: 'hover:bg-chart-blue-4/10',
+    borderOpacity20: 'border-chart-blue-4/20',
+  },
+  'blue-5': {
+    text: 'text-chart-blue-5',
+    bg: 'bg-chart-blue-5',
+    border: 'border-chart-blue-5',
+    borderL: 'border-l-chart-blue-5',
+    borderT: 'border-t-chart-blue-5',
+    textOpacity: 'text-chart-blue-5/50',
+    textHover: 'hover:text-chart-blue-5/90',
+    bgHover: 'hover:bg-chart-blue-5/5',
+    bgOpacity10: 'bg-chart-blue-5/10',
+    bgOpacity20: 'bg-chart-blue-5/20',
+    bgHover90: 'hover:bg-chart-blue-5/90',
+    bgHover5: 'hover:bg-chart-blue-5/5',
+    bgHover10: 'hover:bg-chart-blue-5/10',
+    borderOpacity20: 'border-chart-blue-5/20',
+  },
+  'green-1': {
+    text: 'text-chart-green-1',
+    bg: 'bg-chart-green-1',
+    border: 'border-chart-green-1',
+    borderL: 'border-l-chart-green-1',
+    borderT: 'border-t-chart-green-1',
+    textOpacity: 'text-chart-green-1/50',
+    textHover: 'hover:text-chart-green-1/90',
+    bgHover: 'hover:bg-chart-green-1/5',
+    bgOpacity10: 'bg-chart-green-1/10',
+    bgOpacity20: 'bg-chart-green-1/20',
+    bgHover90: 'hover:bg-chart-green-1/90',
+    bgHover5: 'hover:bg-chart-green-1/5',
+    bgHover10: 'hover:bg-chart-green-1/10',
+    borderOpacity20: 'border-chart-green-1/20',
+  },
+  'green-2': {
+    text: 'text-chart-green-2',
+    bg: 'bg-chart-green-2',
+    border: 'border-chart-green-2',
+    borderL: 'border-l-chart-green-2',
+    borderT: 'border-t-chart-green-2',
+    textOpacity: 'text-chart-green-2/50',
+    textHover: 'hover:text-chart-green-2/90',
+    bgHover: 'hover:bg-chart-green-2/5',
+    bgOpacity10: 'bg-chart-green-2/10',
+    bgOpacity20: 'bg-chart-green-2/20',
+    bgHover90: 'hover:bg-chart-green-2/90',
+    bgHover5: 'hover:bg-chart-green-2/5',
+    bgHover10: 'hover:bg-chart-green-2/10',
+    borderOpacity20: 'border-chart-green-2/20',
+  },
+  'green-3': {
+    text: 'text-chart-green-3',
+    bg: 'bg-chart-green-3',
+    border: 'border-chart-green-3',
+    borderL: 'border-l-chart-green-3',
+    borderT: 'border-t-chart-green-3',
+    textOpacity: 'text-chart-green-3/50',
+    textHover: 'hover:text-chart-green-3/90',
+    bgHover: 'hover:bg-chart-green-3/5',
+    bgOpacity10: 'bg-chart-green-3/10',
+    bgOpacity20: 'bg-chart-green-3/20',
+    bgHover90: 'hover:bg-chart-green-3/90',
+    bgHover5: 'hover:bg-chart-green-3/5',
+    bgHover10: 'hover:bg-chart-green-3/10',
+    borderOpacity20: 'border-chart-green-3/20',
+  },
+  'green-4': {
+    text: 'text-chart-green-4',
+    bg: 'bg-chart-green-4',
+    border: 'border-chart-green-4',
+    borderL: 'border-l-chart-green-4',
+    borderT: 'border-t-chart-green-4',
+    textOpacity: 'text-chart-green-4/50',
+    textHover: 'hover:text-chart-green-4/90',
+    bgHover: 'hover:bg-chart-green-4/5',
+    bgOpacity10: 'bg-chart-green-4/10',
+    bgOpacity20: 'bg-chart-green-4/20',
+    bgHover90: 'hover:bg-chart-green-4/90',
+    bgHover5: 'hover:bg-chart-green-4/5',
+    bgHover10: 'hover:bg-chart-green-4/10',
+    borderOpacity20: 'border-chart-green-4/20',
+  },
+  'green-5': {
+    text: 'text-chart-green-5',
+    bg: 'bg-chart-green-5',
+    border: 'border-chart-green-5',
+    borderL: 'border-l-chart-green-5',
+    borderT: 'border-t-chart-green-5',
+    textOpacity: 'text-chart-green-5/50',
+    textHover: 'hover:text-chart-green-5/90',
+    bgHover: 'hover:bg-chart-green-5/5',
+    bgOpacity10: 'bg-chart-green-5/10',
+    bgOpacity20: 'bg-chart-green-5/20',
+    bgHover90: 'hover:bg-chart-green-5/90',
+    bgHover5: 'hover:bg-chart-green-5/5',
+    bgHover10: 'hover:bg-chart-green-5/10',
+    borderOpacity20: 'border-chart-green-5/20',
+  },
+  'primary-1': {
+    text: 'text-chart-primary-1',
+    bg: 'bg-chart-primary-1',
+    border: 'border-chart-primary-1',
+    borderL: 'border-l-chart-primary-1',
+    borderT: 'border-t-chart-primary-1',
+    textOpacity: 'text-chart-primary-1/50',
+    textHover: 'hover:text-chart-primary-1/90',
+    bgHover: 'hover:bg-chart-primary-1/5',
+    bgOpacity10: 'bg-chart-primary-1/10',
+    bgOpacity20: 'bg-chart-primary-1/20',
+    bgHover90: 'hover:bg-chart-primary-1/90',
+    bgHover5: 'hover:bg-chart-primary-1/5',
+    bgHover10: 'hover:bg-chart-primary-1/10',
+    borderOpacity20: 'border-chart-primary-1/20',
+  },
+  'primary-2': {
+    text: 'text-chart-primary-2',
+    bg: 'bg-chart-primary-2',
+    border: 'border-chart-primary-2',
+    borderL: 'border-l-chart-primary-2',
+    borderT: 'border-t-chart-primary-2',
+    textOpacity: 'text-chart-primary-2/50',
+    textHover: 'hover:text-chart-primary-2/90',
+    bgHover: 'hover:bg-chart-primary-2/5',
+    bgOpacity10: 'bg-chart-primary-2/10',
+    bgOpacity20: 'bg-chart-primary-2/20',
+    bgHover90: 'hover:bg-chart-primary-2/90',
+    bgHover5: 'hover:bg-chart-primary-2/5',
+    bgHover10: 'hover:bg-chart-primary-2/10',
+    borderOpacity20: 'border-chart-primary-2/20',
+  },
+  'primary-3': {
+    text: 'text-chart-primary-3',
+    bg: 'bg-chart-primary-3',
+    border: 'border-chart-primary-3',
+    borderL: 'border-l-chart-primary-3',
+    borderT: 'border-t-chart-primary-3',
+    textOpacity: 'text-chart-primary-3/50',
+    textHover: 'hover:text-chart-primary-3/90',
+    bgHover: 'hover:bg-chart-primary-3/5',
+    bgOpacity10: 'bg-chart-primary-3/10',
+    bgOpacity20: 'bg-chart-primary-3/20',
+    bgHover90: 'hover:bg-chart-primary-3/90',
+    bgHover5: 'hover:bg-chart-primary-3/5',
+    bgHover10: 'hover:bg-chart-primary-3/10',
+    borderOpacity20: 'border-chart-primary-3/20',
+  },
+  'primary-4': {
+    text: 'text-chart-primary-4',
+    bg: 'bg-chart-primary-4',
+    border: 'border-chart-primary-4',
+    borderL: 'border-l-chart-primary-4',
+    borderT: 'border-t-chart-primary-4',
+    textOpacity: 'text-chart-primary-4/50',
+    textHover: 'hover:text-chart-primary-4/90',
+    bgHover: 'hover:bg-chart-primary-4/5',
+    bgOpacity10: 'bg-chart-primary-4/10',
+    bgOpacity20: 'bg-chart-primary-4/20',
+    bgHover90: 'hover:bg-chart-primary-4/90',
+    bgHover5: 'hover:bg-chart-primary-4/5',
+    bgHover10: 'hover:bg-chart-primary-4/10',
+    borderOpacity20: 'border-chart-primary-4/20',
+  },
+  'primary-5': {
+    text: 'text-chart-primary-5',
+    bg: 'bg-chart-primary-5',
+    border: 'border-chart-primary-5',
+    borderL: 'border-l-chart-primary-5',
+    borderT: 'border-t-chart-primary-5',
+    textOpacity: 'text-chart-primary-5/50',
+    textHover: 'hover:text-chart-primary-5/90',
+    bgHover: 'hover:bg-chart-primary-5/5',
+    bgOpacity10: 'bg-chart-primary-5/10',
+    bgOpacity20: 'bg-chart-primary-5/20',
+    bgHover90: 'hover:bg-chart-primary-5/90',
+    bgHover5: 'hover:bg-chart-primary-5/5',
+    bgHover10: 'hover:bg-chart-primary-5/10',
+    borderOpacity20: 'border-chart-primary-5/20',
+  },
+  'orange-1': {
+    text: 'text-chart-orange-1',
+    bg: 'bg-chart-orange-1',
+    border: 'border-chart-orange-1',
+    borderL: 'border-l-chart-orange-1',
+    borderT: 'border-t-chart-orange-1',
+    textOpacity: 'text-chart-orange-1/50',
+    textHover: 'hover:text-chart-orange-1/90',
+    bgHover: 'hover:bg-chart-orange-1/5',
+    bgOpacity10: 'bg-chart-orange-1/10',
+    bgOpacity20: 'bg-chart-orange-1/20',
+    bgHover90: 'hover:bg-chart-orange-1/90',
+    bgHover5: 'hover:bg-chart-orange-1/5',
+    bgHover10: 'hover:bg-chart-orange-1/10',
+    borderOpacity20: 'border-chart-orange-1/20',
+  },
+  'orange-2': {
+    text: 'text-chart-orange-2',
+    bg: 'bg-chart-orange-2',
+    border: 'border-chart-orange-2',
+    borderL: 'border-l-chart-orange-2',
+    borderT: 'border-t-chart-orange-2',
+    textOpacity: 'text-chart-orange-2/50',
+    textHover: 'hover:text-chart-orange-2/90',
+    bgHover: 'hover:bg-chart-orange-2/5',
+    bgOpacity10: 'bg-chart-orange-2/10',
+    bgOpacity20: 'bg-chart-orange-2/20',
+    bgHover90: 'hover:bg-chart-orange-2/90',
+    bgHover5: 'hover:bg-chart-orange-2/5',
+    bgHover10: 'hover:bg-chart-orange-2/10',
+    borderOpacity20: 'border-chart-orange-2/20',
+  },
+  'orange-3': {
+    text: 'text-chart-orange-3',
+    bg: 'bg-chart-orange-3',
+    border: 'border-chart-orange-3',
+    borderL: 'border-l-chart-orange-3',
+    borderT: 'border-t-chart-orange-3',
+    textOpacity: 'text-chart-orange-3/50',
+    textHover: 'hover:text-chart-orange-3/90',
+    bgHover: 'hover:bg-chart-orange-3/5',
+    bgOpacity10: 'bg-chart-orange-3/10',
+    bgOpacity20: 'bg-chart-orange-3/20',
+    bgHover90: 'hover:bg-chart-orange-3/90',
+    bgHover5: 'hover:bg-chart-orange-3/5',
+    bgHover10: 'hover:bg-chart-orange-3/10',
+    borderOpacity20: 'border-chart-orange-3/20',
+  },
+  'orange-4': {
+    text: 'text-chart-orange-4',
+    bg: 'bg-chart-orange-4',
+    border: 'border-chart-orange-4',
+    borderL: 'border-l-chart-orange-4',
+    borderT: 'border-t-chart-orange-4',
+    textOpacity: 'text-chart-orange-4/50',
+    textHover: 'hover:text-chart-orange-4/90',
+    bgHover: 'hover:bg-chart-orange-4/5',
+    bgOpacity10: 'bg-chart-orange-4/10',
+    bgOpacity20: 'bg-chart-orange-4/20',
+    bgHover90: 'hover:bg-chart-orange-4/90',
+    bgHover5: 'hover:bg-chart-orange-4/5',
+    bgHover10: 'hover:bg-chart-orange-4/10',
+    borderOpacity20: 'border-chart-orange-4/20',
+  },
+  'orange-5': {
+    text: 'text-chart-orange-5',
+    bg: 'bg-chart-orange-5',
+    border: 'border-chart-orange-5',
+    borderL: 'border-l-chart-orange-5',
+    borderT: 'border-t-chart-orange-5',
+    textOpacity: 'text-chart-orange-5/50',
+    textHover: 'hover:text-chart-orange-5/90',
+    bgHover: 'hover:bg-chart-orange-5/5',
+    bgOpacity10: 'bg-chart-orange-5/10',
+    bgOpacity20: 'bg-chart-orange-5/20',
+    bgHover90: 'hover:bg-chart-orange-5/90',
+    bgHover5: 'hover:bg-chart-orange-5/5',
+    bgHover10: 'hover:bg-chart-orange-5/10',
+    borderOpacity20: 'border-chart-orange-5/20',
+  },
+  'red-1': {
+    text: 'text-chart-red-1',
+    bg: 'bg-chart-red-1',
+    border: 'border-chart-red-1',
+    borderL: 'border-l-chart-red-1',
+    borderT: 'border-t-chart-red-1',
+    textOpacity: 'text-chart-red-1/50',
+    textHover: 'hover:text-chart-red-1/90',
+    bgHover: 'hover:bg-chart-red-1/5',
+    bgOpacity10: 'bg-chart-red-1/10',
+    bgOpacity20: 'bg-chart-red-1/20',
+    bgHover90: 'hover:bg-chart-red-1/90',
+    bgHover5: 'hover:bg-chart-red-1/5',
+    bgHover10: 'hover:bg-chart-red-1/10',
+    borderOpacity20: 'border-chart-red-1/20',
+  },
+  'red-2': {
+    text: 'text-chart-red-2',
+    bg: 'bg-chart-red-2',
+    border: 'border-chart-red-2',
+    borderL: 'border-l-chart-red-2',
+    borderT: 'border-t-chart-red-2',
+    textOpacity: 'text-chart-red-2/50',
+    textHover: 'hover:text-chart-red-2/90',
+    bgHover: 'hover:bg-chart-red-2/5',
+    bgOpacity10: 'bg-chart-red-2/10',
+    bgOpacity20: 'bg-chart-red-2/20',
+    bgHover90: 'hover:bg-chart-red-2/90',
+    bgHover5: 'hover:bg-chart-red-2/5',
+    bgHover10: 'hover:bg-chart-red-2/10',
+    borderOpacity20: 'border-chart-red-2/20',
+  },
+  'red-3': {
+    text: 'text-chart-red-3',
+    bg: 'bg-chart-red-3',
+    border: 'border-chart-red-3',
+    borderL: 'border-l-chart-red-3',
+    borderT: 'border-t-chart-red-3',
+    textOpacity: 'text-chart-red-3/50',
+    textHover: 'hover:text-chart-red-3/90',
+    bgHover: 'hover:bg-chart-red-3/5',
+    bgOpacity10: 'bg-chart-red-3/10',
+    bgOpacity20: 'bg-chart-red-3/20',
+    bgHover90: 'hover:bg-chart-red-3/90',
+    bgHover5: 'hover:bg-chart-red-3/5',
+    bgHover10: 'hover:bg-chart-red-3/10',
+    borderOpacity20: 'border-chart-red-3/20',
+  },
+  'red-4': {
+    text: 'text-chart-red-4',
+    bg: 'bg-chart-red-4',
+    border: 'border-chart-red-4',
+    borderL: 'border-l-chart-red-4',
+    borderT: 'border-t-chart-red-4',
+    textOpacity: 'text-chart-red-4/50',
+    textHover: 'hover:text-chart-red-4/90',
+    bgHover: 'hover:bg-chart-red-4/5',
+    bgOpacity10: 'bg-chart-red-4/10',
+    bgOpacity20: 'bg-chart-red-4/20',
+    bgHover90: 'hover:bg-chart-red-4/90',
+    bgHover5: 'hover:bg-chart-red-4/5',
+    bgHover10: 'hover:bg-chart-red-4/10',
+    borderOpacity20: 'border-chart-red-4/20',
+  },
+  'red-5': {
+    text: 'text-chart-red-5',
+    bg: 'bg-chart-red-5',
+    border: 'border-chart-red-5',
+    borderL: 'border-l-chart-red-5',
+    borderT: 'border-t-chart-red-5',
+    textOpacity: 'text-chart-red-5/50',
+    textHover: 'hover:text-chart-red-5/90',
+    bgHover: 'hover:bg-chart-red-5/5',
+    bgOpacity10: 'bg-chart-red-5/10',
+    bgOpacity20: 'bg-chart-red-5/20',
+    bgHover90: 'hover:bg-chart-red-5/90',
+    bgHover5: 'hover:bg-chart-red-5/5',
+    bgHover10: 'hover:bg-chart-red-5/10',
+    borderOpacity20: 'border-chart-red-5/20',
+  },
+  'rose-1': {
+    text: 'text-chart-rose-1',
+    bg: 'bg-chart-rose-1',
+    border: 'border-chart-rose-1',
+    borderL: 'border-l-chart-rose-1',
+    borderT: 'border-t-chart-rose-1',
+    textOpacity: 'text-chart-rose-1/50',
+    textHover: 'hover:text-chart-rose-1/90',
+    bgHover: 'hover:bg-chart-rose-1/5',
+    bgOpacity10: 'bg-chart-rose-1/10',
+    bgOpacity20: 'bg-chart-rose-1/20',
+    bgHover90: 'hover:bg-chart-rose-1/90',
+    bgHover5: 'hover:bg-chart-rose-1/5',
+    bgHover10: 'hover:bg-chart-rose-1/10',
+    borderOpacity20: 'border-chart-rose-1/20',
+  },
+  'rose-2': {
+    text: 'text-chart-rose-2',
+    bg: 'bg-chart-rose-2',
+    border: 'border-chart-rose-2',
+    borderL: 'border-l-chart-rose-2',
+    borderT: 'border-t-chart-rose-2',
+    textOpacity: 'text-chart-rose-2/50',
+    textHover: 'hover:text-chart-rose-2/90',
+    bgHover: 'hover:bg-chart-rose-2/5',
+    bgOpacity10: 'bg-chart-rose-2/10',
+    bgOpacity20: 'bg-chart-rose-2/20',
+    bgHover90: 'hover:bg-chart-rose-2/90',
+    bgHover5: 'hover:bg-chart-rose-2/5',
+    bgHover10: 'hover:bg-chart-rose-2/10',
+    borderOpacity20: 'border-chart-rose-2/20',
+  },
+  'rose-3': {
+    text: 'text-chart-rose-3',
+    bg: 'bg-chart-rose-3',
+    border: 'border-chart-rose-3',
+    borderL: 'border-l-chart-rose-3',
+    borderT: 'border-t-chart-rose-3',
+    textOpacity: 'text-chart-rose-3/50',
+    textHover: 'hover:text-chart-rose-3/90',
+    bgHover: 'hover:bg-chart-rose-3/5',
+    bgOpacity10: 'bg-chart-rose-3/10',
+    bgOpacity20: 'bg-chart-rose-3/20',
+    bgHover90: 'hover:bg-chart-rose-3/90',
+    bgHover5: 'hover:bg-chart-rose-3/5',
+    bgHover10: 'hover:bg-chart-rose-3/10',
+    borderOpacity20: 'border-chart-rose-3/20',
+  },
+  'rose-4': {
+    text: 'text-chart-rose-4',
+    bg: 'bg-chart-rose-4',
+    border: 'border-chart-rose-4',
+    borderL: 'border-l-chart-rose-4',
+    borderT: 'border-t-chart-rose-4',
+    textOpacity: 'text-chart-rose-4/50',
+    textHover: 'hover:text-chart-rose-4/90',
+    bgHover: 'hover:bg-chart-rose-4/5',
+    bgOpacity10: 'bg-chart-rose-4/10',
+    bgOpacity20: 'bg-chart-rose-4/20',
+    bgHover90: 'hover:bg-chart-rose-4/90',
+    bgHover5: 'hover:bg-chart-rose-4/5',
+    bgHover10: 'hover:bg-chart-rose-4/10',
+    borderOpacity20: 'border-chart-rose-4/20',
+  },
+  'rose-5': {
+    text: 'text-chart-rose-5',
+    bg: 'bg-chart-rose-5',
+    border: 'border-chart-rose-5',
+    borderL: 'border-l-chart-rose-5',
+    borderT: 'border-t-chart-rose-5',
+    textOpacity: 'text-chart-rose-5/50',
+    textHover: 'hover:text-chart-rose-5/90',
+    bgHover: 'hover:bg-chart-rose-5/5',
+    bgOpacity10: 'bg-chart-rose-5/10',
+    bgOpacity20: 'bg-chart-rose-5/20',
+    bgHover90: 'hover:bg-chart-rose-5/90',
+    bgHover5: 'hover:bg-chart-rose-5/5',
+    bgHover10: 'hover:bg-chart-rose-5/10',
+    borderOpacity20: 'border-chart-rose-5/20',
+  },
+  'violet-1': {
+    text: 'text-chart-violet-1',
+    bg: 'bg-chart-violet-1',
+    border: 'border-chart-violet-1',
+    borderL: 'border-l-chart-violet-1',
+    borderT: 'border-t-chart-violet-1',
+    textOpacity: 'text-chart-violet-1/50',
+    textHover: 'hover:text-chart-violet-1/90',
+    bgHover: 'hover:bg-chart-violet-1/5',
+    bgOpacity10: 'bg-chart-violet-1/10',
+    bgOpacity20: 'bg-chart-violet-1/20',
+    bgHover90: 'hover:bg-chart-violet-1/90',
+    bgHover5: 'hover:bg-chart-violet-1/5',
+    bgHover10: 'hover:bg-chart-violet-1/10',
+    borderOpacity20: 'border-chart-violet-1/20',
+  },
+  'violet-2': {
+    text: 'text-chart-violet-2',
+    bg: 'bg-chart-violet-2',
+    border: 'border-chart-violet-2',
+    borderL: 'border-l-chart-violet-2',
+    borderT: 'border-t-chart-violet-2',
+    textOpacity: 'text-chart-violet-2/50',
+    textHover: 'hover:text-chart-violet-2/90',
+    bgHover: 'hover:bg-chart-violet-2/5',
+    bgOpacity10: 'bg-chart-violet-2/10',
+    bgOpacity20: 'bg-chart-violet-2/20',
+    bgHover90: 'hover:bg-chart-violet-2/90',
+    bgHover5: 'hover:bg-chart-violet-2/5',
+    bgHover10: 'hover:bg-chart-violet-2/10',
+    borderOpacity20: 'border-chart-violet-2/20',
+  },
+  'violet-3': {
+    text: 'text-chart-violet-3',
+    bg: 'bg-chart-violet-3',
+    border: 'border-chart-violet-3',
+    borderL: 'border-l-chart-violet-3',
+    borderT: 'border-t-chart-violet-3',
+    textOpacity: 'text-chart-violet-3/50',
+    textHover: 'hover:text-chart-violet-3/90',
+    bgHover: 'hover:bg-chart-violet-3/5',
+    bgOpacity10: 'bg-chart-violet-3/10',
+    bgOpacity20: 'bg-chart-violet-3/20',
+    bgHover90: 'hover:bg-chart-violet-3/90',
+    bgHover5: 'hover:bg-chart-violet-3/5',
+    bgHover10: 'hover:bg-chart-violet-3/10',
+    borderOpacity20: 'border-chart-violet-3/20',
+  },
+  'violet-4': {
+    text: 'text-chart-violet-4',
+    bg: 'bg-chart-violet-4',
+    border: 'border-chart-violet-4',
+    borderL: 'border-l-chart-violet-4',
+    borderT: 'border-t-chart-violet-4',
+    textOpacity: 'text-chart-violet-4/50',
+    textHover: 'hover:text-chart-violet-4/90',
+    bgHover: 'hover:bg-chart-violet-4/5',
+    bgOpacity10: 'bg-chart-violet-4/10',
+    bgOpacity20: 'bg-chart-violet-4/20',
+    bgHover90: 'hover:bg-chart-violet-4/90',
+    bgHover5: 'hover:bg-chart-violet-4/5',
+    bgHover10: 'hover:bg-chart-violet-4/10',
+    borderOpacity20: 'border-chart-violet-4/20',
+  },
+  'violet-5': {
+    text: 'text-chart-violet-5',
+    bg: 'bg-chart-violet-5',
+    border: 'border-chart-violet-5',
+    borderL: 'border-l-chart-violet-5',
+    borderT: 'border-t-chart-violet-5',
+    textOpacity: 'text-chart-violet-5/50',
+    textHover: 'hover:text-chart-violet-5/90',
+    bgHover: 'hover:bg-chart-violet-5/5',
+    bgOpacity10: 'bg-chart-violet-5/10',
+    bgOpacity20: 'bg-chart-violet-5/20',
+    bgHover90: 'hover:bg-chart-violet-5/90',
+    bgHover5: 'hover:bg-chart-violet-5/5',
+    bgHover10: 'hover:bg-chart-violet-5/10',
+    borderOpacity20: 'border-chart-violet-5/20',
+  },
+  'yellow-1': {
+    text: 'text-chart-yellow-1',
+    bg: 'bg-chart-yellow-1',
+    border: 'border-chart-yellow-1',
+    borderL: 'border-l-chart-yellow-1',
+    borderT: 'border-t-chart-yellow-1',
+    textOpacity: 'text-chart-yellow-1/50',
+    textHover: 'hover:text-chart-yellow-1/90',
+    bgHover: 'hover:bg-chart-yellow-1/5',
+    bgOpacity10: 'bg-chart-yellow-1/10',
+    bgOpacity20: 'bg-chart-yellow-1/20',
+    bgHover90: 'hover:bg-chart-yellow-1/90',
+    bgHover5: 'hover:bg-chart-yellow-1/5',
+    bgHover10: 'hover:bg-chart-yellow-1/10',
+    borderOpacity20: 'border-chart-yellow-1/20',
+  },
+  'yellow-2': {
+    text: 'text-chart-yellow-2',
+    bg: 'bg-chart-yellow-2',
+    border: 'border-chart-yellow-2',
+    borderL: 'border-l-chart-yellow-2',
+    borderT: 'border-t-chart-yellow-2',
+    textOpacity: 'text-chart-yellow-2/50',
+    textHover: 'hover:text-chart-yellow-2/90',
+    bgHover: 'hover:bg-chart-yellow-2/5',
+    bgOpacity10: 'bg-chart-yellow-2/10',
+    bgOpacity20: 'bg-chart-yellow-2/20',
+    bgHover90: 'hover:bg-chart-yellow-2/90',
+    bgHover5: 'hover:bg-chart-yellow-2/5',
+    bgHover10: 'hover:bg-chart-yellow-2/10',
+    borderOpacity20: 'border-chart-yellow-2/20',
+  },
+  'yellow-3': {
+    text: 'text-chart-yellow-3',
+    bg: 'bg-chart-yellow-3',
+    border: 'border-chart-yellow-3',
+    borderL: 'border-l-chart-yellow-3',
+    borderT: 'border-t-chart-yellow-3',
+    textOpacity: 'text-chart-yellow-3/50',
+    textHover: 'hover:text-chart-yellow-3/90',
+    bgHover: 'hover:bg-chart-yellow-3/5',
+    bgOpacity10: 'bg-chart-yellow-3/10',
+    bgOpacity20: 'bg-chart-yellow-3/20',
+    bgHover90: 'hover:bg-chart-yellow-3/90',
+    bgHover5: 'hover:bg-chart-yellow-3/5',
+    bgHover10: 'hover:bg-chart-yellow-3/10',
+    borderOpacity20: 'border-chart-yellow-3/20',
+  },
+  'yellow-4': {
+    text: 'text-chart-yellow-4',
+    bg: 'bg-chart-yellow-4',
+    border: 'border-chart-yellow-4',
+    borderL: 'border-l-chart-yellow-4',
+    borderT: 'border-t-chart-yellow-4',
+    textOpacity: 'text-chart-yellow-4/50',
+    textHover: 'hover:text-chart-yellow-4/90',
+    bgHover: 'hover:bg-chart-yellow-4/5',
+    bgOpacity10: 'bg-chart-yellow-4/10',
+    bgOpacity20: 'bg-chart-yellow-4/20',
+    bgHover90: 'hover:bg-chart-yellow-4/90',
+    bgHover5: 'hover:bg-chart-yellow-4/5',
+    bgHover10: 'hover:bg-chart-yellow-4/10',
+    borderOpacity20: 'border-chart-yellow-4/20',
+  },
+  'yellow-5': {
+    text: 'text-chart-yellow-5',
+    bg: 'bg-chart-yellow-5',
+    border: 'border-chart-yellow-5',
+    borderL: 'border-l-chart-yellow-5',
+    borderT: 'border-t-chart-yellow-5',
+    textOpacity: 'text-chart-yellow-5/50',
+    textHover: 'hover:text-chart-yellow-5/90',
+    bgHover: 'hover:bg-chart-yellow-5/5',
+    bgOpacity10: 'bg-chart-yellow-5/10',
+    bgOpacity20: 'bg-chart-yellow-5/20',
+    bgHover90: 'hover:bg-chart-yellow-5/90',
+    bgHover5: 'hover:bg-chart-yellow-5/5',
+    bgHover10: 'hover:bg-chart-yellow-5/10',
+    borderOpacity20: 'border-chart-yellow-5/20',
+  },
+}
+/* eslint-enable @typescript-eslint/no-unused-vars */
+
+/** Look up a static class string for a chart color. Falls back to dynamic string if color is unknown. */
+function cc(color: ChartColor) {
+  return CHART_CLASSES[color]
+}
+
 export function useColorScheme() {
   const { colorScheme } = useAppContext()
 
@@ -31,91 +707,78 @@ export function useColorScheme() {
     getLoggingSourceColor: (source: LoggingSource): ChartColor =>
       colorScheme.loggingSource[source],
 
-    // Utility functions
+    // Utility functions — use static lookup for Tailwind JIT compatibility
     getChartColorClass: (
       color: ChartColor,
       type: 'text' | 'bg' | 'border' = 'text'
-    ) => `${type}-chart-${color}`,
+    ) => cc(color)[type],
 
     getBadgeClasses: (color: ChartColor) =>
-      `bg-chart-${color}/10 text-chart-${color} border border-chart-${color}/20`,
+      `${cc(color).bgOpacity10} ${cc(color).text} border ${cc(color).borderOpacity20}`,
 
-    // Get all color classes for an entity (eliminates duplicate color class logic)
     getEntityColorClasses: (entity: EntityType) => {
       const color = colorScheme.entities[entity]
+      const c = cc(color.primary)
       return {
-        borderL: `border-l-chart-${color.primary}`,
-        text: `text-chart-${color.primary}`,
-        textOpacity: `text-chart-${color.primary}/50`,
-        textHover: `hover:text-chart-${color.primary}/90`,
-        bgHover: `hover:bg-chart-${color.primary}/5`,
+        borderL: c.borderL,
+        text: c.text,
+        textOpacity: c.textOpacity,
+        textHover: c.textHover,
+        bgHover: c.bgHover,
       }
     },
 
-    // Get button classes for entity-specific primary action buttons
     getEntityButtonClasses: (entity: EntityType) => {
       const color = colorScheme.entities[entity]
-      return `bg-chart-${color.primary} hover:bg-chart-${color.primary}/90 text-white`
+      const c = cc(color.primary)
+      return `${c.bg} ${c.bgHover90} text-white`
     },
 
-    // Get outline button classes for entity-specific secondary action buttons
     getEntityOutlineButtonClasses: (entity: EntityType) => {
       const color = colorScheme.entities[entity]
-      return `border border-chart-${color.primary} text-chart-${color.primary} hover:bg-chart-${color.primary}/10`
+      const c = cc(color.primary)
+      return `border ${c.border} ${c.text} ${c.bgHover10}`
     },
   }
 }
 
 /**
  * Convenience hook that returns all color-related classes for a specific entity type.
- * Reduces boilerplate when you need multiple color classes for the same entity.
- *
- * @example
- * ```tsx
- * // Before (4 lines):
- * const { getEntityColor, getEntityColorClasses, getEntityButtonClasses } = useColorScheme();
- * const sopColor = getEntityColor('SOP');
- * const sopClasses = getEntityColorClasses('SOP');
- * const sopButtonClasses = getEntityButtonClasses('SOP');
- *
- * // After (1 line):
- * const { color, classes, buttonClasses } = useEntityColorScheme('SOP');
- * ```
  */
 export function useEntityColorScheme(entityType: EntityType) {
   const { colorScheme } = useAppContext()
 
-  // Memoize based on the stable colorScheme from context and the entityType
   return useMemo(() => {
     const getEntityColor = (entity: EntityType) => colorScheme.entities[entity]
     const getEntityColorClasses = (entity: EntityType) => {
       const color = colorScheme.entities[entity]
+      const c = cc(color.primary)
       return {
-        borderL: `border-l-chart-${color.primary}`,
-        text: `text-chart-${color.primary}`,
-        textOpacity: `text-chart-${color.primary}/50`,
-        textHover: `hover:text-chart-${color.primary}/90`,
-        bgHover: `hover:bg-chart-${color.primary}/5`,
+        borderL: c.borderL,
+        text: c.text,
+        textOpacity: c.textOpacity,
+        textHover: c.textHover,
+        bgHover: c.bgHover,
       }
     }
     const getEntityButtonClasses = (entity: EntityType) => {
       const color = colorScheme.entities[entity]
-      return `bg-chart-${color.primary} hover:bg-chart-${color.primary}/90 text-white`
+      const c = cc(color.primary)
+      return `${c.bg} ${c.bgHover90} text-white`
     }
     const getEntityOutlineButtonClasses = (entity: EntityType) => {
       const color = colorScheme.entities[entity]
-      return `border border-chart-${color.primary} text-chart-${color.primary} hover:bg-chart-${color.primary}/10`
+      const c = cc(color.primary)
+      return `border ${c.border} ${c.text} ${c.bgHover10}`
     }
     const getRoleTitleColor = (role: RoleTitle): ChartColor =>
       colorScheme.roleTitle[role]
 
     return {
-      // Pre-computed values for this entity
       color: getEntityColor(entityType),
       classes: getEntityColorClasses(entityType),
       buttonClasses: getEntityButtonClasses(entityType),
       outlineButtonClasses: getEntityOutlineButtonClasses(entityType),
-      // Include commonly used functions
       getRoleTitleColor,
       getEntityColor,
       getEntityColorClasses,

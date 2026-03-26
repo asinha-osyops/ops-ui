@@ -110,7 +110,6 @@ export function useTaskPolling(
 
     // Handle empty tasks case
     if (tasks.size === 0) {
-      console.log('[useTaskPolling] No tasks to poll')
       // eslint-disable-next-line react-hooks/set-state-in-effect -- Resetting state when tasks become empty is intentional
       setStatuses(new Map())
       setIsPolling(false)
@@ -118,18 +117,13 @@ export function useTaskPolling(
     }
 
     if (!enabled) {
-      console.log('[useTaskPolling] Polling disabled')
       setIsPolling(false)
       return
     }
 
     // Initialize statuses with PENDING
-    console.log('[useTaskPolling] Starting polling for', tasks.size, 'tasks')
     const initialStatuses = new Map<string, TaskStatus>()
     tasks.forEach((taskId, entityId) => {
-      console.log(
-        `[useTaskPolling] Task: entityId=${entityId}, taskId=${taskId}`
-      )
       initialStatuses.set(entityId, {
         taskId,
         status: ProcessingStatus.PENDING,

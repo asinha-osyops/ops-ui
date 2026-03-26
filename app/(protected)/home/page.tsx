@@ -1,8 +1,5 @@
 'use client'
 
-// Prevent static generation for this page
-export const dynamic = 'force-dynamic'
-
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Route } from '@/lib/routes'

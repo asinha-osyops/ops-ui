@@ -216,7 +216,7 @@ export function formatLogAsText(log: {
   mailLineCount?: number
   tasksLineCount?: number
   deviceLineCount?: number
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }): string {
   const items = [
     { label: 'Company', value: log.companyName },

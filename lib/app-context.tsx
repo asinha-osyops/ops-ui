@@ -123,20 +123,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [fetchCompanies])
 
   // Fetch all employees for the selected company
-  const fetchEmployees = useCallback(async (companyId: string) => {
-    setIsLoadingEmployees(true)
-    try {
-      const fetchedEmployees = await apiClient.getEmployees(companyId)
-      const employeeMap = new Map<string, EmployeeDto>()
-      fetchedEmployees.forEach((emp) => employeeMap.set(emp.id, emp))
-      setEmployees(employeeMap)
-    } catch (error) {
-      showErrorToast('Failed to load employees', error)
-      setEmployees(new Map())
-    } finally {
-      setIsLoadingEmployees(false)
-    }
-  }, [])
+  const fetchEmployees = useCallback(
+    async (companyId: string, signal?: AbortSignal) => {
+      setIsLoadingEmployees(true)
+      try {
+        const fetchedEmployees = await apiClient.getEmployees(companyId)
+        if (signal?.aborted) return
+        const employeeMap = new Map<string, EmployeeDto>()
+        fetchedEmployees.forEach((emp) => employeeMap.set(emp.id, emp))
+        setEmployees(employeeMap)
+      } catch (error) {
+        if (signal?.aborted) return
+        showErrorToast('Failed to load employees', error)
+        setEmployees(new Map())
+      } finally {
+        if (!signal?.aborted) setIsLoadingEmployees(false)
+      }
+    },
+    []
+  )
 
   // Refresh employees for currently selected company
   const refreshEmployees = useCallback(async () => {
@@ -165,20 +170,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
   )
 
   // Fetch all roles for the selected company
-  const fetchRoles = useCallback(async (companyId: string) => {
-    setIsLoadingRoles(true)
-    try {
-      const fetchedRoles = await apiClient.getRoles(companyId)
-      const roleMap = new Map<string, RoleDto>()
-      fetchedRoles.forEach((role) => roleMap.set(role.id, role))
-      setRoles(roleMap)
-    } catch (error) {
-      showErrorToast('Failed to load roles', error)
-      setRoles(new Map())
-    } finally {
-      setIsLoadingRoles(false)
-    }
-  }, [])
+  const fetchRoles = useCallback(
+    async (companyId: string, signal?: AbortSignal) => {
+      setIsLoadingRoles(true)
+      try {
+        const fetchedRoles = await apiClient.getRoles(companyId)
+        if (signal?.aborted) return
+        const roleMap = new Map<string, RoleDto>()
+        fetchedRoles.forEach((role) => roleMap.set(role.id, role))
+        setRoles(roleMap)
+      } catch (error) {
+        if (signal?.aborted) return
+        showErrorToast('Failed to load roles', error)
+        setRoles(new Map())
+      } finally {
+        if (!signal?.aborted) setIsLoadingRoles(false)
+      }
+    },
+    []
+  )
 
   // Refresh roles for currently selected company
   const refreshRoles = useCallback(async () => {
@@ -207,20 +217,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
   )
 
   // Fetch all SOPs for the selected company
-  const fetchSops = useCallback(async (companyId: string) => {
-    setIsLoadingSops(true)
-    try {
-      const fetchedSops = await apiClient.getSops(companyId)
-      const sopMap = new Map<string, SopDto>()
-      fetchedSops.forEach((sop) => sopMap.set(sop.id, sop))
-      setSops(sopMap)
-    } catch (error) {
-      showErrorToast('Failed to load SOPs', error)
-      setSops(new Map())
-    } finally {
-      setIsLoadingSops(false)
-    }
-  }, [])
+  const fetchSops = useCallback(
+    async (companyId: string, signal?: AbortSignal) => {
+      setIsLoadingSops(true)
+      try {
+        const fetchedSops = await apiClient.getSops(companyId)
+        if (signal?.aborted) return
+        const sopMap = new Map<string, SopDto>()
+        fetchedSops.forEach((sop) => sopMap.set(sop.id, sop))
+        setSops(sopMap)
+      } catch (error) {
+        if (signal?.aborted) return
+        showErrorToast('Failed to load SOPs', error)
+        setSops(new Map())
+      } finally {
+        if (!signal?.aborted) setIsLoadingSops(false)
+      }
+    },
+    []
+  )
 
   // Refresh SOPs for currently selected company
   const refreshSops = useCallback(async () => {
@@ -230,20 +245,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [selectedCompany, fetchSops])
 
   // Fetch all logs for the selected company
-  const fetchLogs = useCallback(async (companyId: string) => {
-    setIsLoadingLogs(true)
-    try {
-      const fetchedLogs = await apiClient.getLogs(companyId)
-      const logMap = new Map<string, LogDto>()
-      fetchedLogs.forEach((log) => logMap.set(log.id, log))
-      setLogs(logMap)
-    } catch (error) {
-      showErrorToast('Failed to load logs', error)
-      setLogs(new Map())
-    } finally {
-      setIsLoadingLogs(false)
-    }
-  }, [])
+  const fetchLogs = useCallback(
+    async (companyId: string, signal?: AbortSignal) => {
+      setIsLoadingLogs(true)
+      try {
+        const fetchedLogs = await apiClient.getLogs(companyId)
+        if (signal?.aborted) return
+        const logMap = new Map<string, LogDto>()
+        fetchedLogs.forEach((log) => logMap.set(log.id, log))
+        setLogs(logMap)
+      } catch (error) {
+        if (signal?.aborted) return
+        showErrorToast('Failed to load logs', error)
+        setLogs(new Map())
+      } finally {
+        if (!signal?.aborted) setIsLoadingLogs(false)
+      }
+    },
+    []
+  )
 
   // Refresh logs for currently selected company
   const refreshLogs = useCallback(async () => {
@@ -253,22 +273,28 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [selectedCompany, fetchLogs])
 
   // Fetch all activity events for the selected company
-  const fetchActivityEvents = useCallback(async (companyId: string) => {
-    setIsLoadingActivityEvents(true)
-    try {
-      const fetchedActivityEvents = await apiClient.getActivityEvents(companyId)
-      const activityEventMap = new Map<string, ActivityEventDto>()
-      fetchedActivityEvents.forEach((event) =>
-        activityEventMap.set(event.id, event)
-      )
-      setActivityEvents(activityEventMap)
-    } catch (error) {
-      showErrorToast('Failed to load activity events', error)
-      setActivityEvents(new Map())
-    } finally {
-      setIsLoadingActivityEvents(false)
-    }
-  }, [])
+  const fetchActivityEvents = useCallback(
+    async (companyId: string, signal?: AbortSignal) => {
+      setIsLoadingActivityEvents(true)
+      try {
+        const fetchedActivityEvents =
+          await apiClient.getActivityEvents(companyId)
+        if (signal?.aborted) return
+        const activityEventMap = new Map<string, ActivityEventDto>()
+        fetchedActivityEvents.forEach((event) =>
+          activityEventMap.set(event.id, event)
+        )
+        setActivityEvents(activityEventMap)
+      } catch (error) {
+        if (signal?.aborted) return
+        showErrorToast('Failed to load activity events', error)
+        setActivityEvents(new Map())
+      } finally {
+        if (!signal?.aborted) setIsLoadingActivityEvents(false)
+      }
+    },
+    []
+  )
 
   // Refresh activity events for currently selected company
   const refreshActivityEvents = useCallback(async () => {
@@ -343,13 +369,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [])
 
   // Fetch employees, roles, SOPs, logs, and activity events whenever selected company changes
+  // AbortController cancels in-flight requests when company changes to prevent race conditions
   useEffect(() => {
     if (selectedCompany?.id) {
-      fetchEmployees(selectedCompany.id)
-      fetchRoles(selectedCompany.id)
-      fetchSops(selectedCompany.id)
-      fetchLogs(selectedCompany.id)
-      fetchActivityEvents(selectedCompany.id)
+      const controller = new AbortController()
+      const { signal } = controller
+
+      fetchEmployees(selectedCompany.id, signal)
+      fetchRoles(selectedCompany.id, signal)
+      fetchSops(selectedCompany.id, signal)
+      fetchLogs(selectedCompany.id, signal)
+      fetchActivityEvents(selectedCompany.id, signal)
+
+      return () => controller.abort()
     } else {
       // Clear all data when no company is selected
       setEmployees(new Map())
@@ -367,8 +399,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     fetchActivityEvents,
   ])
 
-  // Memoize context value to prevent unnecessary re-renders
-  const contextValue = useMemo(
+  // Memoize context value using domain-specific sub-objects
+  // This makes dependency tracking clearer and sets up for a future context split
+  const companyValue = useMemo(
     () => ({
       selectedCompanyId,
       selectedCompany,
@@ -378,32 +411,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
       isLoadingCompanies,
       refetchCompanies,
       setCompanyAsSelected,
-      // Employee caching
-      employees,
-      isLoadingEmployees,
-      refreshEmployees,
-      getEmployee,
-      getEmployeeName,
-      // Role caching
-      roles,
-      isLoadingRoles,
-      refreshRoles,
-      getRole,
-      getRoleName,
-      // SOP caching
-      sops,
-      isLoadingSops,
-      refreshSops,
-      // Log caching
-      logs,
-      isLoadingLogs,
-      refreshLogs,
-      // ActivityEvent caching
-      activityEvents,
-      isLoadingActivityEvents,
-      refreshActivityEvents,
-      // Colorscheme
-      colorScheme,
     }),
     [
       selectedCompanyId,
@@ -414,25 +421,67 @@ export function AppProvider({ children }: { children: ReactNode }) {
       isLoadingCompanies,
       refetchCompanies,
       setCompanyAsSelected,
+    ]
+  )
+
+  const employeeValue = useMemo(
+    () => ({
       employees,
       isLoadingEmployees,
       refreshEmployees,
       getEmployee,
       getEmployeeName,
-      roles,
-      isLoadingRoles,
-      refreshRoles,
-      getRole,
-      getRoleName,
-      sops,
-      isLoadingSops,
-      refreshSops,
-      logs,
-      isLoadingLogs,
-      refreshLogs,
+    }),
+    [
+      employees,
+      isLoadingEmployees,
+      refreshEmployees,
+      getEmployee,
+      getEmployeeName,
+    ]
+  )
+
+  const roleValue = useMemo(
+    () => ({ roles, isLoadingRoles, refreshRoles, getRole, getRoleName }),
+    [roles, isLoadingRoles, refreshRoles, getRole, getRoleName]
+  )
+
+  const sopValue = useMemo(
+    () => ({ sops, isLoadingSops, refreshSops }),
+    [sops, isLoadingSops, refreshSops]
+  )
+
+  const logValue = useMemo(
+    () => ({ logs, isLoadingLogs, refreshLogs }),
+    [logs, isLoadingLogs, refreshLogs]
+  )
+
+  const activityEventValue = useMemo(
+    () => ({
       activityEvents,
       isLoadingActivityEvents,
       refreshActivityEvents,
+    }),
+    [activityEvents, isLoadingActivityEvents, refreshActivityEvents]
+  )
+
+  const contextValue = useMemo(
+    () => ({
+      ...companyValue,
+      ...employeeValue,
+      ...roleValue,
+      ...sopValue,
+      ...logValue,
+      ...activityEventValue,
+      colorScheme,
+    }),
+    [
+      companyValue,
+      employeeValue,
+      roleValue,
+      sopValue,
+      logValue,
+      activityEventValue,
       colorScheme,
     ]
   )
@@ -505,6 +554,21 @@ export function useAppContext() {
   // This can happen on public pages or during SSR/build time
   if (context === undefined) {
     return defaultContextValue
+  }
+  return context
+}
+
+/**
+ * Strict version of useAppContext that throws if used outside AppProvider.
+ * Use this in protected pages where the provider is guaranteed to exist.
+ */
+export function useRequiredAppContext(): AppContextType {
+  const context = useContext(AppContext)
+  if (context === undefined) {
+    throw new Error(
+      'useRequiredAppContext must be used within an AppProvider. ' +
+        'For public pages, use useAppContext() instead.'
+    )
   }
   return context
 }

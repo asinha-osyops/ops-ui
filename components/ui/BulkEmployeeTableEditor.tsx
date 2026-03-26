@@ -237,8 +237,11 @@ export function BulkEmployeeTableEditor({
     value: string | null
   ) => {
     const newRows = [...rows]
-    ;(newRows[index] as any)[field] = value
-    // Clear error for this field when user types
+    newRows[index] = {
+      ...newRows[index],
+      [field]: value,
+      errors: { ...newRows[index].errors },
+    }
     delete newRows[index].errors[field as keyof TableRow['errors']]
     setRows(newRows)
   }

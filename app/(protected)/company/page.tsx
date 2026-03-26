@@ -1,5 +1,3 @@
-export const dynamic = 'force-dynamic'
-
 import { Suspense } from 'react'
 import { CompanyPageContent } from './CompanyPageContent'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'

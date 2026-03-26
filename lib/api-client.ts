@@ -267,6 +267,7 @@ export interface LogMatchDto {
   matchCount: number
 }
 
+/** @deprecated Legacy interface for JSON import/export. Use SopDto instead. */
 export interface Sop {
   companyId: string
   companyName?: string
@@ -276,10 +277,14 @@ export interface Sop {
   exportedAt?: string
 }
 
-export interface SOPResponse {
+/** Generic API response for mutation operations */
+export interface ApiResponse {
   success: boolean
   message?: string
 }
+
+/** @deprecated Use ApiResponse instead */
+export type SOPResponse = ApiResponse
 
 export interface SopFileDto {
   id: string
@@ -302,16 +307,8 @@ export interface GeminiResponseFileDto {
   fileSize: number
 }
 
-export interface GeminiResponseFile {
-  id: string
-  sourceRequestId: string
-  sopId: string
-  fileName: string
-  uploadedAt: string
-  contentType: string
-  fileContent: string
-  fileSize: number
-}
+/** @deprecated Use GeminiResponseFileDto instead */
+export type GeminiResponseFile = GeminiResponseFileDto
 
 export interface LogFileDto {
   id: string
@@ -430,14 +427,14 @@ export interface LogLineDto {
   rawCsvLine: string
   createdAt: string
   // Platform-specific data stored in metadata
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 export interface Log {
   companyId: string
   logName: string
   loggingSource: LoggingSource
-  metadata: Record<string, any>
+  metadata: Record<string, unknown>
 }
 
 export interface LogDto {
@@ -446,7 +443,7 @@ export interface LogDto {
   companyName: string
   name: string
   loggingSource: LoggingSource
-  metadata: Record<string, any>
+  metadata: Record<string, unknown>
   logFile: LogFileDto | null
   logLines: LogLineDto[]
   geminiResponseFiles: GeminiResponseFileDto[]
@@ -467,10 +464,8 @@ export interface CreateLogResponseDto {
   message?: string
 }
 
-export interface LogResponse {
-  success: boolean
-  message?: string
-}
+/** @deprecated Use ApiResponse instead */
+export type LogResponse = ApiResponse
 
 // ===== SOP DAG Types =====
 
@@ -643,10 +638,8 @@ export interface CreateCompanyRequestDto {
   pillars: Pillar[]
 }
 
-export interface CompanyResponse {
-  success: boolean
-  message?: string
-}
+/** @deprecated Use ApiResponse instead */
+export type CompanyResponse = ApiResponse
 
 // Employee interfaces
 export interface EmployeeDto {
@@ -680,10 +673,8 @@ export interface UpdateEmployeeRequestDto {
   managerId: string | null
 }
 
-export interface EmployeeResponse {
-  success: boolean
-  message?: string
-}
+/** @deprecated Use ApiResponse instead */
+export type EmployeeResponse = ApiResponse
 
 // Bulk Employee interfaces (renamed from Batch to match OpenAPI spec)
 export interface BulkCreateEmployeesRequestDto {
@@ -1218,7 +1209,7 @@ import {
   makeObjectRequest,
   makeSimpleRequest,
 } from './api-client-helpers'
-import { API_HEADERS } from './api-constants'
+import { API_HEADERS, DELETE_PASSWORD } from './api-constants'
 import { AUTH_ENDPOINTS, AUTH_HEADERS } from './auth-constants'
 import type {
   LoginRequest,
@@ -1338,7 +1329,7 @@ export class APIClient {
   private getAuthHeadersWithDelete(): Record<string, string> {
     return {
       ...this.getAuthHeaders(),
-      'X-Delete-Password': 'delete',
+      'X-Delete-Password': DELETE_PASSWORD,
     }
   }
 
@@ -1600,13 +1591,6 @@ export class APIClient {
       throw new Error('Failed to create SOP')
     }
 
-    // Debug: log the created SOP response
-    console.log('[APIClient] createSopWithFile response:', {
-      sopId: response.id,
-      name: response.name,
-      analysisTaskId: response.analysisTaskId,
-    })
-
     return response
   }
 
@@ -1634,21 +1618,6 @@ export class APIClient {
       },
       'fetching SOPs'
     )
-
-    // Debug: log SOPs with analysis tasks
-    const sopsWithTasks = sops.filter((s) => s.analysisTaskId)
-    console.log(
-      '[APIClient] getSops response:',
-      sops.length,
-      'SOPs,',
-      sopsWithTasks.length,
-      'with analysisTaskId'
-    )
-    sopsWithTasks.forEach((s) => {
-      console.log(
-        `[APIClient] SOP "${s.name}" analysisTaskId: ${s.analysisTaskId}`
-      )
-    })
 
     return sops
   }

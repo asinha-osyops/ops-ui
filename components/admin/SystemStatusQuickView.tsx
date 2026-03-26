@@ -66,7 +66,8 @@ export function SystemStatusQuickView({
   }, [])
 
   useEffect(() => {
-    checkHealth()
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- setState calls inside checkHealth are async (after await), not synchronous
+    void checkHealth()
     // Refresh every 60 seconds
     const interval = setInterval(checkHealth, 60000)
     return () => clearInterval(interval)

@@ -104,7 +104,8 @@ export async function makeRequest<T extends { success: boolean }>(
 export async function makeArrayRequest<T>(
   url: string,
   options: RequestOptions,
-  errorContext: string
+  errorContext: string,
+  config?: { throwOnError?: boolean }
 ): Promise<T[]> {
   try {
     const response = await fetch(url, options)
@@ -125,6 +126,7 @@ export async function makeArrayRequest<T>(
     return JSON.parse(text)
   } catch (error) {
     console.error(`Error ${errorContext}:`, error)
+    if (config?.throwOnError) throw error
     return []
   }
 }
@@ -133,7 +135,8 @@ export async function makeArrayRequest<T>(
 export async function makeNullableRequest<T>(
   url: string,
   options: RequestOptions,
-  errorContext: string
+  errorContext: string,
+  config?: { throwOnError?: boolean }
 ): Promise<T | null> {
   try {
     const response = await fetch(url, options)
@@ -154,6 +157,7 @@ export async function makeNullableRequest<T>(
     return JSON.parse(text)
   } catch (error) {
     console.error(`Error ${errorContext}:`, error)
+    if (config?.throwOnError) throw error
     return null
   }
 }

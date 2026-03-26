@@ -27,7 +27,7 @@ import { SopDto, LogDto, CompanyDto, EmployeeDto } from '@/lib/api-client'
 export function useDownload<T extends { id: string }>(
   entityType: string,
   formatAsText: (item: T) => string,
-  extractData: (item: T) => Record<string, any>,
+  extractData: (item: T) => Record<string, unknown>,
   getName: (item: T) => string
 ) {
   const handleDownloadJSON = (item: T) => {

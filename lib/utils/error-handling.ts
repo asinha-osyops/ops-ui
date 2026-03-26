@@ -127,10 +127,15 @@ export function handleValidationError(error: unknown): string {
  * @param errors - Record of field errors from form.formState.errors
  * @returns Formatted error message
  */
-export function formatValidationErrors(errors: Record<string, any>): string {
+export function formatValidationErrors(
+  errors: Record<string, unknown>
+): string {
   return Object.entries(errors)
     .map(([field, error]) => {
-      const message = error?.message || 'Invalid value'
+      const message =
+        error && typeof error === 'object' && 'message' in error
+          ? String((error as { message: unknown }).message)
+          : 'Invalid value'
       return `${field}: ${message}`
     })
     .join('; ')

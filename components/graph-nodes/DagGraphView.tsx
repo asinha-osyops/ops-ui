@@ -52,11 +52,13 @@ function GraphErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
           Failed to render the graph visualization. This may be due to invalid
           data or a rendering issue.
         </p>
-        {process.env.NODE_ENV === 'development' && error?.message && (
-          <p className="text-xs text-destructive/70 font-mono bg-destructive/10 p-2 rounded">
-            {error.message}
-          </p>
-        )}
+        {process.env.NODE_ENV === 'development' &&
+          error instanceof Error &&
+          error.message && (
+            <p className="text-xs text-destructive/70 font-mono bg-destructive/10 p-2 rounded">
+              {error.message}
+            </p>
+          )}
       </div>
       <Button variant="outline" size="sm" onClick={resetErrorBoundary}>
         <RefreshCw className="h-4 w-4 mr-2" />

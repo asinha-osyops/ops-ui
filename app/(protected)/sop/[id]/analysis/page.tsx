@@ -1,7 +1,5 @@
 'use client'
 
-export const dynamic = 'force-dynamic'
-
 import { useEffect, useState, useCallback, lazy, Suspense, useRef } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { apiClient, SopDto, TraceSopStepsResponseDto } from '@/lib/api-client'
@@ -18,6 +16,7 @@ import {
 import { useAnalysisCache } from '@/hooks/use-analysis-cache'
 import { useEntityDetail } from '@/lib/hooks/useEntityDetail'
 import { Route, Breadcrumbs } from '@/lib/routes'
+import { getStringParam } from '@/lib/utils/route-params'
 import {
   Loader2,
   ArrowLeft,
@@ -55,14 +54,18 @@ function ResultsErrorFallback({
   error,
   resetErrorBoundary,
 }: {
-  error: Error
+  error: unknown
   resetErrorBoundary: () => void
 }) {
   return (
     <Alert variant="destructive" className="mb-6">
       <AlertTitle>Error displaying results</AlertTitle>
       <AlertDescription className="mt-2">
-        <p className="mb-2">{error.message}</p>
+        <p className="mb-2">
+          {error instanceof Error
+            ? error.message
+            : 'An unexpected error occurred'}
+        </p>
         <Button variant="outline" size="sm" onClick={resetErrorBoundary}>
           Try again
         </Button>
@@ -91,7 +94,7 @@ function formatAnalysisTime(timestamp: string): string {
 export default function SopAnalysisPage() {
   const router = useRouter()
   const params = useParams()
-  const sopId = params.id as string
+  const sopId = getStringParam(params.id)
   const { selectedCompany } = useAppContext()
 
   const [results, setResults] = useState<TraceSopStepsResponseDto | null>(null)
@@ -133,13 +136,18 @@ export default function SopAnalysisPage() {
 
     const cached = getCached()
     if (cached) {
-      // We have cached results
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Restoring cached state on mount is intentional, not a cascading render
       setResults(cached.results)
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCachedTimestamp(cached.timestamp)
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsCacheStale(isStale(getSopTimestamp(sop)))
       hasAutoStarted.current = true
     }
   }, [sop, getCached, isStale, getSopTimestamp])
+
+  // Keep a ref to handleTrace to avoid circular useEffect dependency
+  const handleTraceRef = useRef<() => void>(() => {})
 
   // Auto-start analysis if no cached results and SOP is loaded
   useEffect(() => {
@@ -147,8 +155,8 @@ export default function SopAnalysisPage() {
 
     // No cached results, auto-start analysis
     hasAutoStarted.current = true
-    handleTrace()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Triggering analysis on mount via ref is intentional
+    handleTraceRef.current()
   }, [sop, selectedCompany?.id])
 
   // Handle polling completion
@@ -204,11 +212,12 @@ export default function SopAnalysisPage() {
       toast.error(ANALYSIS_CONSTANTS.ERRORS.FETCH_RESULTS, {
         description: error,
       })
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Clearing session on error is intentional cleanup
       setAnalysisSession(null)
     }
   }, [error])
 
-  const handleTrace = useCallback(async () => {
+  const handleTrace = async () => {
     if (!selectedCompany?.id) {
       toast.error('Please select a company from the sidebar')
       return
@@ -250,7 +259,12 @@ export default function SopAnalysisPage() {
         description: getErrorDescription(err),
       })
     }
-  }, [selectedCompany?.id, sopId, clearCache])
+  }
+
+  // Keep ref in sync for auto-start effect
+  useEffect(() => {
+    handleTraceRef.current = handleTrace
+  })
 
   // Keyboard shortcuts
   useEffect(() => {

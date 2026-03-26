@@ -1,7 +1,5 @@
 'use client'
 
-export const dynamic = 'force-dynamic'
-
 import { useEffect, useState, lazy, Suspense } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import {
@@ -11,6 +9,7 @@ import {
   ProcessingStatus,
 } from '@/lib/api-client'
 import { Route, Breadcrumbs } from '@/lib/routes'
+import { getStringParam } from '@/lib/utils/route-params'
 import { useEntityDetail } from '@/lib/hooks/useEntityDetail'
 import { Button } from '@/components/ui/button'
 import { FileInfoCard } from '@/components/ui/FileInfoCard'
@@ -41,7 +40,7 @@ const LogAnalysisDisplay = lazy(() =>
 export default function LogDetailPage() {
   const router = useRouter()
   const params = useParams()
-  const logId = params.id as string
+  const logId = getStringParam(params.id)
 
   const [analyzing, setAnalyzing] = useState(false)
 
@@ -81,20 +80,22 @@ export default function LogDetailPage() {
   // Download hooks
   const { handleDownloadJSON, handleDownloadText } = useLogDownload()
 
-  const { confirmAndDelete: confirmAndDeleteLog } =
-    useDeleteConfirmation<LogDto>({
-      onDelete: async (l) => {
-        return await apiClient.deleteLog(l.id)
-      },
-      onSuccess: async () => {
-        toast.success('Log deleted successfully')
-        router.push(Route.LOG_HOME)
-      },
-      onError: (message) => {
-        toast.error(`Delete failed: ${message}`)
-      },
-      getConfirmMessage: (l) => CONFIRMATIONS.deleteEntity('log', l.name),
-    })
+  const {
+    confirmAndDelete: confirmAndDeleteLog,
+    confirmDialog: deleteConfirmDialog,
+  } = useDeleteConfirmation<LogDto>({
+    onDelete: async (l) => {
+      return await apiClient.deleteLog(l.id)
+    },
+    onSuccess: async () => {
+      toast.success('Log deleted successfully')
+      router.push(Route.LOG_HOME)
+    },
+    onError: (message) => {
+      toast.error(`Delete failed: ${message}`)
+    },
+    getConfirmMessage: (l) => CONFIRMATIONS.deleteEntity('log', l.name),
+  })
 
   const { downloadFile: downloadLogFile, downloading: downloadingLog } =
     useFileDownload((fileId) => apiClient.downloadLogFile(fileId))
@@ -154,221 +155,231 @@ export default function LogDetailPage() {
     log.deviceLineCount
 
   return (
-    <PageLayout
-      title={log.name}
-      titleClassName={logClasses.text}
-      breadcrumbs={Breadcrumbs.log.detail(log.name)}
-      headerActions={
-        <Button variant="outline" onClick={() => router.push(Route.LOG_HOME)}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Logs
-        </Button>
-      }
-    >
-      {/* Header info */}
-      <div className="flex flex-wrap items-center gap-3 mb-6">
-        <Badge variant="outline">{log.companyName}</Badge>
-        <Badge variant="secondary">{log.loggingSource}</Badge>
-        <span className="text-sm text-muted-foreground">
-          Created: {new Date(log.createdAt).toLocaleDateString()}
-        </span>
-        {isProcessing && (
-          <Badge variant="secondary" className="flex items-center gap-1">
-            <Loader2 className="h-3 w-3 animate-spin" />
-            Processing...
-          </Badge>
-        )}
-        {log.processingStatus === ProcessingStatus.FAILED && (
-          <Badge variant="destructive">Processing Failed</Badge>
-        )}
-      </div>
-
-      {/* Tabs */}
-      <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="mb-4">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          {log.logFile && <TabsTrigger value="file">File</TabsTrigger>}
-          {totalLines > 0 && (
-            <TabsTrigger value="lines">Log Lines ({totalLines})</TabsTrigger>
+    <>
+      {deleteConfirmDialog}
+      <PageLayout
+        title={log.name}
+        titleClassName={logClasses.text}
+        breadcrumbs={Breadcrumbs.log.detail(log.name)}
+        headerActions={
+          <Button variant="outline" onClick={() => router.push(Route.LOG_HOME)}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Logs
+          </Button>
+        }
+      >
+        {/* Header info */}
+        <div className="flex flex-wrap items-center gap-3 mb-6">
+          <Badge variant="outline">{log.companyName}</Badge>
+          <Badge variant="secondary">{log.loggingSource}</Badge>
+          <span className="text-sm text-muted-foreground">
+            Created: {new Date(log.createdAt).toLocaleDateString()}
+          </span>
+          {isProcessing && (
+            <Badge variant="secondary" className="flex items-center gap-1">
+              <Loader2 className="h-3 w-3 animate-spin" />
+              Processing...
+            </Badge>
           )}
-          {log.geminiResponseFiles && log.geminiResponseFiles.length > 0 && (
-            <TabsTrigger value="analysis">Analysis</TabsTrigger>
+          {log.processingStatus === ProcessingStatus.FAILED && (
+            <Badge variant="destructive">Processing Failed</Badge>
           )}
-        </TabsList>
+        </div>
 
-        {/* Overview Tab */}
-        <TabsContent value="overview" className="space-y-6">
-          <div className="bg-card rounded-lg border p-6">
-            <h3 className="text-lg font-semibold mb-4">Basic Information</h3>
-            <dl className="grid gap-4 md:grid-cols-2">
-              <div>
-                <dt className="text-sm font-medium text-muted-foreground">
-                  Log Name
-                </dt>
-                <dd className="text-foreground">{log.name}</dd>
-              </div>
-              <div>
-                <dt className="text-sm font-medium text-muted-foreground">
-                  Company
-                </dt>
-                <dd className="text-foreground">{log.companyName}</dd>
-              </div>
-              <div>
-                <dt className="text-sm font-medium text-muted-foreground">
-                  Logging Source
-                </dt>
-                <dd className="text-foreground">{log.loggingSource}</dd>
-              </div>
-              <div>
-                <dt className="text-sm font-medium text-muted-foreground">
-                  Created
-                </dt>
-                <dd className="text-foreground">
-                  {new Date(log.createdAt).toLocaleString()}
-                </dd>
-              </div>
-            </dl>
-          </div>
+        {/* Tabs */}
+        <Tabs defaultValue="overview" className="w-full">
+          <TabsList className="mb-4">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            {log.logFile && <TabsTrigger value="file">File</TabsTrigger>}
+            {totalLines > 0 && (
+              <TabsTrigger value="lines">Log Lines ({totalLines})</TabsTrigger>
+            )}
+            {log.geminiResponseFiles && log.geminiResponseFiles.length > 0 && (
+              <TabsTrigger value="analysis">Analysis</TabsTrigger>
+            )}
+          </TabsList>
 
-          {/* Log Line Counts */}
-          {totalLines > 0 && (
+          {/* Overview Tab */}
+          <TabsContent value="overview" className="space-y-6">
             <div className="bg-card rounded-lg border p-6">
-              <h3 className="text-lg font-semibold mb-4">Log Line Summary</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="text-center p-4 bg-muted rounded-lg">
-                  <div className="text-2xl font-bold">{log.driveLineCount}</div>
-                  <div className="text-sm text-muted-foreground">
-                    Drive Events
-                  </div>
+              <h3 className="text-lg font-semibold mb-4">Basic Information</h3>
+              <dl className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <dt className="text-sm font-medium text-muted-foreground">
+                    Log Name
+                  </dt>
+                  <dd className="text-foreground">{log.name}</dd>
                 </div>
-                <div className="text-center p-4 bg-muted rounded-lg">
-                  <div className="text-2xl font-bold">{log.mailLineCount}</div>
-                  <div className="text-sm text-muted-foreground">
-                    Mail Events
-                  </div>
+                <div>
+                  <dt className="text-sm font-medium text-muted-foreground">
+                    Company
+                  </dt>
+                  <dd className="text-foreground">{log.companyName}</dd>
                 </div>
-                <div className="text-center p-4 bg-muted rounded-lg">
-                  <div className="text-2xl font-bold">{log.tasksLineCount}</div>
-                  <div className="text-sm text-muted-foreground">
-                    Tasks Events
-                  </div>
+                <div>
+                  <dt className="text-sm font-medium text-muted-foreground">
+                    Logging Source
+                  </dt>
+                  <dd className="text-foreground">{log.loggingSource}</dd>
                 </div>
-                <div className="text-center p-4 bg-muted rounded-lg">
-                  <div className="text-2xl font-bold">
-                    {log.deviceLineCount}
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    Device Events
-                  </div>
+                <div>
+                  <dt className="text-sm font-medium text-muted-foreground">
+                    Created
+                  </dt>
+                  <dd className="text-foreground">
+                    {new Date(log.createdAt).toLocaleString()}
+                  </dd>
                 </div>
-              </div>
-            </div>
-          )}
-
-          {/* Metadata */}
-          {log.metadata && Object.keys(log.metadata).length > 0 && (
-            <div className="bg-card rounded-lg border p-6">
-              <h3 className="text-lg font-semibold mb-4">Metadata</h3>
-              <div className="grid gap-3">
-                {Object.entries(log.metadata).map(([key, value]) => (
-                  <DetailField
-                    key={key}
-                    label={key}
-                    value={
-                      typeof value === 'object'
-                        ? JSON.stringify(value)
-                        : String(value)
-                    }
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Actions */}
-          <EntityActions
-            entity={log}
-            entityName="Log"
-            showAnalyze={true}
-            showEdit={false}
-            analyzing={analyzing || isProcessing}
-            onAnalyze={(e) => {
-              e.stopPropagation()
-              handleAnalyze()
-            }}
-            onDownloadJSON={(e) => {
-              e.stopPropagation()
-              handleDownloadJSON(log)
-            }}
-            onDownloadText={(e) => {
-              e.stopPropagation()
-              handleDownloadText(log)
-            }}
-            onDelete={(e) => {
-              e.stopPropagation()
-              confirmAndDeleteLog(log)
-            }}
-          />
-        </TabsContent>
-
-        {/* File Tab */}
-        {log.logFile && (
-          <TabsContent value="file" className="space-y-6">
-            <FileInfoCard file={log.logFile} />
-            <div className="mt-3">
-              <Button
-                variant="outline"
-                onClick={() =>
-                  downloadLogFile(log.logFile!.id, log.logFile!.fileName)
-                }
-                disabled={downloadingLog}
-              >
-                <Download className="mr-2 h-4 w-4" />
-                {downloadingLog ? 'Downloading...' : 'Download Original File'}
-              </Button>
+              </dl>
             </div>
 
-            {/* Parsed Text Preview */}
-            {log.logFile.parsedText && (
+            {/* Log Line Counts */}
+            {totalLines > 0 && (
               <div className="bg-card rounded-lg border p-6">
-                <h3 className="text-lg font-semibold mb-4">
-                  Parsed Text Preview
-                </h3>
-                <ScrollArea className="h-96 rounded-lg">
-                  <pre className="whitespace-pre-wrap text-sm text-muted-foreground bg-muted p-4 rounded-lg">
-                    {log.logFile.parsedText.substring(0, 5000)}
-                    {log.logFile.parsedText.length > 5000 && '... (truncated)'}
-                  </pre>
-                </ScrollArea>
+                <h3 className="text-lg font-semibold mb-4">Log Line Summary</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="text-center p-4 bg-muted rounded-lg">
+                    <div className="text-2xl font-bold">
+                      {log.driveLineCount}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      Drive Events
+                    </div>
+                  </div>
+                  <div className="text-center p-4 bg-muted rounded-lg">
+                    <div className="text-2xl font-bold">
+                      {log.mailLineCount}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      Mail Events
+                    </div>
+                  </div>
+                  <div className="text-center p-4 bg-muted rounded-lg">
+                    <div className="text-2xl font-bold">
+                      {log.tasksLineCount}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      Tasks Events
+                    </div>
+                  </div>
+                  <div className="text-center p-4 bg-muted rounded-lg">
+                    <div className="text-2xl font-bold">
+                      {log.deviceLineCount}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      Device Events
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
-          </TabsContent>
-        )}
 
-        {/* Log Lines Tab */}
-        {totalLines > 0 && (
-          <TabsContent value="lines">
-            <LogLinesTable logLines={log.logLines} totalCount={totalLines} />
-          </TabsContent>
-        )}
+            {/* Metadata */}
+            {log.metadata && Object.keys(log.metadata).length > 0 && (
+              <div className="bg-card rounded-lg border p-6">
+                <h3 className="text-lg font-semibold mb-4">Metadata</h3>
+                <div className="grid gap-3">
+                  {Object.entries(log.metadata).map(([key, value]) => (
+                    <DetailField
+                      key={key}
+                      label={key}
+                      value={
+                        typeof value === 'object'
+                          ? JSON.stringify(value)
+                          : String(value)
+                      }
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
 
-        {/* Analysis Tab */}
-        {log.geminiResponseFiles && log.geminiResponseFiles.length > 0 && (
-          <TabsContent value="analysis">
-            <Suspense fallback={<div>Loading analysis...</div>}>
-              <GeminiAnalysisSection
-                geminiResponseFiles={log.geminiResponseFiles}
-                parseContent={(content) =>
-                  JSON.parse(content) as LogAnalysisDto
-                }
-                renderAnalysis={(analysis) => (
-                  <LogAnalysisDisplay analysis={analysis} />
-                )}
-              />
-            </Suspense>
+            {/* Actions */}
+            <EntityActions
+              entity={log}
+              entityName="Log"
+              showAnalyze={true}
+              showEdit={false}
+              analyzing={analyzing || isProcessing}
+              onAnalyze={(e) => {
+                e.stopPropagation()
+                handleAnalyze()
+              }}
+              onDownloadJSON={(e) => {
+                e.stopPropagation()
+                handleDownloadJSON(log)
+              }}
+              onDownloadText={(e) => {
+                e.stopPropagation()
+                handleDownloadText(log)
+              }}
+              onDelete={(e) => {
+                e.stopPropagation()
+                confirmAndDeleteLog(log)
+              }}
+            />
           </TabsContent>
-        )}
-      </Tabs>
-    </PageLayout>
+
+          {/* File Tab */}
+          {log.logFile && (
+            <TabsContent value="file" className="space-y-6">
+              <FileInfoCard file={log.logFile} />
+              <div className="mt-3">
+                <Button
+                  variant="outline"
+                  onClick={() =>
+                    downloadLogFile(log.logFile!.id, log.logFile!.fileName)
+                  }
+                  disabled={downloadingLog}
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  {downloadingLog ? 'Downloading...' : 'Download Original File'}
+                </Button>
+              </div>
+
+              {/* Parsed Text Preview */}
+              {log.logFile.parsedText && (
+                <div className="bg-card rounded-lg border p-6">
+                  <h3 className="text-lg font-semibold mb-4">
+                    Parsed Text Preview
+                  </h3>
+                  <ScrollArea className="h-96 rounded-lg">
+                    <pre className="whitespace-pre-wrap text-sm text-muted-foreground bg-muted p-4 rounded-lg">
+                      {log.logFile.parsedText.substring(0, 5000)}
+                      {log.logFile.parsedText.length > 5000 &&
+                        '... (truncated)'}
+                    </pre>
+                  </ScrollArea>
+                </div>
+              )}
+            </TabsContent>
+          )}
+
+          {/* Log Lines Tab */}
+          {totalLines > 0 && (
+            <TabsContent value="lines">
+              <LogLinesTable logLines={log.logLines} totalCount={totalLines} />
+            </TabsContent>
+          )}
+
+          {/* Analysis Tab */}
+          {log.geminiResponseFiles && log.geminiResponseFiles.length > 0 && (
+            <TabsContent value="analysis">
+              <Suspense fallback={<div>Loading analysis...</div>}>
+                <GeminiAnalysisSection
+                  geminiResponseFiles={log.geminiResponseFiles}
+                  parseContent={(content) =>
+                    JSON.parse(content) as LogAnalysisDto
+                  }
+                  renderAnalysis={(analysis) => (
+                    <LogAnalysisDisplay analysis={analysis} />
+                  )}
+                />
+              </Suspense>
+            </TabsContent>
+          )}
+        </Tabs>
+      </PageLayout>
+    </>
   )
 }

@@ -58,9 +58,9 @@ function parseUserFromResponse(response: LoginResponse): AuthUser {
  */
 function setAuthCookie(token: string): void {
   // Set cookie with SameSite=Lax for security, path=/ for all routes
-  // No expiry set - will be a session cookie that expires when browser closes
-  // This matches the localStorage behavior
-  document.cookie = `${AUTH_COOKIE_NAME}=${token}; path=/; SameSite=Lax`
+  // Add Secure flag when on HTTPS to prevent transmission over HTTP
+  const secure = window.location.protocol === 'https:' ? '; Secure' : ''
+  document.cookie = `${AUTH_COOKIE_NAME}=${token}; path=/; SameSite=Lax${secure}`
 }
 
 /**
@@ -70,8 +70,6 @@ function clearAuthStorage(): void {
   localStorage.removeItem(AUTH_STORAGE_KEYS.TOKEN)
   localStorage.removeItem(AUTH_STORAGE_KEYS.USER)
   localStorage.removeItem(AUTH_STORAGE_KEYS.EXPIRES_AT)
-  localStorage.removeItem(AUTH_STORAGE_KEYS.REFRESH_TOKEN)
-  localStorage.removeItem(AUTH_STORAGE_KEYS.REFRESH_EXPIRES_AT)
   clearAuthCookie()
 }
 
@@ -100,6 +98,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isValidating = useRef(false)
   // Track refresh timer
   const refreshTimerRef = useRef<NodeJS.Timeout | null>(null)
+  // Store refresh token in memory only (not localStorage) to limit XSS exposure
+  const refreshTokenRef = useRef<string | null>(null)
+  const refreshExpiresRef = useRef<string | null>(null)
 
   /**
    * Clear any existing refresh timer
@@ -116,9 +117,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    * On failure: silently redirect to login with expired flag
    */
   const attemptTokenRefresh = useCallback(async () => {
-    const storedRefreshToken = localStorage.getItem(
-      AUTH_STORAGE_KEYS.REFRESH_TOKEN
-    )
+    const storedRefreshToken = refreshTokenRef.current
 
     if (!storedRefreshToken) {
       // No refresh token available - redirect to login
@@ -139,16 +138,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // Update refresh token if a new one was provided (token rotation)
       if (response.refreshToken) {
-        localStorage.setItem(
-          AUTH_STORAGE_KEYS.REFRESH_TOKEN,
-          response.refreshToken
-        )
+        refreshTokenRef.current = response.refreshToken
       }
       if (response.refreshTokenExpiresAt) {
-        localStorage.setItem(
-          AUTH_STORAGE_KEYS.REFRESH_EXPIRES_AT,
-          response.refreshTokenExpiresAt
-        )
+        refreshExpiresRef.current = response.refreshTokenExpiresAt
       }
 
       // Update state with new token
@@ -243,10 +236,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           await apiClient.fetchCsrfToken()
 
           // Schedule token refresh if we have a refresh token
-          const hasRefreshToken = localStorage.getItem(
-            AUTH_STORAGE_KEYS.REFRESH_TOKEN
-          )
-          if (hasRefreshToken && storedExpiresAt) {
+          if (refreshTokenRef.current && storedExpiresAt) {
             scheduleTokenRefresh(storedExpiresAt)
           }
 
@@ -337,18 +327,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem(AUTH_STORAGE_KEYS.EXPIRES_AT, response.expiresAt)
       setAuthCookie(response.token)
 
-      // Store refresh token if provided
+      // Store refresh token in memory only (not localStorage) to limit XSS exposure
       if (response.refreshToken) {
-        localStorage.setItem(
-          AUTH_STORAGE_KEYS.REFRESH_TOKEN,
-          response.refreshToken
-        )
+        refreshTokenRef.current = response.refreshToken
       }
       if (response.refreshTokenExpiresAt) {
-        localStorage.setItem(
-          AUTH_STORAGE_KEYS.REFRESH_EXPIRES_AT,
-          response.refreshTokenExpiresAt
-        )
+        refreshExpiresRef.current = response.refreshTokenExpiresAt
       }
 
       // Fetch CSRF token for the new session
@@ -385,8 +369,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       )
     }
 
-    // Clear storage and cookie
+    // Clear storage, cookie, and in-memory tokens
     clearAuthStorage()
+    refreshTokenRef.current = null
+    refreshExpiresRef.current = null
 
     // Clear API client token
     apiClient.clearAuthToken()
