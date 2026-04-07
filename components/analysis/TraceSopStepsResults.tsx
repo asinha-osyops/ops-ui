@@ -14,7 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { AnalysisGraphView } from './AnalysisGraphView'
+import { AnalysisGraphNew } from './AnalysisGraphNew'
 
 interface TraceSopStepsResultsProps {
   results: TraceSopStepsResponseDto
@@ -45,7 +45,7 @@ export function TraceSopStepsResults({ results }: TraceSopStepsResultsProps) {
         </CardContent>
       ) : (
         <CardContent className="p-4">
-          <AnalysisGraphView results={results} />
+          <AnalysisGraphNew results={results} />
         </CardContent>
       )}
     </Card>
