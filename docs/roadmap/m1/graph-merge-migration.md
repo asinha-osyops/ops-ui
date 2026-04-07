@@ -1,341 +1,185 @@
-# Graph Migration Guide: Graph A → Graph Merge
+# RFC: Graph Merge Migration
 
-## Purpose
+**Slug**: `graph-merge-migration`
+**Milestone**: m1
+**Created**: 2026-04-06
+**Status**: draft
 
-This document describes how to migrate the main SOP graph (Graph A) to the Graph Merge design. Graph Merge is a working prototype at `/preview/graphMerge` built under `components/sop-graph-merge/`. Use it as the reference implementation.
+## Summary
 
-The audience is Claude Code or any developer applying these changes to the main graph codebase.
+Migrate the main SOP graph (Graph A) to the Graph Merge design, replacing the monolithic `StepNodeBase` + `DagGraphView` architecture with type-specific node components, hover-to-inspect interaction, solid smoothstep edges, and a simpler orchestration layer. Graph Merge is a working prototype at `/preview/graphMerge` under `components/sop-graph-merge/`. The migration preserves all edit capabilities (edge creation/deletion, node type changes, validation) while achieving ~40% codebase reduction and a more maintainable architecture.
 
----
+## Current State
 
-## Architecture Comparison
+### Graph A (2,284 LOC across 8 files)
 
-### Graph A (current main graph)
+| File                                         | LOC  | Purpose                                                                                                                           |
+| -------------------------------------------- | ---- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `components/sop/SopGraphView.tsx`            | 382  | Orchestrator: edit mode toggle, edge creation toolbar, validation panel, node type changes                                        |
+| `components/graph-nodes/DagGraphView.tsx`    | 450  | Generic ReactFlow wrapper: error boundary, keyboard nav (Escape/Enter/Space), FullscreenGraphModal, controlled/uncontrolled state |
+| `components/graph-nodes/StepNodeBase.tsx`    | 248  | Monolithic node: handles all types (START/STEP/END) via prop branching, collapsed (220px) and expanded (420px) states             |
+| `components/graph-nodes/step-node-config.ts` | 44   | Node type styling config                                                                                                          |
+| `lib/hooks/useDagEditing.ts`                 | 417  | Edit state machine: edge creation, node type changes, validation refresh, API calls                                               |
+| `components/sop/DagValidationPanel.tsx`      | 260  | Collapsible error/warning display with clickable items                                                                            |
+| `components/analysis/AnalysisGraphView.tsx`  | 159  | Reuses DagGraphView with StepAnalysisDto accessors (view-only)                                                                    |
+| `components/sop/graph-nodes/SopStepNode.tsx` | ~130 | SOP-specific expanded content wrapper around StepNodeBase                                                                         |
+
+**Consumers:**
+
+- `/app/(protected)/sop/[id]/page.tsx` — main SOP detail page (imports SopGraphView)
+- `AnalysisGraphView` — analysis page (imports DagGraphView)
+- `OrgChartGraphView` — org chart (imports FullscreenGraphModal + AccessibleGraphControls only, NOT DagGraphView)
+
+### Graph Merge (939 LOC across 10 files)
+
+| File                                                    | LOC | Purpose                                                       |
+| ------------------------------------------------------- | --- | ------------------------------------------------------------- |
+| `components/sop-graph-merge/SopGraphNew.tsx`            | 62  | Wrapper: ReactFlowProvider + ErrorBoundary                    |
+| `components/sop-graph-merge/SopGraphNewContent.tsx`     | 211 | ReactFlow setup, node type router, toolbar, hover card wiring |
+| `components/sop-graph-merge/nodes/StartNode.tsx`        | 55  | START: icon + label, green accent, 260px                      |
+| `components/sop-graph-merge/nodes/StepNode.tsx`         | 141 | STEP: details, role badge, fork/join chips, analysis data     |
+| `components/sop-graph-merge/nodes/EndNode.tsx`          | 54  | END: icon + label, red accent, 260px                          |
+| `components/sop-graph-merge/nodes/NodeHoverCard.tsx`    | 215 | Hover popover: enriched step details                          |
+| `components/sop-graph-merge/nodes/node-config.ts`       | 46  | Config + layout defaults (260x120, rankSep 150, nodeSep 90)   |
+| `components/sop-graph-merge/edges/AnimatedEdge.tsx`     | 55  | Solid smoothstep edge with EdgeLabelRenderer                  |
+| `components/sop-graph-merge/hooks/useSopGraphLayout.ts` | 56  | Thin wrapper around useDagLayoutGeneric                       |
+| `components/sop-graph-merge/hooks/useNodeHover.ts`      | 44  | Debounced hover state (300ms enter, 150ms leave)              |
+
+### Shared Dependencies (do not modify)
+
+| File                                                 | Used by                         |
+| ---------------------------------------------------- | ------------------------------- |
+| `lib/hooks/useDagLayoutGeneric.ts` (324 LOC)         | Both Graph A and Graph Merge    |
+| `lib/utils/duration-utils.ts`                        | Both (edge duration formatting) |
+| `lib/constants/graph-config.ts`                      | Both (ReactFlow config)         |
+| `components/graph-nodes/AccessibleGraphControls.tsx` | Both + OrgChartGraphView        |
+| `lib/api-client.ts`                                  | SopDto, StepDto, EdgeDto types  |
+
+## Proposed Changes
+
+### Architecture Shift
+
+Replace the monolithic `StepNodeBase` + generic `DagGraphView` with type-specific node components and a dedicated SOP graph orchestrator:
 
 ```
-components/sop/SopGraphView.tsx          → Orchestrator (toolbar, edit mode, validation)
-components/graph-nodes/DagGraphView.tsx  → ReactFlow wrapper (generic, reusable)
-components/graph-nodes/StepNodeBase.tsx  → Single node component (collapsed + expanded states)
-components/graph-nodes/step-node-config.ts → Node type styling config
-lib/hooks/useDagLayoutGeneric.ts         → dagre layout hook (shared)
+BEFORE (Graph A):
+SopGraphView → DagGraphView → StepNodeBase (all types)
+
+AFTER (Graph Merge):
+SopGraphMerge → SopGraphMergeContent → StartNode | StepNode | EndNode
 ```
 
-Key traits:
-
-- One monolithic `StepNodeBase` handles all node types via props
-- Click-to-expand pattern: collapsed (220px) and expanded (420px) states
-- `DagGraphView` is generic — accepts any step/edge type via accessor pattern
-- Edit mode with edge creation/deletion and node type changes
-- `FullscreenGraphModal` for mobile
-- Uses ReactFlow's built-in edge types (`smoothstep`) with native label properties
-
-### Graph Merge (target design)
-
-```
-components/sop-graph-merge/SopGraphNew.tsx          → Wrapper (ErrorBoundary + ReactFlowProvider)
-components/sop-graph-merge/SopGraphNewContent.tsx    → ReactFlow setup (toolbar, hover, layout)
-components/sop-graph-merge/nodes/StartNode.tsx       → Dedicated START node component
-components/sop-graph-merge/nodes/StepNode.tsx        → Dedicated STEP node component
-components/sop-graph-merge/nodes/EndNode.tsx         → Dedicated END node component
-components/sop-graph-merge/nodes/NodeHoverCard.tsx   → Hover popover for step details
-components/sop-graph-merge/nodes/node-config.ts      → Node type config + layout defaults
-components/sop-graph-merge/edges/AnimatedEdge.tsx    → Custom solid edge with label renderer
-components/sop-graph-merge/hooks/useSopGraphLayout.ts → Thin wrapper around useDagLayoutGeneric
-components/sop-graph-merge/hooks/useNodeHover.ts     → Debounced hover state
-```
-
-Key traits:
-
-- Separate node components per type (START, STEP, END) — no monolithic base
-- Hover-to-inspect pattern (NodeHoverCard) instead of click-to-expand
-- Custom edge component with `EdgeLabelRenderer` for duration labels
-- No edit mode (view-only for now)
-- No FullscreenGraphModal (not yet needed)
-- Direction toggle (TB/LR)
+### Key Design Changes
 
----
+**1. Node Architecture** — Replace `StepNodeBase` (one component, all types via prop branching) with three separate components (`StartNode`, `StepNode`, `EndNode`). Each node type has distinct content — START/END are compact (icon + label), STEP is richer (details, role badge, fork/join, analysis data).
 
-## Changes by Category
+**2. Node Styling** — Orange background/border with left-border accents per role: green (START), orange (STEP), blue (fork), purple (join), red (END). All nodes 260px wide, 120px dagre height.
 
-### 1. Node Architecture
+**3. Interaction Model** — Replace click-to-expand (forces dagre re-layout) with hover-to-inspect (floating card, graph stays stable). Click toggles selection ring only.
 
-**What changed:** Replace `StepNodeBase` (one component, all types) with three separate components.
+**4. Edge Rendering** — Replace ReactFlow native edge labels with custom `AnimatedEdge` component using `getSmoothStepPath` + `EdgeLabelRenderer`. Duration labels from `EdgeDto.transitionDuration`.
 
-**Why:** Each node type has distinct content — START/END are compact (icon + label + name), STEP is richer (details, role badge, fork/join indicators, analysis data). Separate components are simpler and avoid prop-driven branching.
+**5. Layout** — Thin `useSopGraphLayout` wrapper around shared `useDagLayoutGeneric`. Direction toggle (TB/LR). Standardized spacing (rankSep 150, nodeSep 90).
 
-**Graph A pattern:**
+**6. Edit Mode** — Port `useDagEditing` to work with Graph Merge's node type router. Edge creation/deletion, node type changes via toolbar.
 
-```tsx
-// DagGraphView.tsx — single generic node
-function GenericDagNode({ data }) {
-  return (
-    <StepNodeBase
-      stepName={...} nodeType={...} isFork={...}
-      isExpanded={data.isExpanded}
-      expandedContent={renderExpandedContent?.(step)}
-    />
-  )
-}
-const nodeTypes = { dagStepNode: GenericDagNode }
-```
+**7. Validation** — Port `DagValidationPanel` as a child of the new orchestrator.
 
-**Graph Merge pattern:**
+### Feature Gap: What Graph Merge Must Gain
 
-```tsx
-// SopGraphNewContent.tsx — router dispatches to typed components
-const nodeTypes: NodeTypes = {
-  sopGraphNewNode: ({ data, selected, ...rest }) => {
-    const step = data.step as StepDto
-    switch (step.nodeType) {
-      case 'START':
-        return <StartNode data={data} selected={selected} {...rest} />
-      case 'END':
-        return <EndNode data={data} selected={selected} {...rest} />
-      default:
-        return <StepNode data={data} selected={selected} {...rest} />
-    }
-  },
-}
-```
+| Feature                                               | Graph A Source                         | Effort            | Priority                       |
+| ----------------------------------------------------- | -------------------------------------- | ----------------- | ------------------------------ |
+| Edit mode (edge creation/deletion, node type changes) | `useDagEditing` (417 LOC)              | High (~400 LOC)   | P0 — Required                  |
+| Validation panel                                      | `DagValidationPanel` (260 LOC)         | Medium (~150 LOC) | P0 — Required                  |
+| Keyboard navigation (Escape/Enter/Space)              | `DagGraphView` lines 180-220           | Low (~50 LOC)     | P1 — Should have               |
+| Edge duration color-coding (green/red)                | `useDagLayoutGeneric` edge label logic | Low (~30 LOC)     | P2 — Nice to have              |
+| FullscreenGraphModal for mobile                       | `DagGraphView`                         | Low (~50 LOC)     | P2 — Test responsiveness first |
 
-**Files to change:**
+### Files Affected
 
-- Delete: `components/graph-nodes/StepNodeBase.tsx`
-- Delete: `components/graph-nodes/step-node-config.ts`
-- Create: `nodes/StartNode.tsx`, `nodes/StepNode.tsx`, `nodes/EndNode.tsx`
-- Create: `nodes/node-config.ts` (new config format)
+**New files (in `components/sop-graph-merge/` or promoted to `components/sop/`):**
 
-### 2. Node Styling — Orange Theme with Left-Border Accents
+- Already exist from prototype — promote and refine
 
-**What changed:** All node types use an orange background/border. A 4px left border indicates the node's role.
+**Modified files:**
 
-**Graph A:** Unified orange background and border for all types. No left-border differentiation.
+- `app/(protected)/sop/[id]/page.tsx` — swap SopGraphView → SopGraphMerge
+- `components/sop-graph-merge/SopGraphNewContent.tsx` — add edit mode integration
+- `lib/hooks/useDagEditing.ts` — adapt to work with Graph Merge's node type pattern
 
-**Graph Merge colors:**
+**Kept as-is (not migrated yet):**
 
-| Node state    | Background                           | Border                                     | Left border                                    |
-| ------------- | ------------------------------------ | ------------------------------------------ | ---------------------------------------------- |
-| START         | `bg-orange-50 dark:bg-orange-950/20` | `border-orange-300 dark:border-orange-800` | `border-l-green-500`                           |
-| STEP (normal) | same                                 | same                                       | `border-l-orange-500`                          |
-| STEP (fork)   | same                                 | same                                       | `border-l-blue-500 dark:border-l-blue-400`     |
-| STEP (join)   | same                                 | same                                       | `border-l-purple-500 dark:border-l-purple-400` |
-| END           | same                                 | same                                       | `border-l-destructive`                         |
+- `components/analysis/AnalysisGraphView.tsx` — stays on DagGraphView until SOP graph stabilizes
+- `components/org/OrgChartGraphView.tsx` — unrelated, uses different data structures
 
-Handle colors match the left-border color for each type.
+**Deprecated after migration:**
 
-**Reference:** See `components/sop-graph-merge/nodes/StepNode.tsx` lines 44-54 for the fork/join conditional logic.
+- `components/graph-nodes/StepNodeBase.tsx` — replaced by separate node components
+- `components/graph-nodes/step-node-config.ts` — replaced by `node-config.ts`
+- `components/sop/graph-nodes/SopStepNode.tsx` — replaced by StepNode + hover card
+- `components/graph-nodes/DagGraphView.tsx` — kept temporarily for AnalysisGraphView
 
-### 3. Node Sizing — Uniform 260x120
+## Alternatives Considered
 
-**What changed:** All node types use the same dimensions (260px wide, 120px height reservation for dagre).
+**1. Incremental refactor of Graph A in-place** — Modify StepNodeBase to support both monolithic and type-specific modes. Rejected: introduces complex branching and doesn't clean up the architecture. The click-to-expand pattern is fundamentally incompatible with the hover-to-inspect goal.
 
-**Graph A:** Different sizes — START/END at 220px collapsed, 420px expanded. dagre was told one size but nodes rendered at another.
+**2. Keep Graph A and Graph Merge as parallel implementations** — Use Graph Merge for view-only contexts and Graph A for editing. Rejected: maintaining two graph implementations doubles maintenance burden and causes visual inconsistency between edit and view modes.
 
-**Graph Merge:** All nodes render at `style={{ width: 260 }}`. dagre is told `260x120` for all nodes. No expanded state — hover card replaces click-to-expand.
+**3. Migrate AnalysisGraphView simultaneously** — Port the analysis graph to Graph Merge in the same effort. Rejected: AnalysisGraphView uses `GraphStepTraceDto` (not `StepDto`) and has different expanded content (event counts, log lines, timestamps). Migrating it adds scope without clear benefit. Better to stabilize SOP graph first.
 
-**Config (`node-config.ts`):**
+## Resolved Questions
 
-```ts
-export const LAYOUT_DEFAULTS = {
-  direction: 'TB' as const,
-  nodeWidth: 260,
-  nodeHeight: 120,
-  rankSep: 150,
-  nodeSep: 90,
-}
-```
+1. **Hover cards in edit mode** — Hover cards show when no node is selected. When a node is selected (for edge creation source/target), only the selected node's card appears. This prevents visual noise during edge creation while preserving discoverability in browse mode.
 
-### 4. Interaction Model — Hover Instead of Expand
+2. **Directory naming** — Promote `components/sop-graph-merge/` to `components/sop/graph/` after migration. The prototype directory name was temporary.
 
-**What changed:** Replaced click-to-expand (node grows to 420x540 inline) with hover-to-inspect (floating card positioned near the node).
+3. **DagGraphView deprecation** — Deprecate immediately once full functionality match is confirmed. In the interim, remap the old Graph A to a `/old` preview path so it remains accessible for comparison but is no longer the default.
 
-**Why:** Click-to-expand forces dagre to re-layout the entire graph when a node expands. Hover card is non-destructive — the graph stays stable.
+## Implementation Plan
 
-**Graph A pattern:**
+### Phase 1: Edit Mode Integration
 
-- `expandedStepId` state drives dagre layout (expanded nodes get 420x540)
-- `StepNodeBase` renders a `ScrollArea` with `expandedContent` when expanded
-- Click toggles expand/collapse
+- [ ] Port `useDagEditing` to work with Graph Merge's node type router (adapt source/target handle interaction)
+- [ ] Add edit mode toggle to `SopGraphNewContent` toolbar
+- [ ] Add edge creation UI (source selection highlight, target click)
+- [ ] Add edge deletion (click edge → confirm dialog)
+- [ ] Add node type change controls (toolbar or context menu)
+- [ ] Test edge creation/deletion with real SOP data
 
-**Graph Merge pattern:**
+### Phase 2: Validation Panel
 
-- `useNodeHover` hook manages debounced hover state (300ms enter, 150ms leave)
-- `NodeHoverCard` renders as an absolutely-positioned card outside the ReactFlow canvas
-- Position calculated from mouse event + container ref offset
-- Click toggles selection ring only (no layout change)
+- [ ] Port `DagValidationPanel` to work alongside `SopGraphNewContent`
+- [ ] Wire validation errors/warnings from SOP data into the panel
+- [ ] Make validation items clickable to select/focus affected nodes
 
-**Files:**
+### Phase 3: Switch Main SOP Page
 
-- `hooks/useNodeHover.ts` — hover state with debounce
-- `nodes/NodeHoverCard.tsx` — floating detail card (shadcn Card component)
-- `SopGraphNewContent.tsx` — wires `onNodeMouseEnter`/`onNodeMouseLeave` to ReactFlow
+- [ ] Promote `components/sop-graph-merge/` → `components/sop/graph/` (update all imports)
+- [ ] Replace `SopGraphView` import in `app/(protected)/sop/[id]/page.tsx` with the promoted graph
+- [ ] Pass required props (SOP data, edit callbacks, validation state)
+- [ ] Verify all edit operations work end-to-end
+- [ ] Remap old Graph A to `/preview/old-graph` path for comparison
 
-### 5. Edge Style — Solid Smoothstep
+### Phase 4: Polish & Keyboard Navigation
 
-**What changed:** Replaced animated dashed bezier edges with solid smoothstep edges.
+- [ ] Implement conditional hover card: show on hover when no node selected, show only selected node's card when one is selected
+- [ ] Add keyboard handlers: Escape to deselect, Enter/Space for node interaction
+- [ ] Add edge duration color-coding to `AnimatedEdge` (green < 1 week, red >= 1 week)
+- [ ] Test mobile responsiveness; add FullscreenGraphModal wrapper if needed
+- [ ] Rename `AnimatedEdge` → `SopEdge` and edge type `'animated'` → `'sopEdge'`
 
-**Graph A:** Uses ReactFlow's built-in `smoothstep` edge type with native `label`/`labelBgStyle` properties. Labels include color-coding (green < 1 week, red >= 1 week).
+### Phase 5: Cleanup & Deprecation
 
-**Graph Merge:** Uses a custom edge component (`AnimatedEdge`, now renders solid) with `getSmoothStepPath` and `EdgeLabelRenderer` for labels.
-
-**Edge component (`edges/AnimatedEdge.tsx`):**
-
-```tsx
-function SolidEdgeComponent({ id, sourceX, sourceY, targetX, targetY,
-                               sourcePosition, targetPosition, markerEnd, data }) {
-  const [edgePath, labelX, labelY] = getSmoothStepPath({...})
-  const label = data?.label as string | undefined
-
-  return (
-    <>
-      <path id={id} d={edgePath} fill="none" stroke="currentColor"
-            strokeWidth={2} markerEnd={markerEnd}
-            className="text-muted-foreground transition-all duration-200" />
-      {label && (
-        <EdgeLabelRenderer>
-          <div className="absolute bg-card border border-border rounded-md px-2 py-0.5 text-[10px] ..."
-               style={{ transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)` }}>
-            {label}
-          </div>
-        </EdgeLabelRenderer>
-      )}
-    </>
-  )
-}
-```
-
-Note: The export name is still `AnimatedEdge` and the edge type is still `'animated'` — rename these when migrating to avoid confusion.
-
-### 6. Edge Labels — Transition Durations
-
-**What changed:** Edge labels show `transitionDuration` from the EdgeDto instead of step order numbers.
-
-**Graph A:** Duration labels are built inside `useDagLayoutGeneric` using ReactFlow's native label properties with color-coded backgrounds.
-
-**Graph Merge:** Duration labels are built in `SopGraphNewContent.tsx` and passed via `data.label` to the custom edge component's `EdgeLabelRenderer`.
-
-**Pattern:**
-
-```tsx
-// SopGraphNewContent.tsx
-const edgeDtoMap = useMemo(() => {
-  const map = new Map<string, EdgeDto>()
-  for (const e of sop.edges) map.set(e.id, e)
-  return map
-}, [sop.edges])
-
-const labeledEdges = useMemo(
-  () =>
-    edges.map((edge) => {
-      const dto = edgeDtoMap.get(edge.id)
-      const duration = dto?.transitionDuration
-      const label = duration ? formatEdgeDuration(duration) : undefined
-      return { ...edge, type: 'animated', data: { ...edge.data, label } }
-    }),
-  [edges, edgeDtoMap]
-)
-```
-
-**Dependency:** `formatEdgeDuration` from `lib/utils/duration-utils.ts` (already exists, reuse as-is).
-
-### 7. Layout Hook — Thin Wrapper
-
-**What changed:** Instead of calling `useDagLayoutGeneric` directly with many args, Graph Merge wraps it in `useSopGraphLayout` with preset config.
-
-**Graph A:** `DagGraphView` calls `useDagLayoutGeneric` directly with 10 arguments.
-
-**Graph Merge (`hooks/useSopGraphLayout.ts`):**
-
-```ts
-export function useSopGraphLayout(steps, edges, selectedStepId, direction) {
-  const options = useMemo(
-    () => ({
-      direction,
-      nodeWidth: LAYOUT_DEFAULTS.nodeWidth,
-      nodeHeight: LAYOUT_DEFAULTS.nodeHeight,
-      rankSep: LAYOUT_DEFAULTS.rankSep,
-      nodeSep: LAYOUT_DEFAULTS.nodeSep,
-      edgeType: 'animated',
-    }),
-    [direction]
-  )
-
-  return useDagLayoutGeneric(
-    steps,
-    edges,
-    stepAccessors,
-    edgeAccessors,
-    selectedStepId,
-    null,
-    'sopGraphNewNode',
-    options
-  )
-}
-```
-
-Note: `expandedStepId` is always `null` — there is no expand state.
-
-### 8. Direction Toggle
-
-**What changed:** Added a TB/LR toggle button in the toolbar.
-
-**Graph A:** Hardcoded LR direction.
-
-**Graph Merge:** `direction` state in `SopGraphNewContent.tsx`, toggled by a button, passed through to `useSopGraphLayout` → dagre's `rankdir`.
-
-### 9. Component Wrapper
-
-**What changed:** Simplified the wrapper — no `FullscreenGraphModal`, no edit mode toolbar.
-
-**Graph A (`SopGraphView.tsx` + `DagGraphView.tsx`):**
-
-- `SopGraphView`: edit mode state, edge creation UI, validation panel, node type change controls
-- `DagGraphView`: stats bar, `FullscreenGraphModal`, `ErrorBoundary`, ReactFlow
-
-**Graph Merge (`SopGraphNew.tsx` + `SopGraphNewContent.tsx`):**
-
-- `SopGraphNew`: empty state check, `ErrorBoundary`, `ReactFlowProvider`
-- `SopGraphNewContent`: stats bar, direction toggle, ReactFlow, hover card
-
----
-
-## Shared Dependencies (do not modify)
-
-These files are used by both Graph A and Graph Merge. Do not change them during migration:
-
-| File                                                 | Used for                               |
-| ---------------------------------------------------- | -------------------------------------- |
-| `lib/hooks/useDagLayoutGeneric.ts`                   | dagre layout calculation               |
-| `lib/utils/duration-utils.ts`                        | `formatEdgeDuration`, threshold checks |
-| `lib/constants/graph-config.ts`                      | ReactFlow config constants             |
-| `components/graph-nodes/AccessibleGraphControls.tsx` | Zoom/fit controls                      |
-| `lib/api-client.ts`                                  | `SopDto`, `StepDto`, `EdgeDto` types   |
-
----
-
-## What Graph Merge Does NOT Yet Have
-
-These Graph A features are not in Graph Merge. Decide whether to port them:
-
-1. **Edit mode** — edge creation/deletion, node type changes (`useDagEditing` hook)
-2. **DagValidationPanel** — collapsible error/warning display
-3. **FullscreenGraphModal** — mobile bottom sheet for the graph
-4. **Keyboard navigation** — Escape to deselect, Enter/Space to expand
-5. **Edge color-coding** — green/red label backgrounds based on duration threshold
-
----
-
-## Migration Checklist
-
-When applying these changes to the main graph:
-
-- [ ] Create separate node components (StartNode, StepNode, EndNode) under a new directory
-- [ ] Apply orange theme with left-border accents to all nodes
-- [ ] Standardize node sizing to 260x120 everywhere (config, dagre, render)
-- [ ] Replace click-to-expand with hover card (useNodeHover + NodeHoverCard)
-- [ ] Replace animated/bezier edges with solid smoothstep edge component
-- [ ] Switch edge labels from native ReactFlow labels to EdgeLabelRenderer with duration data
-- [ ] Add direction toggle (TB/LR)
-- [ ] Update dagre spacing: rankSep=150, nodeSep=90
-- [ ] Decide which Graph A features to preserve (edit mode, validation, mobile, keyboard nav)
-- [ ] Remove unused code (StepNodeBase, old step-node-config, FullscreenGraphModal if not needed)
+- [ ] Delete `StepNodeBase.tsx`, `step-node-config.ts`, `SopStepNode.tsx`
+- [ ] Delete `SopGraphView.tsx` (replaced by promoted graph)
+- [ ] Deprecate `DagGraphView` — remap AnalysisGraphView to use the new graph or keep temporarily
+- [ ] Delete old `sop-graph-merge/` directory (already promoted to `sop/graph/`)
+- [ ] Remove preview pages for Graph B if no longer needed
+- [ ] Update CLAUDE.md project structure section
+
+### Phase 6: Analysis Graph Migration
+
+- [ ] Migrate `AnalysisGraphView` from `DagGraphView` to the new graph architecture
+- [ ] Create analysis-specific node content (event counts, log lines, timestamps)
+- [ ] Delete `DagGraphView` once no consumers remain
+- [ ] Remove `/preview/old-graph` path

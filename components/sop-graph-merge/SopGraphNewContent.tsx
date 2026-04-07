@@ -7,11 +7,20 @@ import ReactFlow, {
   type NodeTypes,
   type EdgeTypes,
   type NodeMouseHandler,
+  type EdgeMouseHandler,
 } from 'reactflow'
 import 'reactflow/dist/style.css'
-import { ArrowDownUp } from 'lucide-react'
+import { ArrowDownUp, Pencil, PencilOff, Plus, X, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { AccessibleGraphControls } from '@/components/graph-nodes/AccessibleGraphControls'
 import { StartNode } from './nodes/StartNode'
 import { StepNode } from './nodes/StepNode'
@@ -20,7 +29,8 @@ import { NodeHoverCard } from './nodes/NodeHoverCard'
 import { AnimatedEdge } from './edges/AnimatedEdge'
 import { useSopGraphLayout } from './hooks/useSopGraphLayout'
 import { useNodeHover } from './hooks/useNodeHover'
-import type { SopDto, StepDto, EdgeDto } from '@/lib/api-client'
+import type { SopDto, StepDto, StepNodeType, EdgeDto } from '@/lib/api-client'
+import type { UseDagEditingReturn } from '@/lib/hooks/useDagEditing'
 import { formatEdgeDuration } from '@/lib/utils/duration-utils'
 import type { LayoutDirection } from '@/lib/hooks/useDagLayoutGeneric'
 import { REACTFLOW_FIT_VIEW_OPTIONS } from '@/lib/constants/graph-config'
@@ -48,17 +58,26 @@ interface SopGraphNewContentProps {
   sop: SopDto
   className?: string
   graphHeight?: string
+  isEditable?: boolean
+  editing?: UseDagEditingReturn
 }
 
 export function SopGraphNewContent({
   sop,
   className,
   graphHeight = 'h-[600px]',
+  isEditable = false,
+  editing,
 }: SopGraphNewContentProps) {
-  const [selectedStepId, setSelectedStepId] = useState<string | null>(null)
   const [direction, setDirection] = useState<LayoutDirection>('TB')
   const { hoveredNodeId, onNodeMouseEnter, onNodeMouseLeave } = useNodeHover()
   const graphContainerRef = useRef<HTMLDivElement>(null)
+
+  // Edge deletion confirmation
+  const [edgeToDelete, setEdgeToDelete] = useState<string | null>(null)
+
+  // Use editing's selectedNodeId when available, otherwise local state
+  const selectedStepId = editing?.selectedNodeId ?? null
 
   const { nodes, edges } = useSopGraphLayout(
     sop.steps,
@@ -90,7 +109,7 @@ export function SopGraphNewContent({
     [edges, edgeDtoMap]
   )
 
-  // Hover card position (set via mouse events, not render-time ref access)
+  // Hover card position (set via mouse events)
   const [hoverPos, setHoverPos] = useState<{
     x: number
     y: number
@@ -102,9 +121,41 @@ export function SopGraphNewContent({
     return node?.data.step ?? null
   }, [hoveredNodeId, nodes])
 
-  const onNodeClick: NodeMouseHandler = useCallback((_event, node) => {
-    setSelectedStepId((prev) => (prev === node.id ? null : node.id))
-  }, [])
+  // Node click — handles both selection and edge creation
+  const onNodeClick: NodeMouseHandler = useCallback(
+    (_event, node) => {
+      if (editing?.isEditMode && editing.edgeCreationState !== 'idle') {
+        // During edge creation, clicks select source/target
+        editing.handleNodeClickForEdge(node.id)
+      } else if (editing) {
+        // Toggle selection
+        editing.selectNode(editing.selectedNodeId === node.id ? null : node.id)
+      }
+    },
+    [editing]
+  )
+
+  // Edge click — delete edge in edit mode
+  const onEdgeClick: EdgeMouseHandler = useCallback(
+    (_event, edge) => {
+      if (editing?.isEditMode) {
+        setEdgeToDelete(edge.id)
+      }
+    },
+    [editing?.isEditMode]
+  )
+
+  const handleConfirmDeleteEdge = useCallback(async () => {
+    if (edgeToDelete && editing) {
+      await editing.deleteEdge(edgeToDelete)
+      setEdgeToDelete(null)
+    }
+  }, [edgeToDelete, editing])
+
+  // Suppress hover card when a node is selected or during edge creation
+  const suppressHover =
+    !!selectedStepId || editing?.edgeCreationState !== 'idle'
+  const showHoverCard = !suppressHover && hoveredStep && hoverPos
 
   const handleNodeMouseEnter: NodeMouseHandler = useCallback(
     (event, node) => {
@@ -137,11 +188,17 @@ export function SopGraphNewContent({
   const forkCount = sop.steps.filter((s) => s.isFork).length
   const joinCount = sop.steps.filter((s) => s.isJoin).length
 
+  // Find selected step for node type change
+  const selectedStep = useMemo(() => {
+    if (!selectedStepId) return null
+    return sop.steps.find((s) => s.id === selectedStepId) ?? null
+  }, [selectedStepId, sop.steps])
+
   return (
     <div className={className}>
       {/* Toolbar */}
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap">
           <Badge variant="secondary" className="text-xs">
             {stepCount} step{stepCount !== 1 ? 's' : ''}
           </Badge>
@@ -159,15 +216,109 @@ export function SopGraphNewContent({
             </Badge>
           )}
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={toggleDirection}
-          className="gap-1.5"
-        >
-          <ArrowDownUp className="h-3.5 w-3.5" />
-          {direction === 'TB' ? 'Top-Down' : 'Left-Right'}
-        </Button>
+
+        <div className="flex items-center gap-2">
+          {/* Edit mode controls */}
+          {isEditable && editing && (
+            <>
+              {editing.isEditMode && (
+                <>
+                  {/* Edge creation controls */}
+                  {editing.edgeCreationState === 'idle' ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={editing.startEdgeCreation}
+                      disabled={editing.isLoading}
+                      className="gap-1.5"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      Add Edge
+                    </Button>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <Badge
+                        variant="secondary"
+                        className="text-xs animate-pulse"
+                      >
+                        {editing.edgeCreationState === 'selecting-source'
+                          ? 'Select source node...'
+                          : 'Select target node...'}
+                      </Badge>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={editing.cancelEdgeCreation}
+                        className="gap-1"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                        Cancel
+                      </Button>
+                    </div>
+                  )}
+
+                  {/* Node type selector when a node is selected */}
+                  {selectedStep && editing.edgeCreationState === 'idle' && (
+                    <Select
+                      value={selectedStep.nodeType}
+                      onValueChange={(value) =>
+                        editing.changeNodeType(
+                          selectedStep.id,
+                          value as StepNodeType
+                        )
+                      }
+                      disabled={editing.isChangingNodeType}
+                    >
+                      <SelectTrigger className="w-[120px] h-8 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="START">Start</SelectItem>
+                        <SelectItem value="STEP">Step</SelectItem>
+                        <SelectItem value="END">End</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                </>
+              )}
+
+              {/* Edit mode toggle */}
+              <Button
+                variant={editing.isEditMode ? 'default' : 'outline'}
+                size="sm"
+                onClick={editing.toggleEditMode}
+                className="gap-1.5"
+              >
+                {editing.isEditMode ? (
+                  <>
+                    <PencilOff className="h-3.5 w-3.5" />
+                    Done
+                  </>
+                ) : (
+                  <>
+                    <Pencil className="h-3.5 w-3.5" />
+                    Edit
+                  </>
+                )}
+              </Button>
+            </>
+          )}
+
+          {/* Loading indicator */}
+          {editing?.isLoading && (
+            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+          )}
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={toggleDirection}
+            className="gap-1.5"
+          >
+            <ArrowDownUp className="h-3.5 w-3.5" />
+            {direction === 'TB' ? 'Top-Down' : 'Left-Right'}
+          </Button>
+        </div>
       </div>
 
       {/* Graph */}
@@ -181,6 +332,7 @@ export function SopGraphNewContent({
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           onNodeClick={onNodeClick}
+          onEdgeClick={onEdgeClick}
           onNodeMouseEnter={handleNodeMouseEnter}
           onNodeMouseLeave={handleNodeMouseLeave}
           fitView
@@ -191,6 +343,7 @@ export function SopGraphNewContent({
           nodesDraggable={false}
           nodesConnectable={false}
           elementsSelectable={true}
+          edgesUpdatable={false}
         >
           <Background
             variant={BackgroundVariant.Dots}
@@ -201,11 +354,22 @@ export function SopGraphNewContent({
           <AccessibleGraphControls position="bottom-right" />
         </ReactFlow>
 
-        {/* Hover card positioned relative to graph container */}
-        {hoveredStep && hoverPos && (
+        {/* Hover card — suppressed when a node is selected */}
+        {showHoverCard && (
           <NodeHoverCard step={hoveredStep} x={hoverPos.x} y={hoverPos.y} />
         )}
       </div>
+
+      {/* Edge deletion confirmation */}
+      <ConfirmDialog
+        open={edgeToDelete !== null}
+        onOpenChange={(open) => !open && setEdgeToDelete(null)}
+        title="Delete Edge"
+        description="Are you sure you want to delete this edge? This may affect the graph validation."
+        confirmText="Delete"
+        onConfirm={handleConfirmDeleteEdge}
+        destructive={true}
+      />
     </div>
   )
 }

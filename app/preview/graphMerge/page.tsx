@@ -15,7 +15,8 @@ export default function GraphMergePage() {
           Graph Merge — Combined Solution
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Scratchpad for merging the best of Graph A and Graph B
+          Scratchpad for merging the best of Graph A and Graph B. Edit mode
+          enabled for testing.
         </p>
       </div>
 
@@ -36,7 +37,7 @@ export default function GraphMergePage() {
         </TabsList>
       </Tabs>
 
-      <SopGraphNew sop={activeSop} graphHeight="h-[700px]" />
+      <SopGraphNew sop={activeSop} graphHeight="h-[700px]" isEditable={true} />
     </div>
   )
 }

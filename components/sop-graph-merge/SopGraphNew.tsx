@@ -5,6 +5,7 @@ import { ErrorBoundary } from 'react-error-boundary'
 import { AlertTriangle, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { SopGraphNewContent } from './SopGraphNewContent'
+import { useDagEditing } from '@/lib/hooks/useDagEditing'
 import type { SopDto } from '@/lib/api-client'
 
 function GraphErrorFallback({
@@ -37,9 +38,22 @@ interface SopGraphNewProps {
   sop: SopDto
   className?: string
   graphHeight?: string
+  isEditable?: boolean
+  onSopUpdate?: () => void
 }
 
-export function SopGraphNew({ sop, className, graphHeight }: SopGraphNewProps) {
+export function SopGraphNew({
+  sop,
+  className,
+  graphHeight,
+  isEditable = false,
+  onSopUpdate,
+}: SopGraphNewProps) {
+  const editing = useDagEditing({
+    sopId: sop.id,
+    onSopUpdate,
+  })
+
   if (!sop.steps || sop.steps.length === 0) {
     return (
       <div className="flex items-center justify-center h-64 text-muted-foreground text-sm border border-dashed border-border rounded-lg">
@@ -55,6 +69,8 @@ export function SopGraphNew({ sop, className, graphHeight }: SopGraphNewProps) {
           sop={sop}
           className={className}
           graphHeight={graphHeight}
+          isEditable={isEditable}
+          editing={editing}
         />
       </ReactFlowProvider>
     </ErrorBoundary>
