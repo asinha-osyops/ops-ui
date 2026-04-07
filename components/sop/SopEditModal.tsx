@@ -62,6 +62,8 @@ export function SopEditModal({
     defaultValues: { sopName: '', basicDescription: '' },
   })
 
+  const { reset } = form
+
   // Steps managed separately (StepTableEditor has its own complex state)
   const [steps, setSteps] = useState<StepRow[]>([])
   const [stepsError, setStepsError] = useState<string | null>(null)
@@ -69,14 +71,14 @@ export function SopEditModal({
   // Initialize form when SOP changes
   useEffect(() => {
     if (sop) {
-      form.reset({
+      reset({
         sopName: sop.name,
         basicDescription: sop.basicDescription || '',
       })
       setSteps(stepsToRows(sop.steps))
       setStepsError(null)
     }
-  }, [sop, form])
+  }, [sop, reset])
 
   // Reset when modal closes
   useEffect(() => {

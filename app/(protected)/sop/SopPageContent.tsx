@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useCallback, useState } from 'react'
+import { useEffect, useMemo, useCallback, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { ColumnDef } from '@tanstack/react-table'
 import { pluralize } from '@/lib/utils/format-helpers'
@@ -157,7 +157,13 @@ export function SopPageContent() {
     [router]
   )
 
-  // Column definitions
+  // Stable refs for callbacks used in column definitions
+  const handleEditRef = useRef(handleEdit)
+  handleEditRef.current = handleEdit
+  const confirmDeleteRef = useRef(confirmAndDeleteSop)
+  confirmDeleteRef.current = confirmAndDeleteSop
+
+  // Column definitions — deps-free via refs
   const columns: ColumnDef<SopRowData>[] = useMemo(
     () => [
       {
@@ -278,7 +284,7 @@ export function SopPageContent() {
               size="icon"
               onClick={(e) => {
                 e.stopPropagation()
-                handleEdit(row.original)
+                handleEditRef.current(row.original)
               }}
               title="Edit"
               aria-label="Edit SOP"
@@ -290,7 +296,7 @@ export function SopPageContent() {
               size="icon"
               onClick={(e) => {
                 e.stopPropagation()
-                confirmAndDeleteSop(row.original)
+                confirmDeleteRef.current(row.original)
               }}
               title="Delete"
               aria-label="Delete SOP"
@@ -302,7 +308,7 @@ export function SopPageContent() {
         ),
       },
     ],
-    [handleEdit, confirmAndDeleteSop]
+    [] // eslint-disable-line react-hooks/exhaustive-deps -- callbacks accessed via stable refs
   )
 
   // Show alert if no company selected

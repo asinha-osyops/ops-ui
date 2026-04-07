@@ -209,7 +209,11 @@ export function ActivityEventManagementTab() {
                       <FormItem>
                         <FormLabel>Name *</FormLabel>
                         <FormControl>
-                          <Input placeholder="Activity event name" {...field} />
+                          <Input
+                            placeholder="Activity event name"
+                            maxLength={CHARACTER_LIMITS.ROLE_NAME}
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -224,6 +228,7 @@ export function ActivityEventManagementTab() {
                         <FormControl>
                           <Textarea
                             placeholder="Activity event description"
+                            maxLength={CHARACTER_LIMITS.ROLE_DESCRIPTION}
                             rows={3}
                             {...field}
                           />

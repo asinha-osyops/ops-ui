@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/form'
 import { apiClient, RoleDto, Pillar } from '@/lib/api-client'
 import { Checkbox } from '@/components/ui/checkbox'
+import { CHARACTER_LIMITS } from '@/lib/api-constants'
 import { showErrorToast } from '@/lib/utils/error-handling'
 import {
   showEntityCreatedToast,
@@ -205,7 +206,11 @@ export function CompanyManagementTab() {
                       <FormItem>
                         <FormLabel>Name *</FormLabel>
                         <FormControl>
-                          <Input placeholder="Company name" {...field} />
+                          <Input
+                            placeholder="Company name"
+                            maxLength={CHARACTER_LIMITS.COMPANY_NAME}
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -221,6 +226,7 @@ export function CompanyManagementTab() {
                           <Input
                             type="email"
                             placeholder="contact@company.com"
+                            maxLength={CHARACTER_LIMITS.COMPANY_EMAIL}
                             {...field}
                           />
                         </FormControl>
@@ -235,7 +241,11 @@ export function CompanyManagementTab() {
                       <FormItem>
                         <FormLabel>Phone *</FormLabel>
                         <FormControl>
-                          <Input placeholder="+1-555-123-4567" {...field} />
+                          <Input
+                            placeholder="+1-555-123-4567"
+                            maxLength={CHARACTER_LIMITS.COMPANY_PHONE}
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -250,6 +260,7 @@ export function CompanyManagementTab() {
                         <FormControl>
                           <Input
                             placeholder="123 Main St, City, State"
+                            maxLength={CHARACTER_LIMITS.COMPANY_ADDRESS}
                             {...field}
                           />
                         </FormControl>
@@ -375,7 +386,10 @@ export function CompanyManagementTab() {
                         <FormItem>
                           <FormLabel>Name *</FormLabel>
                           <FormControl>
-                            <Input {...field} />
+                            <Input
+                              maxLength={CHARACTER_LIMITS.COMPANY_NAME}
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -388,7 +402,11 @@ export function CompanyManagementTab() {
                         <FormItem>
                           <FormLabel>Email *</FormLabel>
                           <FormControl>
-                            <Input type="email" {...field} />
+                            <Input
+                              type="email"
+                              maxLength={CHARACTER_LIMITS.COMPANY_EMAIL}
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -401,7 +419,10 @@ export function CompanyManagementTab() {
                         <FormItem>
                           <FormLabel>Phone *</FormLabel>
                           <FormControl>
-                            <Input {...field} />
+                            <Input
+                              maxLength={CHARACTER_LIMITS.COMPANY_PHONE}
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -414,7 +435,10 @@ export function CompanyManagementTab() {
                         <FormItem>
                           <FormLabel>Address</FormLabel>
                           <FormControl>
-                            <Input {...field} />
+                            <Input
+                              maxLength={CHARACTER_LIMITS.COMPANY_ADDRESS}
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

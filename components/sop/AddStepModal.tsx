@@ -90,11 +90,12 @@ export function AddStepModal({
   })
 
   // Reset form when modal opens
+  const { reset } = form
   useEffect(() => {
     if (open) {
-      form.reset(defaultValues)
+      reset(defaultValues)
     }
-  }, [open, form])
+  }, [open, reset])
 
   const handleCreate = async (data: CreateStepFormValues) => {
     try {
@@ -202,9 +203,9 @@ export function AddStepModal({
                 <FormItem>
                   <FormLabel>Actor Role (optional)</FormLabel>
                   <Select
-                    value={field.value ?? ''}
+                    value={field.value ?? '__none__'}
                     onValueChange={(value) =>
-                      field.onChange(value || undefined)
+                      field.onChange(value === '__none__' ? undefined : value)
                     }
                     disabled={form.formState.isSubmitting}
                   >
@@ -214,7 +215,7 @@ export function AddStepModal({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="">None</SelectItem>
+                      <SelectItem value="__none__">None</SelectItem>
                       {ROLE_TITLE_OPTIONS.map((role) => (
                         <SelectItem key={role} value={role}>
                           {role.replace(/_/g, ' ')}

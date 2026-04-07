@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { ColumnDef } from '@tanstack/react-table'
 import { apiClient, LogDto } from '@/lib/api-client'
@@ -105,7 +105,13 @@ export function LogPageContent() {
     [router]
   )
 
-  // Column definitions
+  // Stable refs for callbacks used in column definitions
+  const handleAnalyzeRef = useRef(handleAnalyze)
+  handleAnalyzeRef.current = handleAnalyze
+  const confirmDeleteRef = useRef(confirmAndDeleteLog)
+  confirmDeleteRef.current = confirmAndDeleteLog
+
+  // Column definitions — deps-free via refs
   const columns: ColumnDef<LogRowData>[] = useMemo(
     () => [
       {
@@ -181,7 +187,7 @@ export function LogPageContent() {
               size="icon"
               onClick={(e) => {
                 e.stopPropagation()
-                handleAnalyze(row.original)
+                handleAnalyzeRef.current(row.original)
               }}
               disabled={row.original.isAnalyzing}
               title="Analyze"
@@ -198,7 +204,7 @@ export function LogPageContent() {
               size="icon"
               onClick={(e) => {
                 e.stopPropagation()
-                confirmAndDeleteLog(row.original)
+                confirmDeleteRef.current(row.original)
               }}
               title="Delete"
               aria-label="Delete log"
@@ -210,7 +216,7 @@ export function LogPageContent() {
         ),
       },
     ],
-    [handleAnalyze, confirmAndDeleteLog]
+    [] // eslint-disable-line react-hooks/exhaustive-deps -- callbacks accessed via stable refs
   )
 
   // Show alert if no company selected
