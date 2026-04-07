@@ -26,15 +26,15 @@ function AnimatedEdgeComponent({
 
   return (
     <>
-      {/* Base path (hover target area) */}
+      {/* Base path */}
       <path
         id={id}
         d={edgePath}
         fill="none"
-        stroke="hsl(var(--muted-foreground))"
+        stroke="currentColor"
         strokeWidth={2}
         strokeOpacity={0.3}
-        className="transition-all duration-200"
+        className="text-muted-foreground transition-all duration-200"
         markerEnd={markerEnd}
       />
 
@@ -42,11 +42,11 @@ function AnimatedEdgeComponent({
       <path
         d={edgePath}
         fill="none"
-        stroke="hsl(var(--muted-foreground))"
+        stroke="currentColor"
         strokeWidth={1.5}
         strokeOpacity={0.6}
         strokeDasharray="8 4"
-        className="edge-flow-animation"
+        className="text-muted-foreground edge-flow-animation"
       />
 
       {/* Edge label */}

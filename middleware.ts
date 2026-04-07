@@ -44,8 +44,12 @@ function isPublicPath(pathname: string): boolean {
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Skip API routes and .well-known (not covered by config.matcher)
-  if (pathname.startsWith('/api') || pathname.startsWith('/.well-known')) {
+  // Skip API routes, .well-known, and preview routes (not covered by config.matcher)
+  if (
+    pathname.startsWith('/api') ||
+    pathname.startsWith('/.well-known') ||
+    pathname.startsWith('/preview')
+  ) {
     return NextResponse.next()
   }
 

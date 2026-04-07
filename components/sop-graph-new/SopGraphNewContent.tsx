@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useRef } from 'react'
 import ReactFlow, {
   Background,
   BackgroundVariant,
@@ -57,6 +57,7 @@ export function SopGraphNewContent({
   const [selectedStepId, setSelectedStepId] = useState<string | null>(null)
   const [direction, setDirection] = useState<LayoutDirection>('TB')
   const { hoveredNodeId, onNodeMouseEnter, onNodeMouseLeave } = useNodeHover()
+  const graphContainerRef = useRef<HTMLDivElement>(null)
 
   const { nodes, edges } = useSopGraphLayout(
     sop.steps,
@@ -76,32 +77,42 @@ export function SopGraphNewContent({
     [edges]
   )
 
+  // Hover card position (set via mouse events, not render-time ref access)
+  const [hoverPos, setHoverPos] = useState<{
+    x: number
+    y: number
+  } | null>(null)
+
+  const hoveredStep = useMemo(() => {
+    if (!hoveredNodeId) return null
+    const node = nodes.find((n) => n.id === hoveredNodeId)
+    return node?.data.step ?? null
+  }, [hoveredNodeId, nodes])
+
   const onNodeClick: NodeMouseHandler = useCallback((_event, node) => {
     setSelectedStepId((prev) => (prev === node.id ? null : node.id))
   }, [])
 
   const handleNodeMouseEnter: NodeMouseHandler = useCallback(
-    (_event, node) => {
+    (event, node) => {
       onNodeMouseEnter(node.id)
+      if (graphContainerRef.current) {
+        const rect = graphContainerRef.current.getBoundingClientRect()
+        const target = (event.currentTarget || event.target) as HTMLElement
+        const nodeRect = target.getBoundingClientRect()
+        setHoverPos({
+          x: nodeRect.right - rect.left + 10,
+          y: nodeRect.top - rect.top,
+        })
+      }
     },
     [onNodeMouseEnter]
   )
 
   const handleNodeMouseLeave: NodeMouseHandler = useCallback(() => {
     onNodeMouseLeave()
+    setHoverPos(null)
   }, [onNodeMouseLeave])
-
-  // Find hovered node position for the hover card
-  const hoveredNode = useMemo(() => {
-    if (!hoveredNodeId) return null
-    const node = nodes.find((n) => n.id === hoveredNodeId)
-    if (!node) return null
-    return {
-      step: node.data.step,
-      x: (node.position?.x ?? 0) + 270,
-      y: node.position?.y ?? 0,
-    }
-  }, [hoveredNodeId, nodes])
 
   const toggleDirection = useCallback(() => {
     setDirection((d) => (d === 'TB' ? 'LR' : 'TB'))
@@ -148,7 +159,8 @@ export function SopGraphNewContent({
 
       {/* Graph */}
       <div
-        className={`${graphHeight} rounded-lg border border-border bg-background overflow-hidden`}
+        ref={graphContainerRef}
+        className={`${graphHeight} rounded-lg border border-border bg-background overflow-hidden relative`}
       >
         <ReactFlow
           nodes={nodes}
@@ -174,16 +186,12 @@ export function SopGraphNewContent({
             color="hsl(var(--muted-foreground) / 0.15)"
           />
           <AccessibleGraphControls position="bottom-right" />
-
-          {/* Hover card rendered inside ReactFlow viewport */}
-          {hoveredNode && (
-            <NodeHoverCard
-              step={hoveredNode.step}
-              x={hoveredNode.x}
-              y={hoveredNode.y}
-            />
-          )}
         </ReactFlow>
+
+        {/* Hover card positioned relative to graph container */}
+        {hoveredStep && hoverPos && (
+          <NodeHoverCard step={hoveredStep} x={hoverPos.x} y={hoverPos.y} />
+        )}
       </div>
     </div>
   )
