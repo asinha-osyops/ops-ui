@@ -41,6 +41,6 @@ export const LAYOUT_DEFAULTS = {
   direction: 'TB' as const,
   nodeWidth: 260,
   nodeHeight: 120,
-  rankSep: 100,
-  nodeSep: 60,
+  rankSep: 150,
+  nodeSep: 90,
 }
