@@ -1,7 +1,12 @@
 'use client'
 
 import { TraceSopStepsResponseDto } from '@/lib/api-client'
-import { EmptyStateMessage } from '@/components/ui/EmptyStateMessage'
+import {
+  Empty,
+  EmptyHeader,
+  EmptyTitle,
+  EmptyDescription,
+} from '@/components/ui/empty'
 import { AnalysisGraphView } from './AnalysisGraphView'
 
 interface TraceSopStepsResultsProps {
@@ -23,7 +28,14 @@ export function TraceSopStepsResults({ results }: TraceSopStepsResultsProps) {
 
       {results.stepAnalyses.length === 0 ? (
         <div className="p-6">
-          <EmptyStateMessage message="No step traces found for this SOP." />
+          <Empty>
+            <EmptyHeader>
+              <EmptyTitle>No step traces found</EmptyTitle>
+              <EmptyDescription>
+                No step traces were found for this SOP.
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
         </div>
       ) : (
         /* Graph View - uses shared DAG graph component */

@@ -21,6 +21,7 @@ lib/hooks/useDagLayoutGeneric.ts         → dagre layout hook (shared)
 ```
 
 Key traits:
+
 - One monolithic `StepNodeBase` handles all node types via props
 - Click-to-expand pattern: collapsed (220px) and expanded (420px) states
 - `DagGraphView` is generic — accepts any step/edge type via accessor pattern
@@ -44,6 +45,7 @@ components/sop-graph-merge/hooks/useNodeHover.ts     → Debounced hover state
 ```
 
 Key traits:
+
 - Separate node components per type (START, STEP, END) — no monolithic base
 - Hover-to-inspect pattern (NodeHoverCard) instead of click-to-expand
 - Custom edge component with `EdgeLabelRenderer` for duration labels
@@ -62,6 +64,7 @@ Key traits:
 **Why:** Each node type has distinct content — START/END are compact (icon + label + name), STEP is richer (details, role badge, fork/join indicators, analysis data). Separate components are simpler and avoid prop-driven branching.
 
 **Graph A pattern:**
+
 ```tsx
 // DagGraphView.tsx — single generic node
 function GenericDagNode({ data }) {
@@ -77,21 +80,26 @@ const nodeTypes = { dagStepNode: GenericDagNode }
 ```
 
 **Graph Merge pattern:**
+
 ```tsx
 // SopGraphNewContent.tsx — router dispatches to typed components
 const nodeTypes: NodeTypes = {
   sopGraphNewNode: ({ data, selected, ...rest }) => {
     const step = data.step as StepDto
     switch (step.nodeType) {
-      case 'START': return <StartNode data={data} selected={selected} {...rest} />
-      case 'END':   return <EndNode data={data} selected={selected} {...rest} />
-      default:      return <StepNode data={data} selected={selected} {...rest} />
+      case 'START':
+        return <StartNode data={data} selected={selected} {...rest} />
+      case 'END':
+        return <EndNode data={data} selected={selected} {...rest} />
+      default:
+        return <StepNode data={data} selected={selected} {...rest} />
     }
   },
 }
 ```
 
 **Files to change:**
+
 - Delete: `components/graph-nodes/StepNodeBase.tsx`
 - Delete: `components/graph-nodes/step-node-config.ts`
 - Create: `nodes/StartNode.tsx`, `nodes/StepNode.tsx`, `nodes/EndNode.tsx`
@@ -105,13 +113,13 @@ const nodeTypes: NodeTypes = {
 
 **Graph Merge colors:**
 
-| Node state | Background | Border | Left border |
-|---|---|---|---|
-| START | `bg-orange-50 dark:bg-orange-950/20` | `border-orange-300 dark:border-orange-800` | `border-l-green-500` |
-| STEP (normal) | same | same | `border-l-orange-500` |
-| STEP (fork) | same | same | `border-l-blue-500 dark:border-l-blue-400` |
-| STEP (join) | same | same | `border-l-purple-500 dark:border-l-purple-400` |
-| END | same | same | `border-l-destructive` |
+| Node state    | Background                           | Border                                     | Left border                                    |
+| ------------- | ------------------------------------ | ------------------------------------------ | ---------------------------------------------- |
+| START         | `bg-orange-50 dark:bg-orange-950/20` | `border-orange-300 dark:border-orange-800` | `border-l-green-500`                           |
+| STEP (normal) | same                                 | same                                       | `border-l-orange-500`                          |
+| STEP (fork)   | same                                 | same                                       | `border-l-blue-500 dark:border-l-blue-400`     |
+| STEP (join)   | same                                 | same                                       | `border-l-purple-500 dark:border-l-purple-400` |
+| END           | same                                 | same                                       | `border-l-destructive`                         |
 
 Handle colors match the left-border color for each type.
 
@@ -126,6 +134,7 @@ Handle colors match the left-border color for each type.
 **Graph Merge:** All nodes render at `style={{ width: 260 }}`. dagre is told `260x120` for all nodes. No expanded state — hover card replaces click-to-expand.
 
 **Config (`node-config.ts`):**
+
 ```ts
 export const LAYOUT_DEFAULTS = {
   direction: 'TB' as const,
@@ -143,17 +152,20 @@ export const LAYOUT_DEFAULTS = {
 **Why:** Click-to-expand forces dagre to re-layout the entire graph when a node expands. Hover card is non-destructive — the graph stays stable.
 
 **Graph A pattern:**
+
 - `expandedStepId` state drives dagre layout (expanded nodes get 420x540)
 - `StepNodeBase` renders a `ScrollArea` with `expandedContent` when expanded
 - Click toggles expand/collapse
 
 **Graph Merge pattern:**
+
 - `useNodeHover` hook manages debounced hover state (300ms enter, 150ms leave)
 - `NodeHoverCard` renders as an absolutely-positioned card outside the ReactFlow canvas
 - Position calculated from mouse event + container ref offset
 - Click toggles selection ring only (no layout change)
 
 **Files:**
+
 - `hooks/useNodeHover.ts` — hover state with debounce
 - `nodes/NodeHoverCard.tsx` — floating detail card (shadcn Card component)
 - `SopGraphNewContent.tsx` — wires `onNodeMouseEnter`/`onNodeMouseLeave` to ReactFlow
@@ -167,6 +179,7 @@ export const LAYOUT_DEFAULTS = {
 **Graph Merge:** Uses a custom edge component (`AnimatedEdge`, now renders solid) with `getSmoothStepPath` and `EdgeLabelRenderer` for labels.
 
 **Edge component (`edges/AnimatedEdge.tsx`):**
+
 ```tsx
 function SolidEdgeComponent({ id, sourceX, sourceY, targetX, targetY,
                                sourcePosition, targetPosition, markerEnd, data }) {
@@ -202,6 +215,7 @@ Note: The export name is still `AnimatedEdge` and the edge type is still `'anima
 **Graph Merge:** Duration labels are built in `SopGraphNewContent.tsx` and passed via `data.label` to the custom edge component's `EdgeLabelRenderer`.
 
 **Pattern:**
+
 ```tsx
 // SopGraphNewContent.tsx
 const edgeDtoMap = useMemo(() => {
@@ -210,13 +224,14 @@ const edgeDtoMap = useMemo(() => {
   return map
 }, [sop.edges])
 
-const labeledEdges = useMemo(() =>
-  edges.map((edge) => {
-    const dto = edgeDtoMap.get(edge.id)
-    const duration = dto?.transitionDuration
-    const label = duration ? formatEdgeDuration(duration) : undefined
-    return { ...edge, type: 'animated', data: { ...edge.data, label } }
-  }),
+const labeledEdges = useMemo(
+  () =>
+    edges.map((edge) => {
+      const dto = edgeDtoMap.get(edge.id)
+      const duration = dto?.transitionDuration
+      const label = duration ? formatEdgeDuration(duration) : undefined
+      return { ...edge, type: 'animated', data: { ...edge.data, label } }
+    }),
   [edges, edgeDtoMap]
 )
 ```
@@ -230,19 +245,31 @@ const labeledEdges = useMemo(() =>
 **Graph A:** `DagGraphView` calls `useDagLayoutGeneric` directly with 10 arguments.
 
 **Graph Merge (`hooks/useSopGraphLayout.ts`):**
+
 ```ts
 export function useSopGraphLayout(steps, edges, selectedStepId, direction) {
-  const options = useMemo(() => ({
-    direction,
-    nodeWidth: LAYOUT_DEFAULTS.nodeWidth,
-    nodeHeight: LAYOUT_DEFAULTS.nodeHeight,
-    rankSep: LAYOUT_DEFAULTS.rankSep,
-    nodeSep: LAYOUT_DEFAULTS.nodeSep,
-    edgeType: 'animated',
-  }), [direction])
+  const options = useMemo(
+    () => ({
+      direction,
+      nodeWidth: LAYOUT_DEFAULTS.nodeWidth,
+      nodeHeight: LAYOUT_DEFAULTS.nodeHeight,
+      rankSep: LAYOUT_DEFAULTS.rankSep,
+      nodeSep: LAYOUT_DEFAULTS.nodeSep,
+      edgeType: 'animated',
+    }),
+    [direction]
+  )
 
-  return useDagLayoutGeneric(steps, edges, stepAccessors, edgeAccessors,
-                              selectedStepId, null, 'sopGraphNewNode', options)
+  return useDagLayoutGeneric(
+    steps,
+    edges,
+    stepAccessors,
+    edgeAccessors,
+    selectedStepId,
+    null,
+    'sopGraphNewNode',
+    options
+  )
 }
 ```
 
@@ -261,10 +288,12 @@ Note: `expandedStepId` is always `null` — there is no expand state.
 **What changed:** Simplified the wrapper — no `FullscreenGraphModal`, no edit mode toolbar.
 
 **Graph A (`SopGraphView.tsx` + `DagGraphView.tsx`):**
+
 - `SopGraphView`: edit mode state, edge creation UI, validation panel, node type change controls
 - `DagGraphView`: stats bar, `FullscreenGraphModal`, `ErrorBoundary`, ReactFlow
 
 **Graph Merge (`SopGraphNew.tsx` + `SopGraphNewContent.tsx`):**
+
 - `SopGraphNew`: empty state check, `ErrorBoundary`, `ReactFlowProvider`
 - `SopGraphNewContent`: stats bar, direction toggle, ReactFlow, hover card
 
@@ -274,13 +303,13 @@ Note: `expandedStepId` is always `null` — there is no expand state.
 
 These files are used by both Graph A and Graph Merge. Do not change them during migration:
 
-| File | Used for |
-|---|---|
-| `lib/hooks/useDagLayoutGeneric.ts` | dagre layout calculation |
-| `lib/utils/duration-utils.ts` | `formatEdgeDuration`, threshold checks |
-| `lib/constants/graph-config.ts` | ReactFlow config constants |
-| `components/graph-nodes/AccessibleGraphControls.tsx` | Zoom/fit controls |
-| `lib/api-client.ts` | `SopDto`, `StepDto`, `EdgeDto` types |
+| File                                                 | Used for                               |
+| ---------------------------------------------------- | -------------------------------------- |
+| `lib/hooks/useDagLayoutGeneric.ts`                   | dagre layout calculation               |
+| `lib/utils/duration-utils.ts`                        | `formatEdgeDuration`, threshold checks |
+| `lib/constants/graph-config.ts`                      | ReactFlow config constants             |
+| `components/graph-nodes/AccessibleGraphControls.tsx` | Zoom/fit controls                      |
+| `lib/api-client.ts`                                  | `SopDto`, `StepDto`, `EdgeDto` types   |
 
 ---
 

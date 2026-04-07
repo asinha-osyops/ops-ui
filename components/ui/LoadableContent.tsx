@@ -1,7 +1,7 @@
 'use client'
 
 import { ReactNode } from 'react'
-import { InlineLoading } from '@/components/ui/InlineLoading'
+import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import {
   Empty,
   EmptyHeader,
@@ -69,7 +69,7 @@ export function LoadableContent({
         </div>
       )
     }
-    return <InlineLoading message={loadingMessage} />
+    return <LoadingSpinner message={loadingMessage} />
   }
 
   if (isEmpty) {

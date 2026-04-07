@@ -313,12 +313,12 @@ export function CompanyManagementTab() {
                           }
                         }}
                       />
-                      <label
+                      <Label
                         htmlFor={`new-${pillar}`}
-                        className="text-sm font-medium leading-none cursor-pointer"
+                        className="cursor-pointer"
                       >
                         {formatEnumTitleCase(pillar)}
-                      </label>
+                      </Label>
                     </div>
                   ))}
                 </div>
@@ -470,12 +470,12 @@ export function CompanyManagementTab() {
                               }
                             }}
                           />
-                          <label
+                          <Label
                             htmlFor={`edit-${pillar}`}
-                            className="text-sm font-medium leading-none cursor-pointer"
+                            className="cursor-pointer"
                           >
                             {formatEnumTitleCase(pillar)}
-                          </label>
+                          </Label>
                         </div>
                       ))}
                     </div>

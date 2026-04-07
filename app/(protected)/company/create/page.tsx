@@ -223,12 +223,9 @@ export default function Home() {
                             }
                           }}
                         />
-                        <label
-                          htmlFor={pillar}
-                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                        >
+                        <FormLabel htmlFor={pillar} className="cursor-pointer">
                           {formatEnumTitleCase(pillar)}
-                        </label>
+                        </FormLabel>
                       </div>
                     ))}
                   </div>

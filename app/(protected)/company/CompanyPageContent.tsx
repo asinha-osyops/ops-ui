@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import { CompanyDto } from '@/lib/api-client'
 import { Route } from '@/lib/routes'
 import { Button } from '@/components/ui/button'
-import { InlineLoading } from '@/components/ui/InlineLoading'
+import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import {
   Empty,
   EmptyHeader,
@@ -78,7 +78,7 @@ export function CompanyPageContent() {
       }
     >
       {loadingCompanies ? (
-        <InlineLoading message="Loading companies..." />
+        <LoadingSpinner message="Loading companies..." />
       ) : companies.length === 0 ? (
         <Empty className="border">
           <EmptyHeader>
