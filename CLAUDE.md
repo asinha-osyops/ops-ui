@@ -23,14 +23,16 @@ When building new UI, prefer using existing components and built-in functionalit
 - **Theming**: Use CSS variables and Tailwind classes that respect dark/light mode (via `next-themes`)
 - **Post-changes**: Run `npm run format` after code changes to format the repo
 
-### Plan Implementation RFCs
+### Roadmap & RFCs
 
-When a plan implementation is complete, save the implementation summary as `{plan_name}_rfc.md` to `docs/rfc/`. Include:
+The project uses a roadmap system under `docs/roadmap/`. Use the user-level slash commands to manage it:
 
-- What was implemented
-- Key files changed
-- Design decisions made
-- Testing performed
+- `/roadmap` — View the current roadmap overview
+- `/roadmap-add <idea>` — Add an idea to the backlog (`docs/roadmap/backlog.md`)
+- `/milestone-create <name>: <slugs>` — Group backlog items into a milestone (`docs/roadmap/<milestone>/overview.md`)
+- `/to-rfc <milestone>: <slugs>` — Write a detailed RFC for milestone items (`docs/roadmap/<milestone>/<slug>.md`)
+
+When a plan implementation is complete, update the relevant RFC status to `completed` in both the milestone overview and backlog.
 
 ### Server Startup
 
@@ -259,7 +261,11 @@ ops-ui/
 ├── middleware.ts                # Auth middleware (route protection)
 │
 ├── docs/
-│   ├── rfc/                     # Implementation RFCs
+│   ├── roadmap/                 # Roadmap system
+│   │   ├── backlog.md           # All ideas with status tracking
+│   │   └── m1/                  # Milestone 1 — Foundation
+│   │       ├── overview.md      # Milestone overview + item table
+│   │       └── *.md             # RFCs (one per slug)
 │   ├── postman/                 # API collections
 │   ├── howto/                   # How-to guides
 │   └── ideas/                   # Feature ideas
