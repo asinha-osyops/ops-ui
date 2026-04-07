@@ -42,10 +42,15 @@ function StepNodeComponent({
   return (
     <div
       className={cn(
-        'group relative bg-orange-50 dark:bg-orange-950/20 border border-orange-300 dark:border-orange-800 border-l-4 border-l-orange-500',
+        'group relative bg-orange-50 dark:bg-orange-950/20 border border-orange-300 dark:border-orange-800 border-l-4',
         'rounded-lg shadow-sm',
         'transition-all duration-200',
         'hover:shadow-md hover:scale-[1.02]',
+        step.isFork
+          ? 'border-l-blue-500 dark:border-l-blue-400'
+          : step.isJoin
+            ? 'border-l-purple-500 dark:border-l-purple-400'
+            : 'border-l-orange-500',
         selected && 'ring-2 ring-ring ring-offset-2 ring-offset-background'
       )}
       style={{ width: 260 }}

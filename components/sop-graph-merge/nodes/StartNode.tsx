@@ -21,7 +21,7 @@ function StartNodeComponent({
         'hover:shadow-md hover:scale-[1.02]',
         selected && 'ring-2 ring-ring ring-offset-2 ring-offset-background'
       )}
-      style={{ width: 200 }}
+      style={{ width: 260 }}
     >
       <Handle
         type="target"

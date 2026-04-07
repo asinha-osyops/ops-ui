@@ -16,8 +16,8 @@ export const NODE_CONFIG: Record<StepNodeType, NodeTypeConfig> = {
     iconColor: 'text-green-600 dark:text-green-400',
     accentBorder: 'border-l-green-500 dark:border-l-green-400',
     label: 'Start',
-    width: 200,
-    height: 80,
+    width: 260,
+    height: 120,
   },
   STEP: {
     icon: CircleDot,
@@ -32,8 +32,8 @@ export const NODE_CONFIG: Record<StepNodeType, NodeTypeConfig> = {
     iconColor: 'text-red-600 dark:text-red-400',
     accentBorder: 'border-l-destructive',
     label: 'End',
-    width: 200,
-    height: 80,
+    width: 260,
+    height: 120,
   },
 }
 
