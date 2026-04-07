@@ -132,19 +132,23 @@ ops-ui/
 │   │   ├── query-builder/       # Query builder components
 │   │   └── ...
 │   │
-│   ├── graph-nodes/             # Reusable graph components
-│   │   ├── DagGraphView.tsx     # Generic DAG visualization
-│   │   ├── StepNodeBase.tsx     # Base step node for ReactFlow
+│   ├── graph-nodes/             # Shared graph components (legacy + reusable)
+│   │   ├── DagGraphView.tsx     # Generic DAG visualization (used by AnalysisGraphView)
+│   │   ├── StepNodeBase.tsx     # Legacy monolithic node (used by DagGraphView)
 │   │   └── AccessibleGraphControls.tsx
 │   │
 │   ├── sop/                     # SOP-specific components
-│   │   ├── SopGraphView.tsx     # SOP DAG with edge editing
+│   │   ├── graph/               # New SOP graph (promoted from sop-graph-merge)
+│   │   │   ├── SopGraphNew.tsx  # Wrapper (ErrorBoundary + ReactFlowProvider + editing)
+│   │   │   ├── SopGraphNewContent.tsx  # ReactFlow + edit toolbar + validation
+│   │   │   ├── nodes/           # Type-specific node components
+│   │   │   ├── edges/           # SopEdge with duration color-coding
+│   │   │   └── hooks/           # useSopGraphLayout, useNodeHover
+│   │   ├── SopGraphView.tsx     # Legacy SOP graph (to be removed)
 │   │   ├── DagValidationPanel.tsx
 │   │   ├── AddStepModal.tsx
 │   │   ├── SopEditModal.tsx
-│   │   ├── StepManager.tsx
-│   │   ├── StepTableEditor.tsx
-│   │   └── graph-nodes/SopStepNode.tsx
+│   │   └── StepTableEditor.tsx
 │   │
 │   ├── analysis/                # Analysis components
 │   │   ├── AnalysisGraphView.tsx

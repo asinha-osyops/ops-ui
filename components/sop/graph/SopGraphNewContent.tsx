@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useCallback, useRef } from 'react'
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import ReactFlow, {
   Background,
   BackgroundVariant,
@@ -27,7 +27,7 @@ import { StartNode } from './nodes/StartNode'
 import { StepNode } from './nodes/StepNode'
 import { EndNode } from './nodes/EndNode'
 import { NodeHoverCard } from './nodes/NodeHoverCard'
-import { AnimatedEdge } from './edges/AnimatedEdge'
+import { SopEdge } from './edges/SopEdge'
 import { useSopGraphLayout } from './hooks/useSopGraphLayout'
 import { useNodeHover } from './hooks/useNodeHover'
 import type {
@@ -38,7 +38,10 @@ import type {
   DagValidationResultDto,
 } from '@/lib/api-client'
 import type { UseDagEditingReturn } from '@/lib/hooks/useDagEditing'
-import { formatEdgeDuration } from '@/lib/utils/duration-utils'
+import {
+  formatEdgeDuration,
+  isDurationOverThreshold,
+} from '@/lib/utils/duration-utils'
 import type { LayoutDirection } from '@/lib/hooks/useDagLayoutGeneric'
 import { REACTFLOW_FIT_VIEW_OPTIONS } from '@/lib/constants/graph-config'
 
@@ -58,7 +61,7 @@ const nodeTypes: NodeTypes = {
 }
 
 const edgeTypes: EdgeTypes = {
-  animated: AnimatedEdge,
+  sopEdge: SopEdge,
 }
 
 interface SopGraphNewContentProps {
@@ -100,17 +103,20 @@ export function SopGraphNewContent({
     return map
   }, [sop.edges])
 
-  // Add edge labels (transition durations when available)
+  // Add edge labels (transition durations when available) with color-coding
   const labeledEdges = useMemo(
     () =>
       edges.map((edge) => {
         const dto = edgeDtoMap.get(edge.id)
         const duration = dto?.transitionDuration
         const label = duration ? formatEdgeDuration(duration) : undefined
+        const isOverThreshold = duration
+          ? isDurationOverThreshold(duration)
+          : false
         return {
           ...edge,
-          type: 'animated',
-          data: { ...edge.data, label },
+          type: 'sopEdge',
+          data: { ...edge.data, label, isOverThreshold },
         }
       }),
     [edges, edgeDtoMap]
@@ -188,6 +194,21 @@ export function SopGraphNewContent({
   const toggleDirection = useCallback(() => {
     setDirection((d) => (d === 'TB' ? 'LR' : 'TB'))
   }, [])
+
+  // Keyboard navigation: Escape to deselect/cancel
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (editing?.edgeCreationState !== 'idle') {
+          editing?.cancelEdgeCreation()
+        } else if (selectedStepId) {
+          editing?.selectNode(null)
+        }
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [editing, selectedStepId])
 
   // Stats
   const stepCount = sop.steps.length

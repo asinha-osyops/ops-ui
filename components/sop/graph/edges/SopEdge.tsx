@@ -1,7 +1,8 @@
 import { memo } from 'react'
 import { getSmoothStepPath, EdgeLabelRenderer, type EdgeProps } from 'reactflow'
+import { cn } from '@/lib/utils'
 
-function SolidEdgeComponent({
+function SopEdgeComponent({
   id,
   sourceX,
   sourceY,
@@ -22,6 +23,7 @@ function SolidEdgeComponent({
   })
 
   const label = data?.label as string | undefined
+  const isOverThreshold = data?.isOverThreshold as boolean | undefined
 
   return (
     <>
@@ -35,11 +37,16 @@ function SolidEdgeComponent({
         markerEnd={markerEnd}
       />
 
-      {/* Edge label (transition duration) */}
+      {/* Edge label (transition duration) with color-coding */}
       {label && (
         <EdgeLabelRenderer>
           <div
-            className="absolute bg-card border border-border rounded-md px-2 py-0.5 text-[10px] text-muted-foreground shadow-sm pointer-events-none"
+            className={cn(
+              'absolute rounded-md px-2 py-0.5 text-[10px] shadow-sm pointer-events-none border',
+              isOverThreshold
+                ? 'bg-red-50 dark:bg-red-950/30 border-red-300 dark:border-red-800 text-red-700 dark:text-red-300'
+                : 'bg-card border-border text-muted-foreground'
+            )}
             style={{
               transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
             }}
@@ -52,4 +59,4 @@ function SolidEdgeComponent({
   )
 }
 
-export const AnimatedEdge = memo(SolidEdgeComponent)
+export const SopEdge = memo(SopEdgeComponent)

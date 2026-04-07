@@ -38,7 +38,7 @@ export function useSopGraphLayout(
       nodeHeight: LAYOUT_DEFAULTS.nodeHeight,
       rankSep: LAYOUT_DEFAULTS.rankSep,
       nodeSep: LAYOUT_DEFAULTS.nodeSep,
-      edgeType: 'animated',
+      edgeType: 'sopEdge',
     }),
     [direction]
   )

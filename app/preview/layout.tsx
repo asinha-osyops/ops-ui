@@ -19,22 +19,22 @@ export default function PreviewLayout({
             </span>
             <nav className="flex items-center gap-2">
               <Link
+                href="/preview/graphMerge"
+                className="text-sm text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-md hover:bg-muted transition-colors"
+              >
+                Graph (Current)
+              </Link>
+              <Link
                 href="/preview/graphA"
                 className="text-sm text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-md hover:bg-muted transition-colors"
               >
-                Graph A (Original)
+                Graph A (Legacy)
               </Link>
               <Link
                 href="/preview/graphB"
                 className="text-sm text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-md hover:bg-muted transition-colors"
               >
-                Graph B (New)
-              </Link>
-              <Link
-                href="/preview/graphMerge"
-                className="text-sm text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-md hover:bg-muted transition-colors"
-              >
-                Graph Merge
+                Graph B (Legacy)
               </Link>
             </nav>
           </div>
