@@ -1,6 +1,9 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import * as z from 'zod'
 import { toast } from 'sonner'
 import { showErrorToast } from '@/lib/utils/error-handling'
 import { showEntityUpdatedToast } from '@/lib/utils/notifications'
@@ -10,10 +13,10 @@ import {
   SopDto,
   UpdateSopRequestDto,
   UpdateStepRequestDto,
-  RoleTitle,
 } from '@/lib/api-client'
 import { CHARACTER_LIMITS } from '@/lib/api-constants'
 import { truncateId } from '@/lib/utils/format-helpers'
+import { zodBuilders } from '@/lib/schemas/schema-builders'
 import {
   Dialog,
   DialogContent,
@@ -22,10 +25,24 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from '@/components/ui/form'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { CharacterLimitedInput } from '@/components/ui/CharacterLimitedInput'
 import { StepTableEditor, StepRow, stepsToRows } from './StepTableEditor'
+
+/** Schema for top-level SOP fields only (steps validated separately) */
+const sopEditSchema = z.object({
+  sopName: zodBuilders.requiredString('SOP name', 'SOP_NAME'),
+  basicDescription: z.string().max(CHARACTER_LIMITS.SOP_DESCRIPTION).optional(),
+})
+type SopEditFormValues = z.infer<typeof sopEditSchema>
 
 interface SopEditModalProps {
   sop: SopDto | null
@@ -40,70 +57,51 @@ export function SopEditModal({
   onOpenChange,
   onSuccess,
 }: SopEditModalProps) {
-  // Form state
-  const [sopName, setSopName] = useState('')
-  const [basicDescription, setBasicDescription] = useState('')
-  const [steps, setSteps] = useState<StepRow[]>([])
+  const form = useForm<SopEditFormValues>({
+    resolver: zodResolver(sopEditSchema),
+    defaultValues: { sopName: '', basicDescription: '' },
+  })
 
-  // UI state
-  const [isSaving, setIsSaving] = useState(false)
-  const [validationErrors, setValidationErrors] = useState<{
-    name?: string
-    steps?: string
-  }>({})
+  // Steps managed separately (StepTableEditor has its own complex state)
+  const [steps, setSteps] = useState<StepRow[]>([])
+  const [stepsError, setStepsError] = useState<string | null>(null)
 
   // Initialize form when SOP changes
   useEffect(() => {
     if (sop) {
-      setSopName(sop.name)
-      setBasicDescription(sop.basicDescription || '')
+      form.reset({
+        sopName: sop.name,
+        basicDescription: sop.basicDescription || '',
+      })
       setSteps(stepsToRows(sop.steps))
-      setValidationErrors({})
+      setStepsError(null)
     }
-  }, [sop])
+  }, [sop, form])
 
-  // Reset form when modal closes
+  // Reset when modal closes
   useEffect(() => {
     if (!open) {
-      setValidationErrors({})
-      setIsSaving(false)
+      setStepsError(null)
     }
   }, [open])
 
-  const validate = useCallback((): boolean => {
-    const errors: typeof validationErrors = {}
-
-    // Validate SOP name
-    if (!sopName.trim()) {
-      errors.name = 'SOP name is required'
-    }
-
-    // Validate steps
-    if (steps.length === 0) {
-      errors.steps = 'At least one step is required'
-    } else {
-      const hasEmptyStepName = steps.some((step) => !step.name.trim())
-      if (hasEmptyStepName) {
-        errors.steps = 'All steps must have a name'
-      }
-    }
-
-    setValidationErrors(errors)
-    return Object.keys(errors).length === 0
-  }, [sopName, steps])
-
-  const handleSave = async () => {
+  const handleSave = async (data: SopEditFormValues) => {
     if (!sop) return
 
-    if (!validate()) {
+    // Validate steps separately
+    if (steps.length === 0) {
+      setStepsError('At least one step is required')
+      toast.error('Please fix the validation errors')
+      return
+    }
+    const hasEmptyStepName = steps.some((step) => !step.name.trim())
+    if (hasEmptyStepName) {
+      setStepsError('All steps must have a name')
       toast.error('Please fix the validation errors')
       return
     }
 
-    setIsSaving(true)
-
     try {
-      // Transform steps to API format
       const updateSteps: UpdateStepRequestDto[] = steps.map((step) => ({
         name: step.name.trim(),
         details: step.details.trim() || undefined,
@@ -113,8 +111,8 @@ export function SopEditModal({
       }))
 
       const requestDto: UpdateSopRequestDto = {
-        name: sopName.trim(),
-        basicDescription: basicDescription.trim() || undefined,
+        name: data.sopName.trim(),
+        basicDescription: data.basicDescription?.trim() || undefined,
         steps: updateSteps,
       }
 
@@ -124,13 +122,7 @@ export function SopEditModal({
       onSuccess()
     } catch (error) {
       showErrorToast('Failed to update SOP', error)
-    } finally {
-      setIsSaving(false)
     }
-  }
-
-  const handleCancel = () => {
-    onOpenChange(false)
   }
 
   if (!sop) return null
@@ -146,78 +138,91 @@ export function SopEditModal({
         </DialogHeader>
 
         <ScrollArea className="flex-1 px-6">
-          <div className="space-y-6 pb-6">
-            {/* SOP Name */}
-            <div>
-              <CharacterLimitedInput
-                id="sop-name"
-                label="SOP Name *"
-                value={sopName}
-                onChange={(e) => {
-                  setSopName(e.target.value)
-                  if (validationErrors.name) {
-                    setValidationErrors((prev) => ({
-                      ...prev,
-                      name: undefined,
-                    }))
-                  }
-                }}
-                maxLength={CHARACTER_LIMITS.SOP_NAME}
-                placeholder="Enter SOP name"
-                disabled={isSaving}
-                className={validationErrors.name ? 'border-destructive' : ''}
+          <Form {...form}>
+            <form
+              id="sop-edit-form"
+              onSubmit={form.handleSubmit(handleSave)}
+              className="space-y-6 pb-6"
+            >
+              {/* SOP Name */}
+              <FormField
+                control={form.control}
+                name="sopName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <CharacterLimitedInput
+                        id="sop-name"
+                        label="SOP Name *"
+                        value={field.value}
+                        onChange={field.onChange}
+                        maxLength={CHARACTER_LIMITS.SOP_NAME}
+                        placeholder="Enter SOP name"
+                        disabled={form.formState.isSubmitting}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              {validationErrors.name && (
-                <p className="text-sm text-destructive mt-1">
-                  {validationErrors.name}
-                </p>
-              )}
-            </div>
 
-            {/* Basic Description */}
-            <CharacterLimitedInput
-              id="sop-description"
-              label="Description"
-              value={basicDescription}
-              onChange={(e) => setBasicDescription(e.target.value)}
-              maxLength={CHARACTER_LIMITS.SOP_DESCRIPTION}
-              placeholder="Enter description (optional)"
-              disabled={isSaving}
-              multiline
-              rows={3}
-            />
-
-            {/* Steps */}
-            <div>
-              <h3 className="text-sm font-medium mb-3">Steps</h3>
-              {validationErrors.steps && (
-                <p className="text-sm text-destructive mb-2">
-                  {validationErrors.steps}
-                </p>
-              )}
-              <StepTableEditor
-                steps={steps}
-                onChange={(newSteps) => {
-                  setSteps(newSteps)
-                  if (validationErrors.steps) {
-                    setValidationErrors((prev) => ({
-                      ...prev,
-                      steps: undefined,
-                    }))
-                  }
-                }}
-                disabled={isSaving}
+              {/* Basic Description */}
+              <FormField
+                control={form.control}
+                name="basicDescription"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <CharacterLimitedInput
+                        id="sop-description"
+                        label="Description"
+                        value={field.value ?? ''}
+                        onChange={field.onChange}
+                        maxLength={CHARACTER_LIMITS.SOP_DESCRIPTION}
+                        placeholder="Enter description (optional)"
+                        disabled={form.formState.isSubmitting}
+                        multiline
+                        rows={3}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-          </div>
+
+              {/* Steps */}
+              <div>
+                <h3 className="text-sm font-medium mb-3">Steps</h3>
+                {stepsError && (
+                  <p className="text-sm text-destructive mb-2">{stepsError}</p>
+                )}
+                <StepTableEditor
+                  steps={steps}
+                  onChange={(newSteps) => {
+                    setSteps(newSteps)
+                    if (stepsError) setStepsError(null)
+                  }}
+                  disabled={form.formState.isSubmitting}
+                />
+              </div>
+            </form>
+          </Form>
         </ScrollArea>
 
         <DialogFooter className="px-6 py-4 border-t">
-          <Button variant="outline" onClick={handleCancel} disabled={isSaving}>
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={form.formState.isSubmitting}
+          >
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={isSaving}>
-            {isSaving ? 'Saving...' : 'Save Changes'}
+          <Button
+            type="submit"
+            form="sop-edit-form"
+            disabled={form.formState.isSubmitting}
+          >
+            {form.formState.isSubmitting ? 'Saving...' : 'Save Changes'}
           </Button>
         </DialogFooter>
       </DialogContent>

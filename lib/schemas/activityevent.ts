@@ -25,3 +25,11 @@ export type ActivityEventFormValues = z.infer<typeof activityEventSchema>
 export type LogLineEventTypeMappingFormValues = z.infer<
   typeof logLineEventTypeMappingSchema
 >
+
+/** Schema for the create activity event form (no companyId needed) */
+export const activityEventCreateSchema = activityEventSchema.omit({
+  companyId: true,
+})
+export type ActivityEventCreateFormValues = z.infer<
+  typeof activityEventCreateSchema
+>

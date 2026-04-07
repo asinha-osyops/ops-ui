@@ -10,6 +10,11 @@ export const stepSchema = z.object({
   actorRoleTitle: zodBuilders.optionalEnum(RoleTitle),
 })
 
+/** Schema for creating a new step (includes nodeType) */
+export const createStepSchema = stepSchema.extend({
+  nodeType: z.enum(['START', 'STEP', 'END']),
+})
+
 export const sopSchema = z.object({
   sopName: zodBuilders.requiredString('SOP name', 'SOP_NAME'),
   basicDescription: zodBuilders.requiredString(
@@ -21,3 +26,4 @@ export const sopSchema = z.object({
 
 export type SopFormValues = z.infer<typeof sopSchema>
 export type StepFormValues = z.infer<typeof stepSchema>
+export type CreateStepFormValues = z.infer<typeof createStepSchema>

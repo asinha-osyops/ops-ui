@@ -7,6 +7,13 @@ import {
   EmptyTitle,
   EmptyDescription,
 } from '@/components/ui/empty'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 import { AnalysisGraphView } from './AnalysisGraphView'
 
 interface TraceSopStepsResultsProps {
@@ -15,19 +22,18 @@ interface TraceSopStepsResultsProps {
 
 export function TraceSopStepsResults({ results }: TraceSopStepsResultsProps) {
   return (
-    <div className="bg-card rounded-lg shadow-sm border border-border overflow-hidden">
-      {/* Header */}
-      <div className="p-6 border-b border-border">
-        <h2 className="text-lg font-medium text-foreground">
+    <Card className="overflow-hidden">
+      <CardHeader>
+        <CardTitle className="text-lg">
           Trace Results: {results.sop.name}
-        </h2>
-        <p className="text-sm text-muted-foreground mt-1">
+        </CardTitle>
+        <CardDescription>
           Click on a step to expand and view its details
-        </p>
-      </div>
+        </CardDescription>
+      </CardHeader>
 
       {results.stepAnalyses.length === 0 ? (
-        <div className="p-6">
+        <CardContent>
           <Empty>
             <EmptyHeader>
               <EmptyTitle>No step traces found</EmptyTitle>
@@ -36,13 +42,12 @@ export function TraceSopStepsResults({ results }: TraceSopStepsResultsProps) {
               </EmptyDescription>
             </EmptyHeader>
           </Empty>
-        </div>
+        </CardContent>
       ) : (
-        /* Graph View - uses shared DAG graph component */
-        <div className="p-4">
+        <CardContent className="p-4">
           <AnalysisGraphView results={results} />
-        </div>
+        </CardContent>
       )}
-    </div>
+    </Card>
   )
 }

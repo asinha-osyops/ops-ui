@@ -4,13 +4,8 @@ import { useRouter } from 'next/navigation'
 import { CompanyDto } from '@/lib/api-client'
 import { Route } from '@/lib/routes'
 import { Button } from '@/components/ui/button'
-import { LoadingSpinner } from '@/components/ui/loading-spinner'
-import {
-  Empty,
-  EmptyHeader,
-  EmptyTitle,
-  EmptyDescription,
-} from '@/components/ui/empty'
+import { LoadableContent } from '@/components/ui/LoadableContent'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DetailsCard } from '@/components/ui/DetailsCard'
 import { EmployeeManagementSection } from '@/components/ui/EmployeeManagementSection'
 import { PageLayout } from '@/components/PageLayout'
@@ -77,18 +72,13 @@ export function CompanyPageContent() {
         </Button>
       }
     >
-      {loadingCompanies ? (
-        <LoadingSpinner message="Loading companies..." />
-      ) : companies.length === 0 ? (
-        <Empty className="border">
-          <EmptyHeader>
-            <EmptyTitle>No companies found</EmptyTitle>
-            <EmptyDescription>
-              Create your first company to get started.
-            </EmptyDescription>
-          </EmptyHeader>
-        </Empty>
-      ) : (
+      <LoadableContent
+        loading={loadingCompanies}
+        loadingMessage="Loading companies..."
+        isEmpty={companies.length === 0}
+        emptyTitle="No companies found"
+        emptyDescription="Create your first company to get started."
+      >
         <>
           {/* Main Display Section */}
           {selectedCompany && (
@@ -121,27 +111,31 @@ export function CompanyPageContent() {
               />
 
               {/* Company Actions */}
-              <div className="bg-card rounded-lg p-4 border border-border">
-                <h3 className="text-sm font-medium text-foreground mb-3">
-                  Company Actions
-                </h3>
-                <div className="flex gap-3 flex-wrap">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => handleDownloadJSON(selectedCompany)}
-                  >
-                    Download as JSON
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => handleDownloadText(selectedCompany)}
-                  >
-                    Download as Text
-                  </Button>
-                </div>
-              </div>
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium">
+                    Company Actions
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex gap-3 flex-wrap">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => handleDownloadJSON(selectedCompany)}
+                    >
+                      Download as JSON
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => handleDownloadText(selectedCompany)}
+                    >
+                      Download as Text
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
 
               {/* Employees Section */}
               <EmployeeManagementSection
@@ -182,7 +176,7 @@ export function CompanyPageContent() {
             </div>
           )}
         </>
-      )}
+      </LoadableContent>
     </PageLayout>
   )
 }

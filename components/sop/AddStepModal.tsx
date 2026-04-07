@@ -1,6 +1,8 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import { useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
 import { showErrorToast } from '@/lib/utils/error-handling'
 
@@ -11,7 +13,7 @@ import {
   StepNodeType,
   StepDto,
 } from '@/lib/api-client'
-import { CHARACTER_LIMITS } from '@/lib/api-constants'
+import { createStepSchema, type CreateStepFormValues } from '@/lib/schemas/sop'
 import {
   Dialog,
   DialogContent,
@@ -20,9 +22,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
 import { Button } from '@/components/ui/button'
 import { CharacterLimitedInput } from '@/components/ui/CharacterLimitedInput'
-import { Label } from '@/components/ui/label'
+import { CHARACTER_LIMITS } from '@/lib/api-constants'
 import {
   Select,
   SelectContent,
@@ -50,6 +60,15 @@ const NODE_TYPE_OPTIONS: {
   { value: 'END', label: 'End', description: 'Exit point of the workflow' },
 ]
 
+const defaultValues: CreateStepFormValues = {
+  name: '',
+  details: '',
+  postStepDocumentation: '',
+  monitoringRequirements: '',
+  nodeType: 'STEP',
+  actorRoleTitle: undefined,
+}
+
 interface AddStepModalProps {
   sopId: string
   sopName: string
@@ -65,55 +84,28 @@ export function AddStepModal({
   onOpenChange,
   onSuccess,
 }: AddStepModalProps) {
-  // Form state
-  const [name, setName] = useState('')
-  const [details, setDetails] = useState('')
-  const [postStepDocumentation, setPostStepDocumentation] = useState('')
-  const [monitoringRequirements, setMonitoringRequirements] = useState('')
-  const [nodeType, setNodeType] = useState<StepNodeType>('STEP')
-  const [actorRoleTitle, setActorRoleTitle] = useState<RoleTitle | ''>('')
+  const form = useForm<CreateStepFormValues>({
+    resolver: zodResolver(createStepSchema),
+    defaultValues,
+  })
 
-  // UI state
-  const [isCreating, setIsCreating] = useState(false)
-  const [validationError, setValidationError] = useState<string | null>(null)
-
-  // Reset form when modal opens/closes
+  // Reset form when modal opens
   useEffect(() => {
     if (open) {
-      setName('')
-      setDetails('')
-      setPostStepDocumentation('')
-      setMonitoringRequirements('')
-      setNodeType('STEP')
-      setActorRoleTitle('')
-      setValidationError(null)
+      form.reset(defaultValues)
     }
-  }, [open])
+  }, [open, form])
 
-  const validate = useCallback((): boolean => {
-    if (!name.trim()) {
-      setValidationError('Step name is required')
-      return false
-    }
-    setValidationError(null)
-    return true
-  }, [name])
-
-  const handleCreate = async () => {
-    if (!validate()) {
-      return
-    }
-
-    setIsCreating(true)
-
+  const handleCreate = async (data: CreateStepFormValues) => {
     try {
       const request: CreateStepRequestDto = {
-        name: name.trim(),
-        details: details.trim() || undefined,
-        postStepDocumentation: postStepDocumentation.trim() || undefined,
-        monitoringRequirements: monitoringRequirements.trim() || undefined,
-        nodeType,
-        actorRoleTitle: actorRoleTitle || undefined,
+        name: data.name.trim(),
+        details: data.details?.trim() || undefined,
+        postStepDocumentation: data.postStepDocumentation?.trim() || undefined,
+        monitoringRequirements:
+          data.monitoringRequirements?.trim() || undefined,
+        nodeType: data.nodeType,
+        actorRoleTitle: data.actorRoleTitle || undefined,
       }
 
       const newStep = await apiClient.createStep(sopId, request)
@@ -126,13 +118,7 @@ export function AddStepModal({
       onOpenChange(false)
     } catch (error) {
       showErrorToast('Failed to create step', error)
-    } finally {
-      setIsCreating(false)
     }
-  }
-
-  const handleCancel = () => {
-    onOpenChange(false)
   }
 
   return (
@@ -146,130 +132,191 @@ export function AddStepModal({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          {/* Step Name */}
-          <div>
-            <CharacterLimitedInput
-              id="step-name"
-              label="Step Name *"
-              value={name}
-              onChange={(e) => {
-                setName(e.target.value)
-                if (validationError) setValidationError(null)
-              }}
-              maxLength={CHARACTER_LIMITS.STEP_NAME}
-              placeholder="Enter step name"
-              disabled={isCreating}
-              className={validationError ? 'border-destructive' : ''}
-            />
-            {validationError && (
-              <p className="text-sm text-destructive mt-1">{validationError}</p>
-            )}
-          </div>
-
-          {/* Node Type */}
-          <div className="space-y-2">
-            <Label htmlFor="node-type">Node Type</Label>
-            <Select
-              value={nodeType}
-              onValueChange={(value) => setNodeType(value as StepNodeType)}
-              disabled={isCreating}
-            >
-              <SelectTrigger id="node-type">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {NODE_TYPE_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    <div className="flex flex-col">
-                      <span>{option.label}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {option.description}
-                      </span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Actor Role Title */}
-          <div className="space-y-2">
-            <Label htmlFor="actor-role">Actor Role (optional)</Label>
-            <Select
-              value={actorRoleTitle}
-              onValueChange={(value) => setActorRoleTitle(value as RoleTitle)}
-              disabled={isCreating}
-            >
-              <SelectTrigger id="actor-role">
-                <SelectValue placeholder="Select a role..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">None</SelectItem>
-                {ROLE_TITLE_OPTIONS.map((role) => (
-                  <SelectItem key={role} value={role}>
-                    {role.replace(/_/g, ' ')}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Details */}
-          <CharacterLimitedInput
-            id="step-details"
-            label="Details (optional)"
-            value={details}
-            onChange={(e) => setDetails(e.target.value)}
-            maxLength={CHARACTER_LIMITS.STEP_DETAILS}
-            placeholder="Detailed instructions for this step"
-            disabled={isCreating}
-            multiline
-            rows={2}
-          />
-
-          {/* Post-Step Documentation */}
-          <CharacterLimitedInput
-            id="post-step-doc"
-            label="Post-Step Documentation (optional)"
-            value={postStepDocumentation}
-            onChange={(e) => setPostStepDocumentation(e.target.value)}
-            maxLength={CHARACTER_LIMITS.STEP_POST_DOC}
-            placeholder="Documentation to complete after this step"
-            disabled={isCreating}
-          />
-
-          {/* Monitoring Requirements */}
-          <CharacterLimitedInput
-            id="monitoring"
-            label="Monitoring Requirements (optional)"
-            value={monitoringRequirements}
-            onChange={(e) => setMonitoringRequirements(e.target.value)}
-            maxLength={CHARACTER_LIMITS.STEP_MONITORING}
-            placeholder="Requirements for monitoring this step"
-            disabled={isCreating}
-          />
-        </div>
-
-        <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={handleCancel}
-            disabled={isCreating}
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(handleCreate)}
+            className="space-y-4 py-4"
           >
-            Cancel
-          </Button>
-          <Button onClick={handleCreate} disabled={isCreating}>
-            {isCreating ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Creating...
-              </>
-            ) : (
-              'Create Step'
-            )}
-          </Button>
-        </DialogFooter>
+            {/* Step Name */}
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <CharacterLimitedInput
+                      id="step-name"
+                      label="Step Name *"
+                      value={field.value}
+                      onChange={field.onChange}
+                      maxLength={CHARACTER_LIMITS.STEP_NAME}
+                      placeholder="Enter step name"
+                      disabled={form.formState.isSubmitting}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Node Type */}
+            <FormField
+              control={form.control}
+              name="nodeType"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Node Type</FormLabel>
+                  <Select
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    disabled={form.formState.isSubmitting}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {NODE_TYPE_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          <div className="flex flex-col">
+                            <span>{option.label}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {option.description}
+                            </span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Actor Role Title */}
+            <FormField
+              control={form.control}
+              name="actorRoleTitle"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Actor Role (optional)</FormLabel>
+                  <Select
+                    value={field.value ?? ''}
+                    onValueChange={(value) =>
+                      field.onChange(value || undefined)
+                    }
+                    disabled={form.formState.isSubmitting}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a role..." />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="">None</SelectItem>
+                      {ROLE_TITLE_OPTIONS.map((role) => (
+                        <SelectItem key={role} value={role}>
+                          {role.replace(/_/g, ' ')}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Details */}
+            <FormField
+              control={form.control}
+              name="details"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <CharacterLimitedInput
+                      id="step-details"
+                      label="Details (optional)"
+                      value={field.value ?? ''}
+                      onChange={field.onChange}
+                      maxLength={CHARACTER_LIMITS.STEP_DETAILS}
+                      placeholder="Detailed instructions for this step"
+                      disabled={form.formState.isSubmitting}
+                      multiline
+                      rows={2}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Post-Step Documentation */}
+            <FormField
+              control={form.control}
+              name="postStepDocumentation"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <CharacterLimitedInput
+                      id="post-step-doc"
+                      label="Post-Step Documentation (optional)"
+                      value={field.value ?? ''}
+                      onChange={field.onChange}
+                      maxLength={CHARACTER_LIMITS.STEP_POST_DOC}
+                      placeholder="Documentation to complete after this step"
+                      disabled={form.formState.isSubmitting}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Monitoring Requirements */}
+            <FormField
+              control={form.control}
+              name="monitoringRequirements"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <CharacterLimitedInput
+                      id="monitoring"
+                      label="Monitoring Requirements (optional)"
+                      value={field.value ?? ''}
+                      onChange={field.onChange}
+                      maxLength={CHARACTER_LIMITS.STEP_MONITORING}
+                      placeholder="Requirements for monitoring this step"
+                      disabled={form.formState.isSubmitting}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                disabled={form.formState.isSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={form.formState.isSubmitting}>
+                {form.formState.isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  'Create Step'
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   )

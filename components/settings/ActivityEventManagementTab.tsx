@@ -1,11 +1,20 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
 import {
   Table,
   TableBody,
@@ -37,14 +46,17 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { ActivityEventEditModal } from '@/components/ui/ActivityEventEditModal'
 import { Spinner } from '@/components/ui/spinner'
 import { useColorScheme } from '@/lib/hooks/useColorScheme'
-import { toast } from 'sonner'
+import {
+  activityEventCreateSchema,
+  type ActivityEventCreateFormValues,
+} from '@/lib/schemas/activityevent'
 
-interface NewActivityEventData {
-  name: string
-  description: string
-  associatedRoleTitles: RoleTitle[]
-  associatedEventCategories: EventCategory[]
-  logLineEventTypeMappings: LogLineEventTypeMappingDto[]
+const defaultEventFormValues: ActivityEventCreateFormValues = {
+  name: '',
+  description: '',
+  associatedRoleTitles: [],
+  associatedEventCategories: [],
+  logLineEventTypeMappings: [],
 }
 
 export function ActivityEventManagementTab() {
@@ -54,16 +66,12 @@ export function ActivityEventManagementTab() {
   const [activityEvents, setActivityEvents] = useState<ActivityEventDto[]>([])
   const [loading, setLoading] = useState(true)
 
-  // Create new activity event state
+  // Create new activity event form
   const [isCreating, setIsCreating] = useState(false)
-  const [newEventData, setNewEventData] = useState<NewActivityEventData>({
-    name: '',
-    description: '',
-    associatedRoleTitles: [],
-    associatedEventCategories: [],
-    logLineEventTypeMappings: [],
+  const createForm = useForm<ActivityEventCreateFormValues>({
+    resolver: zodResolver(activityEventCreateSchema),
+    defaultValues: defaultEventFormValues,
   })
-  const [creatingEvent, setCreatingEvent] = useState(false)
 
   // Edit state
   const [editingEvent, setEditingEvent] = useState<ActivityEventDto | null>(
@@ -93,55 +101,47 @@ export function ActivityEventManagementTab() {
     }
   }
 
-  const handleCreateEvent = async () => {
-    if (!newEventData.name.trim()) {
-      toast.error('Activity event name is required')
-      return
-    }
-
-    setCreatingEvent(true)
+  const handleCreateEvent = async (data: ActivityEventCreateFormValues) => {
     try {
       const createdEvent = await apiClient.createActivityEvent({
-        name: newEventData.name,
-        description: newEventData.description || '',
+        name: data.name,
+        description: data.description || '',
       })
 
       // Update role titles if selected
-      if (newEventData.associatedRoleTitles.length > 0) {
+      if (data.associatedRoleTitles && data.associatedRoleTitles.length > 0) {
         await apiClient.updateActivityEventRoleTitles(
           createdEvent.id,
-          newEventData.associatedRoleTitles
+          data.associatedRoleTitles
         )
       }
       // Update event categories if selected
-      if (newEventData.associatedEventCategories.length > 0) {
+      if (
+        data.associatedEventCategories &&
+        data.associatedEventCategories.length > 0
+      ) {
         await apiClient.updateActivityEventEventCategories(
           createdEvent.id,
-          newEventData.associatedEventCategories
+          data.associatedEventCategories
         )
       }
       // Update log line event type mappings if any
-      if (newEventData.logLineEventTypeMappings.length > 0) {
+      if (
+        data.logLineEventTypeMappings &&
+        data.logLineEventTypeMappings.length > 0
+      ) {
         await apiClient.updateActivityEventLogLineEventTypes(
           createdEvent.id,
-          newEventData.logLineEventTypeMappings
+          data.logLineEventTypeMappings
         )
       }
 
       showEntityCreatedToast('Activity event')
       setIsCreating(false)
-      setNewEventData({
-        name: '',
-        description: '',
-        associatedRoleTitles: [],
-        associatedEventCategories: [],
-        logLineEventTypeMappings: [],
-      })
+      createForm.reset(defaultEventFormValues)
       fetchData()
     } catch (error) {
       showErrorToast('Failed to create activity event', error)
-    } finally {
-      setCreatingEvent(false)
     }
   }
 
@@ -196,106 +196,120 @@ export function ActivityEventManagementTab() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="new-name">Name *</Label>
-                <Input
-                  id="new-name"
-                  value={newEventData.name}
-                  onChange={(e) =>
-                    setNewEventData((prev) => ({
-                      ...prev,
-                      name: e.target.value,
-                    }))
-                  }
-                  maxLength={CHARACTER_LIMITS.ROLE_NAME}
-                  placeholder="Activity event name"
-                />
-              </div>
-              <div className="space-y-2 sm:col-span-2">
-                <Label htmlFor="new-description">Description</Label>
-                <Textarea
-                  id="new-description"
-                  value={newEventData.description}
-                  onChange={(e) =>
-                    setNewEventData((prev) => ({
-                      ...prev,
-                      description: e.target.value,
-                    }))
-                  }
-                  maxLength={CHARACTER_LIMITS.ROLE_DESCRIPTION}
-                  placeholder="Activity event description"
-                  rows={3}
-                />
-              </div>
-              <div className="space-y-2">
-                <MultiSelect
-                  id="new-roleTitles"
-                  label="Associated Role Titles"
-                  options={Object.values(RoleTitle)}
-                  selectedValues={newEventData.associatedRoleTitles}
-                  onChange={(values) =>
-                    setNewEventData((prev) => ({
-                      ...prev,
-                      associatedRoleTitles: values as RoleTitle[],
-                    }))
-                  }
-                  placeholder="Select role titles..."
-                />
-              </div>
-              <div className="space-y-2">
-                <MultiSelect
-                  id="new-eventCategories"
-                  label="Associated Event Categories"
-                  options={Object.values(EventCategory)}
-                  selectedValues={newEventData.associatedEventCategories}
-                  onChange={(values) =>
-                    setNewEventData((prev) => ({
-                      ...prev,
-                      associatedEventCategories: values as EventCategory[],
-                    }))
-                  }
-                  placeholder="Select event categories..."
-                />
-              </div>
-              <div className="space-y-2 sm:col-span-2">
-                <LogLineEventTypeMappingsEditor
-                  mappings={newEventData.logLineEventTypeMappings}
-                  onChange={(mappings) =>
-                    setNewEventData((prev) => ({
-                      ...prev,
-                      logLineEventTypeMappings: mappings,
-                    }))
-                  }
-                />
-              </div>
-            </div>
-            <div className="flex gap-2 mt-4">
-              <Button onClick={handleCreateEvent} disabled={creatingEvent}>
-                {creatingEvent ? (
-                  <Spinner className="h-4 w-4 mr-2" />
-                ) : (
-                  <Save className="h-4 w-4 mr-2" />
-                )}
-                Save
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setIsCreating(false)
-                  setNewEventData({
-                    name: '',
-                    description: '',
-                    associatedRoleTitles: [],
-                    associatedEventCategories: [],
-                    logLineEventTypeMappings: [],
-                  })
-                }}
+            <Form {...createForm}>
+              <form
+                onSubmit={createForm.handleSubmit(handleCreateEvent)}
+                className="space-y-4"
               >
-                <X className="h-4 w-4 mr-2" />
-                Cancel
-              </Button>
-            </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <FormField
+                    control={createForm.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Name *</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Activity event name" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={createForm.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem className="sm:col-span-2">
+                        <FormLabel>Description</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Activity event description"
+                            rows={3}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={createForm.control}
+                    name="associatedRoleTitles"
+                    render={({ field }) => (
+                      <FormItem>
+                        <MultiSelect
+                          id="new-roleTitles"
+                          label="Associated Role Titles"
+                          options={Object.values(RoleTitle)}
+                          selectedValues={field.value ?? []}
+                          onChange={(values) =>
+                            field.onChange(values as RoleTitle[])
+                          }
+                          placeholder="Select role titles..."
+                        />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={createForm.control}
+                    name="associatedEventCategories"
+                    render={({ field }) => (
+                      <FormItem>
+                        <MultiSelect
+                          id="new-eventCategories"
+                          label="Associated Event Categories"
+                          options={Object.values(EventCategory)}
+                          selectedValues={field.value ?? []}
+                          onChange={(values) =>
+                            field.onChange(values as EventCategory[])
+                          }
+                          placeholder="Select event categories..."
+                        />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={createForm.control}
+                    name="logLineEventTypeMappings"
+                    render={({ field }) => (
+                      <FormItem className="sm:col-span-2">
+                        <LogLineEventTypeMappingsEditor
+                          mappings={field.value ?? []}
+                          onChange={field.onChange}
+                        />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    type="submit"
+                    disabled={createForm.formState.isSubmitting}
+                  >
+                    {createForm.formState.isSubmitting ? (
+                      <Spinner className="h-4 w-4 mr-2" />
+                    ) : (
+                      <Save className="h-4 w-4 mr-2" />
+                    )}
+                    Save
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setIsCreating(false)
+                      createForm.reset(defaultEventFormValues)
+                    }}
+                  >
+                    <X className="h-4 w-4 mr-2" />
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            </Form>
           </CardContent>
         </Card>
       )}

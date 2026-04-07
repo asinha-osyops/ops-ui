@@ -18,6 +18,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { PageLayout } from '@/components/PageLayout'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { apiClient, Pillar } from '@/lib/api-client'
 import { companySchema, type CompanyFormValues } from '@/lib/schemas/company'
@@ -119,121 +120,130 @@ export default function Home() {
     >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <div className="bg-card rounded-lg shadow-sm border border-border p-6">
-            <h2 className="text-lg font-medium text-foreground mb-4">
-              Company Information
-            </h2>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Company Information</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem className="lg:col-span-2">
+                      <FormLabel>Company Name *</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter company name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem className="lg:col-span-2">
-                    <FormLabel>Company Name *</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter company name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email *</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="email"
+                          placeholder="Enter email address"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email *</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="email"
-                        placeholder="Enter email address"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                <FormField
+                  control={form.control}
+                  name="phoneNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Phone Number *</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="e.g., +1-555-123-4567 or 555-123-4567"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <FormField
-                control={form.control}
-                name="phoneNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Phone Number *</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="e.g., +1-555-123-4567 or 555-123-4567"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="address"
-                render={({ field }) => (
-                  <FormItem className="lg:col-span-2">
-                    <FormLabel>Address</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Enter company address"
-                        rows={3}
-                        {...field}
-                        value={field.value || ''}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-          </div>
+                <FormField
+                  control={form.control}
+                  name="address"
+                  render={({ field }) => (
+                    <FormItem className="lg:col-span-2">
+                      <FormLabel>Address</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Enter company address"
+                          rows={3}
+                          {...field}
+                          value={field.value || ''}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Organizational Pillars Section */}
-          <div className="bg-card rounded-lg shadow-sm border border-border p-6">
-            <h2 className="text-lg font-medium text-foreground mb-4">
-              Organizational Pillars
-            </h2>
-            <FormField
-              control={form.control}
-              name="pillars"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Select Pillars *</FormLabel>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mt-2">
-                    {allPillars.map((pillar) => (
-                      <div key={pillar} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={pillar}
-                          checked={field.value?.includes(pillar)}
-                          onCheckedChange={(checked) => {
-                            const currentValue = field.value || []
-                            if (checked) {
-                              field.onChange([...currentValue, pillar])
-                            } else {
-                              field.onChange(
-                                currentValue.filter((p) => p !== pillar)
-                              )
-                            }
-                          }}
-                        />
-                        <FormLabel htmlFor={pillar} className="cursor-pointer">
-                          {formatEnumTitleCase(pillar)}
-                        </FormLabel>
-                      </div>
-                    ))}
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Organizational Pillars</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <FormField
+                control={form.control}
+                name="pillars"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Select Pillars *</FormLabel>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mt-2">
+                      {allPillars.map((pillar) => (
+                        <div
+                          key={pillar}
+                          className="flex items-center space-x-2"
+                        >
+                          <Checkbox
+                            id={pillar}
+                            checked={field.value?.includes(pillar)}
+                            onCheckedChange={(checked) => {
+                              const currentValue = field.value || []
+                              if (checked) {
+                                field.onChange([...currentValue, pillar])
+                              } else {
+                                field.onChange(
+                                  currentValue.filter((p) => p !== pillar)
+                                )
+                              }
+                            }}
+                          />
+                          <FormLabel
+                            htmlFor={pillar}
+                            className="cursor-pointer"
+                          >
+                            {formatEnumTitleCase(pillar)}
+                          </FormLabel>
+                        </div>
+                      ))}
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </CardContent>
+          </Card>
 
           {/* Submit Section */}
           <div className="flex justify-between pt-6 border-t border-border">
