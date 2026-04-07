@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { SopGraphNew } from '@/components/sop-graph-merge/SopGraphNew'
+import { SopGraphNew } from '@/components/sop/graph/SopGraphNew'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ALL_TEST_SOPS } from '../test-data'
 

@@ -49,7 +49,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { SopEditModal } from '@/components/sop/SopEditModal'
 import { SopGraphView } from '@/components/sop/SopGraphView'
-import { SopGraphNew } from '@/components/sop-graph-new/SopGraphNew'
+import { SopGraphNew } from '@/components/sop/graph/SopGraphNew'
 import { AddStepModal } from '@/components/sop/AddStepModal'
 import { useTaskPolling } from '@/hooks/use-task-polling'
 import {
@@ -492,7 +492,7 @@ export default function SopDetailPage() {
           <TabsList className="mb-4">
             <TabsTrigger value="steps">Steps ({sop.steps.length})</TabsTrigger>
             <TabsTrigger value="graph">Graph View</TabsTrigger>
-            <TabsTrigger value="graph-new">Graph (New)</TabsTrigger>
+            <TabsTrigger value="graph-new">Graph (Legacy)</TabsTrigger>
           </TabsList>
 
           {/* Steps Tab */}
@@ -721,14 +721,14 @@ export default function SopDetailPage() {
             </div>
           </TabsContent>
 
-          {/* Graph View Tab */}
+          {/* Graph View Tab — new merged graph with edit mode */}
           <TabsContent value="graph">
-            <SopGraphView sop={sop} isEditable={true} onSopUpdate={fetchSop} />
+            <SopGraphNew sop={sop} isEditable={true} onSopUpdate={fetchSop} />
           </TabsContent>
 
-          {/* New Graph View */}
+          {/* Legacy Graph View */}
           <TabsContent value="graph-new">
-            <SopGraphNew sop={sop} />
+            <SopGraphView sop={sop} isEditable={true} onSopUpdate={fetchSop} />
           </TabsContent>
         </Tabs>
 
