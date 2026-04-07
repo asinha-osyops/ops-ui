@@ -19,10 +19,18 @@ const step = (
   ...overrides,
 })
 
-const edge = (from: string, to: string, id?: string): EdgeDto => ({
+const edge = (
+  from: string,
+  to: string,
+  id?: string,
+  durationSeconds?: number
+): EdgeDto => ({
   id: id || `${from}-${to}`,
   from,
   to,
+  ...(durationSeconds !== undefined && {
+    transitionDuration: { seconds: durationSeconds, nano: 0 },
+  }),
 })
 
 // --- Simple linear SOP (3 steps) ---
@@ -80,7 +88,7 @@ export const SIMPLE_SOP: SopDto = {
       actorRoleTitle: 'TEAM_LEAD',
     }),
   ],
-  edges: [edge('s1', 's2'), edge('s2', 's3')],
+  edges: [edge('s1', 's2', undefined, 3600), edge('s2', 's3', undefined, 7200)],
 }
 
 // --- Complex SOP with forks/joins (8 steps) ---
@@ -199,15 +207,15 @@ export const COMPLEX_SOP: SopDto = {
     }),
   ],
   edges: [
-    edge('ir1', 'ir2'),
-    edge('ir2', 'ir3'),
-    edge('ir2', 'ir4'),
-    edge('ir3', 'ir5'),
-    edge('ir4', 'ir5'),
-    edge('ir5', 'ir6'),
-    edge('ir6', 'ir7'),
-    edge('ir6', 'ir8'),
-    edge('ir7', 'ir8'),
+    edge('ir1', 'ir2', undefined, 300),
+    edge('ir2', 'ir3', undefined, 1800),
+    edge('ir2', 'ir4', undefined, 900),
+    edge('ir3', 'ir5', undefined, 5400),
+    edge('ir4', 'ir5', undefined, 3600),
+    edge('ir5', 'ir6', undefined, 86400),
+    edge('ir6', 'ir7', undefined, 604800),
+    edge('ir6', 'ir8', undefined, 172800),
+    edge('ir7', 'ir8', undefined, 259200),
   ],
 }
 

@@ -30,6 +30,12 @@ export default function PreviewLayout({
               >
                 Graph B (New)
               </Link>
+              <Link
+                href="/preview/graphMerge"
+                className="text-sm text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-md hover:bg-muted transition-colors"
+              >
+                Graph Merge
+              </Link>
             </nav>
           </div>
           <ThemeToggle />
