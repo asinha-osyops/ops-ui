@@ -12,6 +12,7 @@ import { Route, Breadcrumbs } from '@/lib/routes'
 import { useEntityDetail } from '@/lib/hooks/useEntityDetail'
 import { Button } from '@/components/ui/button'
 import { FileInfoCard } from '@/components/ui/FileInfoCard'
+import { DetailField } from '@/components/ui/DetailField'
 import { EntityActions } from '@/components/ui/EntityActions'
 import { LoadableContent } from '@/components/ui/LoadableContent'
 import { PageLayout } from '@/components/PageLayout'
@@ -610,24 +611,16 @@ export default function SopDetailPage() {
                             step.monitoringRequirements) && (
                             <div className="grid grid-cols-2 gap-4 mt-3 pt-3 border-t border-border">
                               {step.postStepDocumentation && (
-                                <div>
-                                  <p className="text-xs font-medium text-muted-foreground mb-1">
-                                    Post-Step Documentation
-                                  </p>
-                                  <p className="text-sm text-foreground">
-                                    {step.postStepDocumentation}
-                                  </p>
-                                </div>
+                                <DetailField
+                                  label="Post-Step Documentation"
+                                  value={step.postStepDocumentation}
+                                />
                               )}
                               {step.monitoringRequirements && (
-                                <div>
-                                  <p className="text-xs font-medium text-muted-foreground mb-1">
-                                    Monitoring Requirements
-                                  </p>
-                                  <p className="text-sm text-foreground">
-                                    {step.monitoringRequirements}
-                                  </p>
-                                </div>
+                                <DetailField
+                                  label="Monitoring Requirements"
+                                  value={step.monitoringRequirements}
+                                />
                               )}
                             </div>
                           )}

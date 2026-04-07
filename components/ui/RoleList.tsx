@@ -8,6 +8,7 @@ import { Spinner } from './spinner'
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from './empty'
 import { Card, CardHeader, CardContent, CardFooter } from './card'
 import { Badge } from './badge'
+import { DetailField } from './DetailField'
 import { downloadAsJSON, downloadAsText } from '@/lib/utils/download'
 import { formatRoleAsText } from '@/lib/utils/text-formatters'
 import { useColorScheme } from '@/lib/hooks/useColorScheme'
@@ -142,22 +143,16 @@ export function RoleList({
             <CardContent>
               {/* Role Details Grid */}
               <div className="space-y-3">
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground mb-1">
-                    Description
-                  </p>
-                  <p className="text-sm text-foreground break-words">
-                    {role.description}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground mb-1">
-                    Responsibilities
-                  </p>
-                  <p className="text-sm text-foreground break-words">
-                    {role.responsibilities}
-                  </p>
-                </div>
+                <DetailField
+                  label="Description"
+                  value={role.description}
+                  valueClassName="break-words"
+                />
+                <DetailField
+                  label="Responsibilities"
+                  value={role.responsibilities}
+                  valueClassName="break-words"
+                />
               </div>
             </CardContent>
 

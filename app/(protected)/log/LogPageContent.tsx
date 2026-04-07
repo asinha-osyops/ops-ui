@@ -1,12 +1,14 @@
 'use client'
 
-import { memo, useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
+import { ColumnDef } from '@tanstack/react-table'
 import { apiClient, LogDto } from '@/lib/api-client'
 import { Route, Breadcrumbs } from '@/lib/routes'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { LoadableContent } from '@/components/ui/LoadableContent'
+import { DataTable } from '@/components/ui/data-table'
 import { PageLayout } from '@/components/PageLayout'
 import { useDeleteConfirmation } from '@/lib/hooks/useDeleteConfirmation'
 import { useAnalysis } from '@/lib/hooks/useAnalysis'
@@ -17,14 +19,6 @@ import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import { Loader2, Trash2, FileText, Play } from 'lucide-react'
 import { useRequireCompany } from '@/lib/hooks/useRequireCompany'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 
 // Helper function for calculating total log lines
 const getTotalLines = (log: LogDto) => {
@@ -36,104 +30,10 @@ const getTotalLines = (log: LogDto) => {
   )
 }
 
-// Memoized table row component to prevent unnecessary re-renders
-interface LogTableRowProps {
-  log: LogDto
+/** Row data enriched with analyzing state */
+interface LogRowData extends LogDto {
   isAnalyzing: boolean
-  onRowClick: (log: LogDto) => void
-  onAnalyze: (log: LogDto) => void
-  onDelete: (log: LogDto) => void
 }
-
-const LogTableRowMemo = memo(function LogTableRowMemo({
-  log,
-  isAnalyzing,
-  onRowClick,
-  onAnalyze,
-  onDelete,
-}: LogTableRowProps) {
-  const totalLines = getTotalLines(log)
-
-  return (
-    <TableRow
-      className="cursor-pointer hover:bg-muted/50"
-      onClick={() => onRowClick(log)}
-    >
-      <TableCell>
-        <div className="flex items-center gap-2">
-          <span className="font-medium">{log.name}</span>
-          {isAnalyzing && (
-            <Badge variant="secondary" className="flex items-center gap-1">
-              <Loader2 className="h-3 w-3 animate-spin" />
-              <span className="hidden sm:inline">Analyzing</span>
-            </Badge>
-          )}
-        </div>
-      </TableCell>
-      <TableCell className="hidden sm:table-cell">
-        <Badge variant="outline">{log.loggingSource}</Badge>
-      </TableCell>
-      <TableCell className="hidden md:table-cell">
-        {totalLines > 0 ? (
-          <Badge variant="secondary">{totalLines}</Badge>
-        ) : (
-          <span className="text-muted-foreground">-</span>
-        )}
-      </TableCell>
-      <TableCell className="hidden lg:table-cell">
-        {log.logFile ? (
-          <div className="flex items-center gap-1 text-muted-foreground">
-            <FileText className="h-4 w-4" />
-            <span className="text-sm truncate max-w-[120px]">
-              {log.logFile.fileName}
-            </span>
-          </div>
-        ) : (
-          <span className="text-muted-foreground">-</span>
-        )}
-      </TableCell>
-      <TableCell className="hidden md:table-cell">
-        <span className="text-sm text-muted-foreground">
-          {new Date(log.createdAt).toLocaleDateString()}
-        </span>
-      </TableCell>
-      <TableCell className="text-right">
-        <div className="flex items-center justify-end gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={(e) => {
-              e.stopPropagation()
-              onAnalyze(log)
-            }}
-            disabled={isAnalyzing}
-            title="Analyze"
-            aria-label="Analyze log"
-          >
-            {isAnalyzing ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Play className="h-4 w-4" />
-            )}
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={(e) => {
-              e.stopPropagation()
-              onDelete(log)
-            }}
-            title="Delete"
-            aria-label="Delete log"
-            className="text-destructive hover:text-destructive"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
-      </TableCell>
-    </TableRow>
-  )
-})
 
 export function LogPageContent() {
   const router = useRouter()
@@ -173,7 +73,7 @@ export function LogPageContent() {
     getConfirmMessage: (log) => CONFIRMATIONS.deleteEntity('log', log.name),
   })
 
-  // Analyze handler - memoized for use in table rows
+  // Analyze handler
   const handleAnalyze = useCallback(
     async (log: LogDto) => {
       await analyze(
@@ -190,12 +90,127 @@ export function LogPageContent() {
     [analyze, refreshLogs]
   )
 
-  // Navigate to detail page - memoized for use in table rows
+  // Enrich rows with analyzing state
+  const rows: LogRowData[] = useMemo(
+    () =>
+      logs.map((log) => ({ ...log, isAnalyzing: analyzingIds.has(log.id) })),
+    [logs, analyzingIds]
+  )
+
+  // Navigate to detail page
   const handleRowClick = useCallback(
-    (log: LogDto) => {
-      router.push(Route.LOG_DETAIL(log.id))
+    (row: LogRowData) => {
+      router.push(Route.LOG_DETAIL(row.id))
     },
     [router]
+  )
+
+  // Column definitions
+  const columns: ColumnDef<LogRowData>[] = useMemo(
+    () => [
+      {
+        accessorKey: 'name',
+        header: 'Name',
+        cell: ({ row }) => (
+          <div className="flex items-center gap-2">
+            <span className="font-medium">{row.original.name}</span>
+            {row.original.isAnalyzing && (
+              <Badge variant="secondary" className="flex items-center gap-1">
+                <Loader2 className="h-3 w-3 animate-spin" />
+                <span className="hidden sm:inline">Analyzing</span>
+              </Badge>
+            )}
+          </div>
+        ),
+      },
+      {
+        accessorKey: 'loggingSource',
+        header: 'Source',
+        meta: { className: 'hidden sm:table-cell' },
+        cell: ({ row }) => (
+          <Badge variant="outline">{row.original.loggingSource}</Badge>
+        ),
+      },
+      {
+        id: 'lines',
+        header: 'Lines',
+        meta: { className: 'hidden md:table-cell' },
+        cell: ({ row }) => {
+          const totalLines = getTotalLines(row.original)
+          return totalLines > 0 ? (
+            <Badge variant="secondary">{totalLines}</Badge>
+          ) : (
+            <span className="text-muted-foreground">-</span>
+          )
+        },
+      },
+      {
+        id: 'file',
+        header: 'File',
+        meta: { className: 'hidden lg:table-cell' },
+        cell: ({ row }) =>
+          row.original.logFile ? (
+            <div className="flex items-center gap-1 text-muted-foreground">
+              <FileText className="h-4 w-4" />
+              <span className="text-sm truncate max-w-[120px]">
+                {row.original.logFile.fileName}
+              </span>
+            </div>
+          ) : (
+            <span className="text-muted-foreground">-</span>
+          ),
+      },
+      {
+        accessorKey: 'createdAt',
+        header: 'Created',
+        meta: { className: 'hidden md:table-cell' },
+        cell: ({ row }) => (
+          <span className="text-sm text-muted-foreground">
+            {new Date(row.original.createdAt).toLocaleDateString()}
+          </span>
+        ),
+      },
+      {
+        id: 'actions',
+        header: () => <span className="text-right block">Actions</span>,
+        meta: { className: 'text-right' },
+        cell: ({ row }) => (
+          <div className="flex items-center justify-end gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation()
+                handleAnalyze(row.original)
+              }}
+              disabled={row.original.isAnalyzing}
+              title="Analyze"
+              aria-label="Analyze log"
+            >
+              {row.original.isAnalyzing ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Play className="h-4 w-4" />
+              )}
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation()
+                confirmAndDeleteLog(row.original)
+              }}
+              title="Delete"
+              aria-label="Delete log"
+              className="text-destructive hover:text-destructive"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        ),
+      },
+    ],
+    [handleAnalyze, confirmAndDeleteLog]
   )
 
   // Show alert if no company selected
@@ -241,40 +256,12 @@ export function LogPageContent() {
               useSkeleton={true}
               skeletonRows={5}
             >
-              <div className="rounded-lg border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead className="hidden sm:table-cell">
-                        Source
-                      </TableHead>
-                      <TableHead className="hidden md:table-cell">
-                        Lines
-                      </TableHead>
-                      <TableHead className="hidden lg:table-cell">
-                        File
-                      </TableHead>
-                      <TableHead className="hidden md:table-cell">
-                        Created
-                      </TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {logs.map((log) => (
-                      <LogTableRowMemo
-                        key={log.id}
-                        log={log}
-                        isAnalyzing={analyzingIds.has(log.id)}
-                        onRowClick={handleRowClick}
-                        onAnalyze={handleAnalyze}
-                        onDelete={confirmAndDeleteLog}
-                      />
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+              <DataTable
+                columns={columns}
+                data={rows}
+                onRowClick={handleRowClick}
+                showViewOptions={false}
+              />
             </LoadableContent>
           </CardContent>
         </Card>

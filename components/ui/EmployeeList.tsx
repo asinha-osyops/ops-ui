@@ -8,6 +8,7 @@ import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from './empty'
 import { Card, CardHeader, CardContent, CardFooter } from './card'
 import { Avatar, AvatarFallback } from './avatar'
 import { Badge } from './badge'
+import { DetailField } from './DetailField'
 import { downloadAsJSON, downloadAsText } from '@/lib/utils/download'
 import { formatEmployeeAsText } from '@/lib/utils/text-formatters'
 
@@ -116,29 +117,17 @@ export function EmployeeList({
               <CardContent>
                 {/* Employee Details Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div>
-                    <p className="text-xs font-medium text-muted-foreground mb-1">
-                      Email
-                    </p>
-                    <p className="text-sm text-foreground">{employee.email}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs font-medium text-muted-foreground mb-1">
-                      Phone Number
-                    </p>
-                    <p className="text-sm text-foreground">
-                      {employee.phoneNumber}
-                    </p>
-                  </div>
+                  <DetailField label="Email" value={employee.email} />
+                  <DetailField
+                    label="Phone Number"
+                    value={employee.phoneNumber}
+                  />
                   {employee.managerName && (
-                    <div className="md:col-span-2">
-                      <p className="text-xs font-medium text-muted-foreground mb-1">
-                        Manager
-                      </p>
-                      <p className="text-sm text-foreground">
-                        {employee.managerName}
-                      </p>
-                    </div>
+                    <DetailField
+                      label="Manager"
+                      value={employee.managerName}
+                      className="md:col-span-2"
+                    />
                   )}
                 </div>
               </CardContent>

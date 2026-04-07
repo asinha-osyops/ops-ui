@@ -1,6 +1,7 @@
 import { Card, CardHeader, CardTitle, CardContent } from './card'
 import { ScrollArea } from './scroll-area'
 import { Separator } from './separator'
+import { DetailField } from './DetailField'
 
 interface FileInfo {
   fileName: string
@@ -33,34 +34,16 @@ export function FileInfoCard({
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <p className="text-xs font-medium text-muted-foreground mb-1">
-              File Name
-            </p>
-            <p className="text-sm text-foreground">{file.fileName}</p>
-          </div>
-          <div>
-            <p className="text-xs font-medium text-muted-foreground mb-1">
-              Uploaded
-            </p>
-            <p className="text-sm text-foreground">
-              {new Date(file.uploadedAt).toLocaleDateString()}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs font-medium text-muted-foreground mb-1">
-              File Size
-            </p>
-            <p className="text-sm text-foreground">
-              {(file.fileSize / 1024).toFixed(2)} KB
-            </p>
-          </div>
-          <div>
-            <p className="text-xs font-medium text-muted-foreground mb-1">
-              Content Type
-            </p>
-            <p className="text-sm text-foreground">{file.contentType}</p>
-          </div>
+          <DetailField label="File Name" value={file.fileName} />
+          <DetailField
+            label="Uploaded"
+            value={new Date(file.uploadedAt).toLocaleDateString()}
+          />
+          <DetailField
+            label="File Size"
+            value={`${(file.fileSize / 1024).toFixed(2)} KB`}
+          />
+          <DetailField label="Content Type" value={file.contentType} />
         </div>
 
         {file.parsedText && (

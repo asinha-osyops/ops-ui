@@ -8,6 +8,7 @@ import { Spinner } from './spinner'
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from './empty'
 import { Card, CardHeader, CardContent, CardFooter } from './card'
 import { Badge } from './badge'
+import { DetailField } from './DetailField'
 import { downloadAsJSON, downloadAsText } from '@/lib/utils/download'
 import { formatActivityEventAsText } from '@/lib/utils/text-formatters'
 
@@ -132,14 +133,11 @@ export function ActivityEventList({
             <CardContent>
               {/* Activity Event Details */}
               <div className="space-y-3">
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground mb-1">
-                    Description
-                  </p>
-                  <p className="text-sm text-foreground break-words">
-                    {activityEvent.description}
-                  </p>
-                </div>
+                <DetailField
+                  label="Description"
+                  value={activityEvent.description}
+                  valueClassName="break-words"
+                />
 
                 <div>
                   <p className="text-xs font-medium text-muted-foreground mb-1">

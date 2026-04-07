@@ -1,6 +1,7 @@
 import { SopAnalysisDto } from '@/lib/api-client'
 import { Card, CardHeader, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { DetailField } from '@/components/ui/DetailField'
 import { AnalysisResultCard } from './AnalysisResultCard'
 
 interface SopAnalysisDisplayProps {
@@ -39,37 +40,19 @@ export function SopAnalysisDisplay({
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <div>
-                    <p className="text-xs font-medium text-muted-foreground mb-1">
-                      Name
-                    </p>
-                    <p className="text-sm text-foreground">{step.name}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs font-medium text-muted-foreground mb-1">
-                      Details
-                    </p>
-                    <p className="text-sm text-foreground">{step.details}</p>
-                  </div>
+                  <DetailField label="Name" value={step.name} />
+                  <DetailField label="Details" value={step.details} />
                   {step.postStepDocumentation && (
-                    <div>
-                      <p className="text-xs font-medium text-muted-foreground mb-1">
-                        Post-Step Documentation
-                      </p>
-                      <p className="text-sm text-foreground">
-                        {step.postStepDocumentation}
-                      </p>
-                    </div>
+                    <DetailField
+                      label="Post-Step Documentation"
+                      value={step.postStepDocumentation}
+                    />
                   )}
                   {step.monitoringRequirements && (
-                    <div>
-                      <p className="text-xs font-medium text-muted-foreground mb-1">
-                        Monitoring Requirements
-                      </p>
-                      <p className="text-sm text-foreground">
-                        {step.monitoringRequirements}
-                      </p>
-                    </div>
+                    <DetailField
+                      label="Monitoring Requirements"
+                      value={step.monitoringRequirements}
+                    />
                   )}
                 </CardContent>
               </Card>

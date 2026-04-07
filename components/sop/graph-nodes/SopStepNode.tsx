@@ -4,6 +4,8 @@ import { memo } from 'react'
 import { NodeProps } from 'reactflow'
 import { StepDto } from '@/lib/api-client'
 import { Badge } from '@/components/ui/badge'
+import { DetailField } from '@/components/ui/DetailField'
+import { Separator } from '@/components/ui/separator'
 import { StepNodeBase } from '@/components/graph-nodes/StepNodeBase'
 
 export interface SopStepNodeData {
@@ -21,23 +23,17 @@ export function SopExpandedContent({ step }: { step: StepDto }) {
   return (
     <div className="space-y-4">
       {/* Details */}
-      <div>
-        <h4 className="text-xs font-medium text-muted-foreground mb-1">
-          Details
-        </h4>
-        <p className="text-sm text-foreground">
-          {step.details || 'No details provided'}
-        </p>
-      </div>
+      <DetailField
+        label="Details"
+        value={step.details || 'No details provided'}
+      />
 
       {/* Actor Role */}
       {step.actorRoleTitle && (
-        <div>
-          <h4 className="text-xs font-medium text-muted-foreground mb-1">
-            Actor Role
-          </h4>
-          <Badge variant="outline">{step.actorRoleTitle}</Badge>
-        </div>
+        <DetailField
+          label="Actor Role"
+          value={<Badge variant="outline">{step.actorRoleTitle}</Badge>}
+        />
       )}
 
       {/* Matching Employees */}
@@ -59,78 +55,73 @@ export function SopExpandedContent({ step }: { step: StepDto }) {
 
       {/* Post-Step Documentation */}
       {step.postStepDocumentation && (
-        <div>
-          <h4 className="text-xs font-medium text-muted-foreground mb-1">
-            Post-Step Documentation
-          </h4>
-          <p className="text-sm text-foreground">
-            {step.postStepDocumentation}
-          </p>
-        </div>
+        <DetailField
+          label="Post-Step Documentation"
+          value={step.postStepDocumentation}
+        />
       )}
 
       {/* Monitoring Requirements */}
       {step.monitoringRequirements && (
-        <div>
-          <h4 className="text-xs font-medium text-muted-foreground mb-1">
-            Monitoring Requirements
-          </h4>
-          <p className="text-sm text-foreground">
-            {step.monitoringRequirements}
-          </p>
-        </div>
+        <DetailField
+          label="Monitoring Requirements"
+          value={step.monitoringRequirements}
+        />
       )}
 
       {/* Inferred Fields (AI-detected from step text) */}
       {(step.inferredEventCategories?.length ||
         step.inferredResourceType ||
         step.inferredResourceTitle) && (
-        <div className="pt-3 border-t border-border">
-          <h4 className="text-xs font-medium text-muted-foreground mb-2">
-            AI-Inferred Context
-          </h4>
-          <div className="space-y-2">
-            {step.inferredEventCategories &&
-              step.inferredEventCategories.length > 0 && (
-                <div>
-                  <span className="text-xs text-muted-foreground">
-                    Event Categories:
-                  </span>
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {step.inferredEventCategories.map((category) => (
-                      <Badge
-                        key={category}
-                        variant="secondary"
-                        className="text-xs"
-                      >
-                        {category}
-                      </Badge>
-                    ))}
+        <>
+          <Separator className="my-3" />
+          <div>
+            <h4 className="text-xs font-medium text-muted-foreground mb-2">
+              AI-Inferred Context
+            </h4>
+            <div className="space-y-2">
+              {step.inferredEventCategories &&
+                step.inferredEventCategories.length > 0 && (
+                  <div>
+                    <span className="text-xs text-muted-foreground">
+                      Event Categories:
+                    </span>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {step.inferredEventCategories.map((category) => (
+                        <Badge
+                          key={category}
+                          variant="secondary"
+                          className="text-xs"
+                        >
+                          {category}
+                        </Badge>
+                      ))}
+                    </div>
                   </div>
+                )}
+              {step.inferredResourceType && (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">
+                    Resource Type:
+                  </span>
+                  <Badge variant="outline" className="text-xs">
+                    {step.inferredResourceType}
+                  </Badge>
                 </div>
               )}
-            {step.inferredResourceType && (
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">
-                  Resource Type:
-                </span>
-                <Badge variant="outline" className="text-xs">
-                  {step.inferredResourceType}
-                </Badge>
-              </div>
-            )}
-            {step.inferredResourceTitle && (
-              <div>
-                <span className="text-xs text-muted-foreground">
-                  Resource Title:
-                </span>
-                <p className="text-sm text-foreground mt-0.5">
-                  {step.inferredResourceTitle}
-                </p>
-              </div>
-            )}
+              {step.inferredResourceTitle && (
+                <div>
+                  <span className="text-xs text-muted-foreground">
+                    Resource Title:
+                  </span>
+                  <p className="text-sm text-foreground mt-0.5">
+                    {step.inferredResourceTitle}
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   )

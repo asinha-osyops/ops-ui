@@ -1,13 +1,15 @@
 'use client'
 
-import { useEffect, useMemo, useCallback, useState, memo } from 'react'
+import { useEffect, useMemo, useCallback, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { ColumnDef } from '@tanstack/react-table'
 import { pluralize } from '@/lib/utils/format-helpers'
 import { apiClient, SopDto, ProcessingStatus } from '@/lib/api-client'
 import { Route, Breadcrumbs } from '@/lib/routes'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { LoadableContent } from '@/components/ui/LoadableContent'
+import { DataTable } from '@/components/ui/data-table'
 import { PageLayout } from '@/components/PageLayout'
 import { useDeleteConfirmation } from '@/lib/hooks/useDeleteConfirmation'
 import { useEntityColorScheme } from '@/lib/hooks/useColorScheme'
@@ -27,142 +29,11 @@ import {
 import { useRequireCompany } from '@/lib/hooks/useRequireCompany'
 import { useTaskPolling } from '@/hooks/use-task-polling'
 import { SopEditModal } from '@/components/sop/SopEditModal'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 
-// Memoized table row component to prevent unnecessary re-renders
-interface SopTableRowProps {
-  sop: SopDto
+/** Row data enriched with analyzing state */
+interface SopRowData extends SopDto {
   isAnalyzing: boolean
-  onRowClick: (sop: SopDto) => void
-  onEdit: (sop: SopDto) => void
-  onDelete: (sop: SopDto) => void
 }
-
-const SopTableRowMemo = memo(function SopTableRowMemo({
-  sop,
-  isAnalyzing,
-  onRowClick,
-  onEdit,
-  onDelete,
-}: SopTableRowProps) {
-  return (
-    <TableRow
-      className="cursor-pointer hover:bg-muted/50"
-      onClick={() => onRowClick(sop)}
-    >
-      <TableCell>
-        <div className="flex items-center gap-2">
-          <span className="font-medium">{sop.name}</span>
-          {isAnalyzing && (
-            <Badge variant="secondary" className="flex items-center gap-1">
-              <Loader2 className="h-3 w-3 animate-spin" />
-              <span className="hidden sm:inline">Analyzing</span>
-            </Badge>
-          )}
-        </div>
-      </TableCell>
-      <TableCell className="hidden md:table-cell">
-        <span className="text-muted-foreground line-clamp-1">
-          {sop.basicDescription || '-'}
-        </span>
-      </TableCell>
-      <TableCell className="hidden sm:table-cell">
-        <Badge variant="outline">
-          {sop.steps.length} step{pluralize(sop.steps.length)}
-        </Badge>
-      </TableCell>
-      <TableCell className="hidden sm:table-cell">
-        {/* Validation Status */}
-        {sop.dagValid ? (
-          sop.validationWarnings && sop.validationWarnings.length > 0 ? (
-            <Badge
-              variant="outline"
-              className="border-yellow-500 text-yellow-600 dark:text-yellow-400 flex items-center gap-1 w-fit"
-            >
-              <AlertTriangle className="h-3 w-3" />
-              <span>
-                {sop.validationWarnings.length} warning
-                {sop.validationWarnings.length !== 1 ? 's' : ''}
-              </span>
-            </Badge>
-          ) : (
-            <Badge
-              variant="outline"
-              className="border-green-500 text-green-600 dark:text-green-400 flex items-center gap-1 w-fit"
-            >
-              <CheckCircle className="h-3 w-3" />
-              <span>Valid</span>
-            </Badge>
-          )
-        ) : (
-          <Badge
-            variant="outline"
-            className="border-red-500 text-red-600 dark:text-red-400 flex items-center gap-1 w-fit"
-          >
-            <XCircle className="h-3 w-3" />
-            <span>
-              {sop.validationErrors?.length || 0} error
-              {(sop.validationErrors?.length || 0) !== 1 ? 's' : ''}
-            </span>
-          </Badge>
-        )}
-      </TableCell>
-      <TableCell className="hidden lg:table-cell">
-        {sop.sopFile ? (
-          <div className="flex items-center gap-1 text-muted-foreground">
-            <FileText className="h-4 w-4" />
-            <span className="text-sm truncate max-w-[120px]">
-              {sop.sopFile.fileName}
-            </span>
-          </div>
-        ) : (
-          <span className="text-muted-foreground">-</span>
-        )}
-      </TableCell>
-      <TableCell className="hidden md:table-cell">
-        <span className="text-sm text-muted-foreground">
-          {new Date(sop.createdAt).toLocaleDateString()}
-        </span>
-      </TableCell>
-      <TableCell className="text-right">
-        <div className="flex items-center justify-end gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={(e) => {
-              e.stopPropagation()
-              onEdit(sop)
-            }}
-            title="Edit"
-            aria-label="Edit SOP"
-          >
-            <Pencil className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={(e) => {
-              e.stopPropagation()
-              onDelete(sop)
-            }}
-            title="Delete"
-            aria-label="Delete SOP"
-            className="text-destructive hover:text-destructive"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
-      </TableCell>
-    </TableRow>
-  )
-})
 
 export function SopPageContent() {
   const router = useRouter()
@@ -260,19 +131,179 @@ export function SopPageContent() {
   })
 
   // Helper to check if SOP is currently being analyzed
-  const isAnalyzing = (sopId: string) => {
-    const status = taskStatuses.get(sopId)
-    return (
-      status &&
-      (status.status === ProcessingStatus.PENDING ||
-        status.status === ProcessingStatus.PROCESSING)
-    )
-  }
+  const isAnalyzing = useCallback(
+    (sopId: string) => {
+      const status = taskStatuses.get(sopId)
+      return !!(
+        status &&
+        (status.status === ProcessingStatus.PENDING ||
+          status.status === ProcessingStatus.PROCESSING)
+      )
+    },
+    [taskStatuses]
+  )
+
+  // Enrich rows with analyzing state
+  const rows: SopRowData[] = useMemo(
+    () => sops.map((sop) => ({ ...sop, isAnalyzing: isAnalyzing(sop.id) })),
+    [sops, isAnalyzing]
+  )
 
   // Navigate to detail page
-  const handleRowClick = (sop: SopDto) => {
-    router.push(Route.SOP_DETAIL(sop.id))
-  }
+  const handleRowClick = useCallback(
+    (row: SopRowData) => {
+      router.push(Route.SOP_DETAIL(row.id))
+    },
+    [router]
+  )
+
+  // Column definitions
+  const columns: ColumnDef<SopRowData>[] = useMemo(
+    () => [
+      {
+        accessorKey: 'name',
+        header: 'Name',
+        cell: ({ row }) => (
+          <div className="flex items-center gap-2">
+            <span className="font-medium">{row.original.name}</span>
+            {row.original.isAnalyzing && (
+              <Badge variant="secondary" className="flex items-center gap-1">
+                <Loader2 className="h-3 w-3 animate-spin" />
+                <span className="hidden sm:inline">Analyzing</span>
+              </Badge>
+            )}
+          </div>
+        ),
+      },
+      {
+        accessorKey: 'basicDescription',
+        header: 'Description',
+        meta: { className: 'hidden md:table-cell' },
+        cell: ({ row }) => (
+          <span className="text-muted-foreground line-clamp-1">
+            {row.original.basicDescription || '-'}
+          </span>
+        ),
+      },
+      {
+        id: 'steps',
+        header: 'Steps',
+        meta: { className: 'hidden sm:table-cell' },
+        cell: ({ row }) => (
+          <Badge variant="outline">
+            {row.original.steps.length} step
+            {pluralize(row.original.steps.length)}
+          </Badge>
+        ),
+      },
+      {
+        id: 'status',
+        header: 'Status',
+        meta: { className: 'hidden sm:table-cell' },
+        cell: ({ row }) => {
+          const sop = row.original
+          if (sop.dagValid) {
+            if (sop.validationWarnings && sop.validationWarnings.length > 0) {
+              return (
+                <Badge
+                  variant="outline"
+                  className="border-yellow-500 text-yellow-600 dark:text-yellow-400 flex items-center gap-1 w-fit"
+                >
+                  <AlertTriangle className="h-3 w-3" />
+                  <span>
+                    {sop.validationWarnings.length} warning
+                    {sop.validationWarnings.length !== 1 ? 's' : ''}
+                  </span>
+                </Badge>
+              )
+            }
+            return (
+              <Badge
+                variant="outline"
+                className="border-green-500 text-green-600 dark:text-green-400 flex items-center gap-1 w-fit"
+              >
+                <CheckCircle className="h-3 w-3" />
+                <span>Valid</span>
+              </Badge>
+            )
+          }
+          return (
+            <Badge
+              variant="outline"
+              className="border-red-500 text-red-600 dark:text-red-400 flex items-center gap-1 w-fit"
+            >
+              <XCircle className="h-3 w-3" />
+              <span>
+                {sop.validationErrors?.length || 0} error
+                {(sop.validationErrors?.length || 0) !== 1 ? 's' : ''}
+              </span>
+            </Badge>
+          )
+        },
+      },
+      {
+        id: 'file',
+        header: 'File',
+        meta: { className: 'hidden lg:table-cell' },
+        cell: ({ row }) =>
+          row.original.sopFile ? (
+            <div className="flex items-center gap-1 text-muted-foreground">
+              <FileText className="h-4 w-4" />
+              <span className="text-sm truncate max-w-[120px]">
+                {row.original.sopFile.fileName}
+              </span>
+            </div>
+          ) : (
+            <span className="text-muted-foreground">-</span>
+          ),
+      },
+      {
+        accessorKey: 'createdAt',
+        header: 'Created',
+        meta: { className: 'hidden md:table-cell' },
+        cell: ({ row }) => (
+          <span className="text-sm text-muted-foreground">
+            {new Date(row.original.createdAt).toLocaleDateString()}
+          </span>
+        ),
+      },
+      {
+        id: 'actions',
+        header: () => <span className="text-right block">Actions</span>,
+        meta: { className: 'text-right' },
+        cell: ({ row }) => (
+          <div className="flex items-center justify-end gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation()
+                handleEdit(row.original)
+              }}
+              title="Edit"
+              aria-label="Edit SOP"
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation()
+                confirmAndDeleteSop(row.original)
+              }}
+              title="Delete"
+              aria-label="Delete SOP"
+              className="text-destructive hover:text-destructive"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        ),
+      },
+    ],
+    [handleEdit, confirmAndDeleteSop]
+  )
 
   // Show alert if no company selected
   if (!hasCompany) {
@@ -309,43 +340,12 @@ export function SopPageContent() {
               useSkeleton={true}
               skeletonRows={5}
             >
-              <div className="rounded-lg border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead className="hidden md:table-cell">
-                        Description
-                      </TableHead>
-                      <TableHead className="hidden sm:table-cell">
-                        Steps
-                      </TableHead>
-                      <TableHead className="hidden sm:table-cell">
-                        Status
-                      </TableHead>
-                      <TableHead className="hidden lg:table-cell">
-                        File
-                      </TableHead>
-                      <TableHead className="hidden md:table-cell">
-                        Created
-                      </TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {sops.map((sop) => (
-                      <SopTableRowMemo
-                        key={sop.id}
-                        sop={sop}
-                        isAnalyzing={!!isAnalyzing(sop.id)}
-                        onRowClick={handleRowClick}
-                        onEdit={handleEdit}
-                        onDelete={confirmAndDeleteSop}
-                      />
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+              <DataTable
+                columns={columns}
+                data={rows}
+                onRowClick={handleRowClick}
+                showViewOptions={false}
+              />
             </LoadableContent>
           </CardContent>
         </Card>
