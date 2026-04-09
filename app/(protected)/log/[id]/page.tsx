@@ -50,6 +50,11 @@ export default function LogDetailPage() {
   const params = useParams()
   const logId = getStringParam(params.id)
 
+  // Client-side task tracking: LogDto has no taskId field, so if processing
+  // was started in another session we can't resume polling from this page.
+  // The "Processing..." badge still shows (via log.processingStatus) but the
+  // user must refresh manually to see completion. Backend would need a taskId
+  // field on LogDto to fix this properly.
   const [processingTaskId, setProcessingTaskId] = useState<string | null>(null)
 
   const { classes: logClasses, buttonClasses: logButtonClasses } =
@@ -67,14 +72,19 @@ export default function LogDetailPage() {
     entityTypeName: 'Log',
   })
 
-  // Task polling for async log processing
+  // Task polling for async log processing.
+  // Extract id into a primitive so React Compiler's inferred dep matches
+  // the source deps exactly — depending on the whole `log` object would
+  // cause unnecessary polling restarts since useEntityDetail returns a
+  // fresh reference on every fetchLog().
+  const logIdForPolling = log?.id
   const processingTasks = useMemo(() => {
     const tasks = new Map<string, string>()
-    if (processingTaskId && log) {
-      tasks.set(log.id, processingTaskId)
+    if (processingTaskId && logIdForPolling) {
+      tasks.set(logIdForPolling, processingTaskId)
     }
     return tasks
-  }, [processingTaskId, log])
+  }, [processingTaskId, logIdForPolling])
 
   const { statuses: taskStatuses, allComplete } = useTaskPolling(
     processingTasks,

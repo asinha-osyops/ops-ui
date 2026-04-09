@@ -232,11 +232,11 @@ export function AnalysisGraphNew({
         </Button>
       </div>
 
-      <div className="flex gap-4">
+      <div className="flex flex-col md:flex-row gap-4">
         {/* Graph */}
         <div
           ref={graphContainerRef}
-          className="h-[900px] flex-1 rounded-lg border border-border bg-background overflow-hidden relative"
+          className="h-[500px] md:h-[900px] flex-1 rounded-lg border border-border bg-background overflow-hidden relative"
         >
           <ReactFlow
             nodes={nodes}
@@ -265,9 +265,9 @@ export function AnalysisGraphNew({
 
         {/* Expanded step detail panel (click-to-expand) */}
         {expandedStep && (
-          <div className="w-[400px] shrink-0">
-            <div className="rounded-lg border border-border bg-card overflow-hidden">
-              <div className="p-3 border-b border-border bg-muted/50">
+          <div className="w-full md:w-[400px] md:shrink-0">
+            <div className="rounded-lg border border-border bg-card overflow-hidden flex flex-col h-[500px] md:h-[900px]">
+              <div className="p-3 border-b border-border bg-muted/50 flex-shrink-0">
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-medium truncate">
                     {expandedStep.name}
@@ -290,7 +290,7 @@ export function AnalysisGraphNew({
                   stepDuration={getStepTotals(expandedStep.id).stepDuration}
                 />
               </div>
-              <ScrollArea className="h-[820px]">
+              <ScrollArea className="flex-1">
                 <div className="p-3">
                   <AnalysisStepExpandedContent
                     step={expandedStep}

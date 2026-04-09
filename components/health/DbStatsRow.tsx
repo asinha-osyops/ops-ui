@@ -153,8 +153,8 @@ export const DbStatsRow = forwardRef<DbStatsRowHandle>(
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {data.largestTables.map((table) => (
-                          <TableRow key={table.tableName}>
+                        {data.largestTables.map((table, i) => (
+                          <TableRow key={table.tableName ?? `table-${i}`}>
                             <TableCell className="font-mono text-xs">
                               {table.tableName}
                             </TableCell>
@@ -199,8 +199,8 @@ export const DbStatsRow = forwardRef<DbStatsRowHandle>(
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {data.unusedIndexes.map((idx) => (
-                          <TableRow key={idx.indexName}>
+                        {data.unusedIndexes.map((idx, i) => (
+                          <TableRow key={idx.indexName ?? `idx-${i}`}>
                             <TableCell className="font-mono text-xs">
                               {idx.tableName}
                             </TableCell>

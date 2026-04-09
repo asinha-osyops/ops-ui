@@ -578,25 +578,10 @@ export interface SopAnalysisStepDto {
   postStepDocumentation: string | null
 }
 
-/**
- * @deprecated Legacy DTO for Gemini processing results. Use SopAnalysisDto for trace analysis.
- */
-export interface GeminiSopAnalysisDto {
-  steps: SopAnalysisStepDto[]
-}
-
 export interface LogAnalysisDto {
   system: string
   actions: string[]
   users: string[]
-}
-
-export interface GenerateTextRequestDto {
-  prompt: string
-}
-
-export interface GenerateTextResponseDto {
-  generatedText: string
 }
 
 export interface CreateSopResponseDto extends SOPResponse {
@@ -942,28 +927,12 @@ export interface UpdateActivityEventEventCategoriesRequestDto {
   eventCategories: EventCategory[]
 }
 
-// ===== Log Line Statistics DTOs =====
+// ===== Statistics DTOs =====
 
 export interface CategoryCount {
   eventCategory: EventCategory
   count: number
 }
-
-export interface ServiceCount {
-  service: string
-  count: number
-}
-
-export interface LogLineStatisticsDto {
-  totalCount: number
-  countByEventCategory: Record<string, number>
-  countByService: Record<string, number>
-  countByPlatform: Record<string, number>
-  topEventCategories: CategoryCount[]
-  topServices: ServiceCount[]
-}
-
-// ===== Statistics DTOs =====
 
 export interface LogMetricsDto {
   totalCount: number
@@ -985,24 +954,6 @@ export interface CsrfResponseDto {
 // ===== Processing Result DTOs =====
 
 /**
- * Result of synchronous SOP processing (Gemini analysis)
- */
-export interface SopProcessingResultDto {
-  steps: SopAnalysisStepDto[]
-  edges?: EdgeDto[]
-  formatFlags?: Record<string, boolean>
-}
-
-/**
- * Result of synchronous Log processing (Gemini analysis)
- */
-export interface LogProcessingResultDto {
-  system: string
-  actions: string[]
-  users: string[]
-}
-
-/**
  * Response when async processing is queued
  */
 export interface AsyncProcessingResponseDto {
@@ -1013,11 +964,6 @@ export interface AsyncProcessingResponseDto {
 }
 
 // ===== Cache Information DTOs =====
-
-/**
- * @deprecated Legacy DTO — backend no longer returns this shape.
- */
-export type ActivityEventCacheInfoDto = Record<string, unknown>
 
 /**
  * SOP-level analysis results
@@ -1588,28 +1534,6 @@ export class APIClient {
   }
 
   /**
-   * @deprecated Use createSopWithFile() instead. This method will be removed in a future version.
-   * The backend now expects multipart/form-data with optional file upload.
-   */
-  async createSOP(requestDto: CreateSopRequestDto): Promise<SopDto> {
-    const response = await makeNullableRequest<SopDto>(
-      `${this.baseURL}/api/sop`,
-      {
-        method: 'POST',
-        headers: this.getAuthHeaders(),
-        body: JSON.stringify(requestDto),
-      },
-      'creating SOP'
-    )
-
-    if (!response) {
-      throw new Error('Failed to create SOP')
-    }
-
-    return response
-  }
-
-  /**
    * Create SOP with multipart/form-data (aligned with OpenAPI spec)
    * @param requestDto - SOP metadata
    * @param file - Optional SOP file (.pdf, .doc, .docx)
@@ -1686,34 +1610,6 @@ export class APIClient {
       },
       `fetching SOP ${id}`
     )
-  }
-
-  /**
-   * @deprecated Synchronous SOP processing no longer exists. The backend endpoint
-   * POST /api/sop/process/{id} now returns an async task response.
-   * Use processSopAsync() instead.
-   */
-  async processSop(id: string): Promise<SopProcessingResultDto | null> {
-    console.warn(
-      'processSop() is deprecated: POST /api/sop/process/{id} now returns async task. Use processSopAsync() instead.'
-    )
-    return makeNullableRequest<SopProcessingResultDto>(
-      `${this.baseURL}/api/sop/process/${id}`,
-      {
-        method: 'POST',
-        headers: this.getAuthHeaders(),
-      },
-      `processing SOP ${id}`
-    )
-  }
-
-  /**
-   * @deprecated Use processSop() instead. This alias will be removed in a future version.
-   */
-  async analyzeSop(id: string): Promise<GeminiSopAnalysisDto | null> {
-    const result = await this.processSop(id)
-    // Transform to legacy format for backward compatibility
-    return result ? { steps: result.steps } : null
   }
 
   async deleteSop(id: string): Promise<SOPResponse> {
@@ -1832,24 +1728,6 @@ export class APIClient {
         headers: this.getAuthHeaders(),
       },
       `validating DAG for SOP ${sopId}`
-    )
-  }
-
-  /**
-   * @deprecated Backend endpoint POST /api/sop/{sopId}/migrate-to-dag has been removed.
-   * All SOPs are now DAG-native. This method will 404.
-   */
-  async migrateToDag(sopId: string): Promise<DagValidationResultDto> {
-    console.warn(
-      'migrateToDag() is deprecated: endpoint removed from backend. All SOPs are DAG-native.'
-    )
-    return makeObjectRequest<DagValidationResultDto>(
-      `${this.baseURL}/api/sop/${sopId}/migrate-to-dag`,
-      {
-        method: 'POST',
-        headers: this.getAuthHeaders(),
-      },
-      `migrating SOP ${sopId} to DAG format`
     )
   }
 
@@ -2038,27 +1916,6 @@ export class APIClient {
   }
 
   // Log methods
-  /**
-   * @deprecated Use createLogWithFile() instead. This method will be removed in a future version.
-   * The backend now expects multipart/form-data with required file upload.
-   */
-  async createLog(requestDto: CreateLogRequestDto): Promise<LogDto> {
-    const response = await makeNullableRequest<LogDto>(
-      `${this.baseURL}/api/log`,
-      {
-        method: 'POST',
-        headers: this.getAuthHeaders(),
-        body: JSON.stringify(requestDto),
-      },
-      'creating log'
-    )
-
-    if (!response) {
-      throw new Error('Failed to create log')
-    }
-
-    return response
-  }
 
   /**
    * Create Log with multipart/form-data (aligned with OpenAPI spec)
@@ -2133,32 +1990,6 @@ export class APIClient {
       },
       `fetching log ${id}`
     )
-  }
-
-  /**
-   * @deprecated Synchronous log processing no longer exists. The backend endpoint
-   * POST /api/log/process/{id} now returns an async task response.
-   * Use processLogAsync() instead.
-   */
-  async processLog(id: string): Promise<LogProcessingResultDto | null> {
-    console.warn(
-      'processLog() is deprecated: POST /api/log/process/{id} now returns async task. Use processLogAsync() instead.'
-    )
-    return makeNullableRequest<LogProcessingResultDto>(
-      `${this.baseURL}/api/log/process/${id}`,
-      {
-        method: 'POST',
-        headers: this.getAuthHeaders(),
-      },
-      `processing log ${id}`
-    )
-  }
-
-  /**
-   * @deprecated Use processLog() instead. This alias will be removed in a future version.
-   */
-  async analyzeLog(id: string): Promise<LogAnalysisDto | null> {
-    return this.processLog(id)
   }
 
   async deleteLog(id: string): Promise<LogResponse> {
@@ -2408,27 +2239,6 @@ export class APIClient {
         headers: this.getAuthHeaders(),
       },
       `fetching log lines by multi-attribute query`
-    )
-  }
-
-  /**
-   * @deprecated Backend endpoint GET /api/log/lines/statistics does not exist.
-   * Statistics are now available via GET /api/statistics/log (requires integration).
-   */
-  async getLogLineStatistics(
-    companyId: string
-  ): Promise<LogLineStatisticsDto | null> {
-    console.warn(
-      'getLogLineStatistics() is deprecated: /api/log/lines/statistics does not exist. Statistics are under /api/statistics/log.'
-    )
-    const params = new URLSearchParams({ companyId })
-    return makeNullableRequest<LogLineStatisticsDto>(
-      `${this.baseURL}/api/log/lines/statistics?${params}`,
-      {
-        method: 'GET',
-        headers: this.getAuthHeaders(),
-      },
-      `fetching log line statistics for company ${companyId}`
     )
   }
 
@@ -2797,25 +2607,6 @@ export class APIClient {
     return response
   }
 
-  /**
-   * @deprecated Backend endpoint POST /api/gemini/generate is not in the OpenAPI spec.
-   * This endpoint may have been removed. Use AI processing via processSopAsync/processLogAsync instead.
-   */
-  async generateText(prompt: string): Promise<GenerateTextResponseDto | null> {
-    console.warn(
-      'generateText() is deprecated: /api/gemini/generate may not exist on current backend.'
-    )
-    return makeNullableRequest<GenerateTextResponseDto>(
-      `${this.baseURL}/api/gemini/generate`,
-      {
-        method: 'POST',
-        headers: this.getAuthHeaders(),
-        body: JSON.stringify({ prompt }),
-      },
-      'generating text with Gemini'
-    )
-  }
-
   // ActivityEvent methods
   async createActivityEvent(
     requestDto: CreateActivityEventRequestDto
@@ -2925,28 +2716,6 @@ export class APIClient {
     )
   }
 
-  /**
-   * @deprecated Backend endpoint PUT /api/activity-event/{id}/log-line-types does not exist.
-   * Use updateActivityEventEventCategories() or updateActivityEventLogLineEventTypes() instead.
-   */
-  async updateActivityEventLogLineTypes(
-    id: string,
-    eventCategories: EventCategory[]
-  ): Promise<ActivityEventDto | null> {
-    console.warn(
-      'updateActivityEventLogLineTypes() is deprecated: /log-line-types endpoint does not exist. Use updateActivityEventEventCategories() instead.'
-    )
-    return makeNullableRequest<ActivityEventDto>(
-      `${this.baseURL}/api/activity-event/${id}/log-line-types`,
-      {
-        method: 'PUT',
-        headers: this.getAuthHeaders(),
-        body: JSON.stringify({ eventCategories }),
-      },
-      `updating event categories for activity event ${id}`
-    )
-  }
-
   async updateActivityEventEventCategories(
     id: string,
     eventCategories: EventCategory[]
@@ -2992,27 +2761,6 @@ export class APIClient {
     )
   }
 
-  /**
-   * @deprecated Synchronous analysis endpoint no longer exists on the backend.
-   * Use analyzeSopOrchestrated() for async DAG-orchestrated analysis instead.
-   */
-  async traceSopSteps(
-    request: AnalyzeSopRequestDto
-  ): Promise<TraceSopStepsResponseDto | null> {
-    console.warn(
-      'traceSopSteps() is deprecated: synchronous /api/analysis/analyze no longer exists. Use analyzeSopOrchestrated() instead.'
-    )
-    return makeNullableRequest<TraceSopStepsResponseDto>(
-      `${this.baseURL}/api/analysis/analyze`,
-      {
-        method: 'POST',
-        headers: this.getAuthHeaders(),
-        body: JSON.stringify(request),
-      },
-      'tracing SOP steps'
-    )
-  }
-
   // ===== Async Processing Methods =====
 
   /**
@@ -3033,13 +2781,6 @@ export class APIClient {
   }
 
   /**
-   * @deprecated Use processSopAsync() instead. This alias will be removed in a future version.
-   */
-  async analyzeSopAsync(id: string): Promise<AsyncAnalysisResponseDto> {
-    return this.processSopAsync(id)
-  }
-
-  /**
    * Process Log with Gemini AI (asynchronous)
    * Queues log for background processing
    */
@@ -3054,13 +2795,6 @@ export class APIClient {
     )
     if (!response) throw new Error('Failed to queue log processing')
     return response
-  }
-
-  /**
-   * @deprecated Use processLogAsync() instead. This alias will be removed in a future version.
-   */
-  async analyzeLogAsync(id: string): Promise<AsyncAnalysisResponseDto> {
-    return this.processLogAsync(id)
   }
 
   // ===== Async Analysis Methods =====
@@ -3154,18 +2888,14 @@ export class APIClient {
    * Returns null if no results exist or user lacks admin access
    */
   async getSopCacheInfo(sopId: string): Promise<SopCacheInfoDto | null> {
-    try {
-      return await makeNullableRequest<SopCacheInfoDto>(
-        `${this.baseURL}/api/admin/analysis-results/sop/${sopId}`,
-        {
-          method: 'GET',
-          headers: this.getAuthHeaders(),
-        },
-        `fetching analysis results for SOP ${sopId}`
-      )
-    } catch {
-      return null
-    }
+    return makeNullableRequest<SopCacheInfoDto>(
+      `${this.baseURL}/api/admin/analysis-results/sop/${sopId}`,
+      {
+        method: 'GET',
+        headers: this.getAuthHeaders(),
+      },
+      `fetching analysis results for SOP ${sopId}`
+    )
   }
 
   /**
@@ -3175,31 +2905,14 @@ export class APIClient {
   async getStepCacheInfo(
     stepId: string
   ): Promise<StepActivityEventResultDto | null> {
-    try {
-      return await makeNullableRequest<StepActivityEventResultDto>(
-        `${this.baseURL}/api/admin/analysis-results/step/${stepId}`,
-        {
-          method: 'GET',
-          headers: this.getAuthHeaders(),
-        },
-        `fetching analysis result for step ${stepId}`
-      )
-    } catch {
-      return null
-    }
-  }
-
-  /**
-   * @deprecated Backend does not have a GET endpoint for activity event analysis results.
-   * Use getStepCacheInfo() to read results per step instead.
-   */
-  async getActivityEventCacheInfo(
-    _activityEventId: string
-  ): Promise<ActivityEventCacheInfoDto | null> {
-    console.warn(
-      'getActivityEventCacheInfo() is deprecated: no GET endpoint exists at /api/admin/analysis-results/activity-event/.'
+    return makeNullableRequest<StepActivityEventResultDto>(
+      `${this.baseURL}/api/admin/analysis-results/step/${stepId}`,
+      {
+        method: 'GET',
+        headers: this.getAuthHeaders(),
+      },
+      `fetching analysis result for step ${stepId}`
     )
-    return null
   }
 
   /**
@@ -3209,18 +2922,14 @@ export class APIClient {
   async invalidateStepCache(
     stepId: string
   ): Promise<{ success: boolean; message?: string }> {
-    try {
-      return await makeSimpleRequest(
-        `${this.baseURL}/api/admin/analysis-results/step/${stepId}`,
-        {
-          method: 'DELETE',
-          headers: this.getAuthHeaders(),
-        },
-        `deleting analysis results for step ${stepId}`
-      )
-    } catch {
-      return { success: false, message: 'Failed to delete step results' }
-    }
+    return makeSimpleRequest(
+      `${this.baseURL}/api/admin/analysis-results/step/${stepId}`,
+      {
+        method: 'DELETE',
+        headers: this.getAuthHeaders(),
+      },
+      `deleting analysis results for step ${stepId}`
+    )
   }
 
   /**

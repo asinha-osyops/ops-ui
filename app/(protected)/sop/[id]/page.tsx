@@ -38,7 +38,6 @@ import {
   StopCircle,
   GitBranch,
   GitMerge,
-  AlertTriangle,
   FileText,
   CheckCircle,
   XCircle,
@@ -84,14 +83,20 @@ export default function SopDetailPage() {
     entityTypeName: 'SOP',
   })
 
-  // Task polling for analysis - memoize to prevent infinite re-renders
+  // Task polling for analysis - memoize to prevent infinite re-renders.
+  // Extract ids into primitives so React Compiler's inferred dep matches
+  // the source deps exactly — depending on the whole `sop` object would
+  // cause unnecessary polling restarts since useEntityDetail returns a
+  // fresh reference on every fetchSop().
+  const sopIdForPolling = sop?.id
+  const sopAnalysisTaskId = sop?.analysisTaskId
   const analyzingTasks = useMemo(() => {
     const tasks = new Map<string, string>()
-    if (sop?.analysisTaskId) {
-      tasks.set(sop.id, sop.analysisTaskId)
+    if (sopAnalysisTaskId && sopIdForPolling) {
+      tasks.set(sopIdForPolling, sopAnalysisTaskId)
     }
     return tasks
-  }, [sop?.id, sop?.analysisTaskId])
+  }, [sopIdForPolling, sopAnalysisTaskId])
 
   const { statuses: taskStatuses, allComplete } = useTaskPolling(
     analyzingTasks,
@@ -428,7 +433,7 @@ export default function SopDetailPage() {
           <TabsList className="mb-4">
             <TabsTrigger value="steps">Steps ({sop.steps.length})</TabsTrigger>
             <TabsTrigger value="graph">Graph View</TabsTrigger>
-            <TabsTrigger value="graph-new">Graph (Legacy)</TabsTrigger>
+            <TabsTrigger value="graph-legacy">Graph (Legacy)</TabsTrigger>
           </TabsList>
 
           {/* Steps Tab */}
@@ -663,7 +668,7 @@ export default function SopDetailPage() {
           </TabsContent>
 
           {/* Legacy Graph View */}
-          <TabsContent value="graph-new">
+          <TabsContent value="graph-legacy">
             <SopGraphView sop={sop} isEditable={true} onSopUpdate={fetchSop} />
           </TabsContent>
         </Tabs>

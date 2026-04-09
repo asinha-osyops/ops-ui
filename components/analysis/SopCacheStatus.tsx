@@ -155,52 +155,58 @@ export function SopCacheStatus({
                     </div>
                     <ScrollArea className="h-48">
                       <div className="space-y-1 pr-4">
-                        {cacheInfo.stepResults.map((step) => (
-                          <div
-                            key={step.stepId}
-                            className="flex items-center justify-between text-xs p-2 rounded bg-muted/50"
-                          >
-                            <span
-                              className="truncate max-w-[150px]"
-                              title={step.stepName}
+                        {cacheInfo.stepResults.map((step) => {
+                          const logLineResults = step.logLineResults ?? []
+                          const totalLogLines = logLineResults.reduce(
+                            (sum, r) => sum + r.matchingLogLineCount,
+                            0
+                          )
+                          return (
+                            <div
+                              key={step.stepId}
+                              className="flex items-center justify-between text-xs p-2 rounded bg-muted/50"
                             >
-                              {step.stepName}
-                            </span>
-                            <div className="flex items-center gap-2">
-                              <Badge variant="outline" className="text-[10px]">
-                                {step.activityEventCount} AE
-                              </Badge>
-                              {(step.logLineResults?.length ?? 0) > 0 && (
+                              <span
+                                className="truncate max-w-[150px]"
+                                title={step.stepName}
+                              >
+                                {step.stepName}
+                              </span>
+                              <div className="flex items-center gap-2">
                                 <Badge
-                                  variant="secondary"
+                                  variant="outline"
                                   className="text-[10px]"
                                 >
-                                  {step.logLineResults!.reduce(
-                                    (sum, r) => sum + r.matchingLogLineCount,
-                                    0
-                                  )}{' '}
-                                  log lines
+                                  {step.activityEventCount} AE
                                 </Badge>
-                              )}
-                              {step.fullyComplete ? (
-                                <Badge
-                                  variant="outline"
-                                  className="text-[10px] border-green-500 text-green-600"
-                                >
-                                  Done
-                                </Badge>
-                              ) : (
-                                <Badge
-                                  variant="outline"
-                                  className="text-[10px] border-yellow-500 text-yellow-600"
-                                >
-                                  {step.completedLogLineTasks}/
-                                  {step.totalLogLineTasks}
-                                </Badge>
-                              )}
+                                {logLineResults.length > 0 && (
+                                  <Badge
+                                    variant="secondary"
+                                    className="text-[10px]"
+                                  >
+                                    {totalLogLines} log lines
+                                  </Badge>
+                                )}
+                                {step.fullyComplete ? (
+                                  <Badge
+                                    variant="outline"
+                                    className="text-[10px] border-green-500 text-green-600"
+                                  >
+                                    Done
+                                  </Badge>
+                                ) : (
+                                  <Badge
+                                    variant="outline"
+                                    className="text-[10px] border-yellow-500 text-yellow-600"
+                                  >
+                                    {step.completedLogLineTasks}/
+                                    {step.totalLogLineTasks}
+                                  </Badge>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          )
+                        })}
                       </div>
                     </ScrollArea>
                   </div>

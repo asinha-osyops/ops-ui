@@ -50,7 +50,10 @@ export function LogPageContent() {
     breadcrumbs: Breadcrumbs.log.home,
   })
 
-  // Track logs with active processing tasks (client-side, since LogDto has no taskId field)
+  // Client-side task tracking (differs from SopPageContent which derives
+  // from sop.analysisTaskId on each refresh). LogDto has no taskId field,
+  // so we must hold onto taskIds locally between handleAnalyze and poll
+  // completion. See also log/[id]/page.tsx for the same constraint.
   const [processingTasks, setProcessingTasks] = useState<Map<string, string>>(
     () => new Map()
   )
@@ -91,7 +94,6 @@ export function LogPageContent() {
       })
     })
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- Clearing tasks after completion is intentional
     setProcessingTasks(new Map())
   }, [allComplete, processingTasks.size, taskStatuses, logs, refreshLogs])
 
