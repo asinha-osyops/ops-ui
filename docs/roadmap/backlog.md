@@ -185,15 +185,16 @@ Comprehensive UI redesign using shadcn components.
 
 - **Slug**: `graph-merge-migration`
 - **Added**: 2026-04-06
-- **Status**: rfc:graph-merge-migration
+- **Status**: implemented
 
 Migrate the main SOP graph (Graph A) to the Graph Merge design combining the best of Graph A and Graph B.
 
 **Context**:
 
-- Migration guide at `docs/roadmap/m1/graph-merge-migration.md`
-- Reference implementation at `components/sop-graph-merge/`
-- Covers node architecture, styling, sizing, interaction model, edge style, layout changes
+- RFC at `docs/roadmap/m1/graph-merge-migration.md`
+- Implemented at `components/sop/graph/` (promoted from `sop-graph-merge/`)
+- Analysis graph migrated to `components/analysis/AnalysisGraphNew.tsx`
+- Legacy files pending deletion once parity confirmed
 
 ---
 

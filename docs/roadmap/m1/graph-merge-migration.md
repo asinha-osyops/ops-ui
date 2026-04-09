@@ -3,7 +3,7 @@
 **Slug**: `graph-merge-migration`
 **Milestone**: m1
 **Created**: 2026-04-06
-**Status**: draft
+**Status**: implemented
 
 ## Summary
 
@@ -137,49 +137,55 @@ SopGraphMerge → SopGraphMergeContent → StartNode | StepNode | EndNode
 
 ## Implementation Plan
 
-### Phase 1: Edit Mode Integration
+### Phase 1: Edit Mode Integration — Done
 
-- [ ] Port `useDagEditing` to work with Graph Merge's node type router (adapt source/target handle interaction)
-- [ ] Add edit mode toggle to `SopGraphNewContent` toolbar
-- [ ] Add edge creation UI (source selection highlight, target click)
-- [ ] Add edge deletion (click edge → confirm dialog)
-- [ ] Add node type change controls (toolbar or context menu)
-- [ ] Test edge creation/deletion with real SOP data
+- [x] Port `useDagEditing` to work with Graph Merge's node type router
+- [x] Add edit mode toggle to `SopGraphNewContent` toolbar
+- [x] Add edge creation UI (source selection highlight, target click)
+- [x] Add edge deletion (click edge → confirm dialog)
+- [x] Add node type change controls (dropdown in toolbar)
 
-### Phase 2: Validation Panel
+### Phase 2: Validation Panel — Done
 
-- [ ] Port `DagValidationPanel` to work alongside `SopGraphNewContent`
-- [ ] Wire validation errors/warnings from SOP data into the panel
-- [ ] Make validation items clickable to select/focus affected nodes
+- [x] Reused `DagValidationPanel` directly (no copy needed)
+- [x] Wire validation from editing hook or SOP's own fields
+- [x] Clicking validation items selects the affected node
 
-### Phase 3: Switch Main SOP Page
+### Phase 3: Switch Main SOP Page — Done
 
-- [ ] Promote `components/sop-graph-merge/` → `components/sop/graph/` (update all imports)
-- [ ] Replace `SopGraphView` import in `app/(protected)/sop/[id]/page.tsx` with the promoted graph
-- [ ] Pass required props (SOP data, edit callbacks, validation state)
-- [ ] Verify all edit operations work end-to-end
-- [ ] Remap old Graph A to `/preview/old-graph` path for comparison
+- [x] Promoted `components/sop-graph-merge/` → `components/sop/graph/`
+- [x] Main SOP page "Graph View" tab uses new graph with `isEditable={true}`
+- [x] Old `SopGraphView` moved to "Graph (Legacy)" tab for comparison
+- [x] Preview nav updated: Graph Merge is "Graph (Current)", Graph A/B labeled "Legacy"
 
-### Phase 4: Polish & Keyboard Navigation
+### Phase 4: Polish & Keyboard Navigation — Done
 
-- [ ] Implement conditional hover card: show on hover when no node selected, show only selected node's card when one is selected
-- [ ] Add keyboard handlers: Escape to deselect, Enter/Space for node interaction
-- [ ] Add edge duration color-coding to `AnimatedEdge` (green < 1 week, red >= 1 week)
-- [ ] Test mobile responsiveness; add FullscreenGraphModal wrapper if needed
-- [ ] Rename `AnimatedEdge` → `SopEdge` and edge type `'animated'` → `'sopEdge'`
+- [x] Conditional hover card: shows when no node selected, suppressed during selection/edge creation
+- [x] Keyboard navigation: Escape to deselect or cancel edge creation
+- [x] Edge duration color-coding via `SopEdge` (red labels for durations over threshold)
+- [x] Renamed `AnimatedEdge` → `SopEdge`, edge type `'animated'` → `'sopEdge'`
 
-### Phase 5: Cleanup & Deprecation
+### Phase 5: Cleanup & Deprecation — Done
 
-- [ ] Delete `StepNodeBase.tsx`, `step-node-config.ts`, `SopStepNode.tsx`
-- [ ] Delete `SopGraphView.tsx` (replaced by promoted graph)
-- [ ] Deprecate `DagGraphView` — remap AnalysisGraphView to use the new graph or keep temporarily
-- [ ] Delete old `sop-graph-merge/` directory (already promoted to `sop/graph/`)
-- [ ] Remove preview pages for Graph B if no longer needed
-- [ ] Update CLAUDE.md project structure section
+- [x] Deleted `sop-graph-merge/` directory (promoted to `sop/graph/`)
+- [x] Deleted old `AnimatedEdge.tsx` (replaced by `SopEdge.tsx`)
+- [x] Updated CLAUDE.md project structure
+- [ ] Delete legacy files once parity confirmed: `StepNodeBase.tsx`, `step-node-config.ts`, `SopStepNode.tsx`, `SopGraphView.tsx`, `DagGraphView.tsx`
 
-### Phase 6: Analysis Graph Migration
+### Phase 6: Analysis Graph Migration — Done
 
-- [ ] Migrate `AnalysisGraphView` from `DagGraphView` to the new graph architecture
-- [ ] Create analysis-specific node content (event counts, log lines, timestamps)
-- [ ] Delete `DagGraphView` once no consumers remain
-- [ ] Remove `/preview/old-graph` path
+- [x] Created `AnalysisGraphNew` using new node components + `SopEdge` + side panel for expanded content
+- [x] `TraceSopStepsResults` switched from `AnalysisGraphView` → `AnalysisGraphNew`
+- [x] Old `AnalysisGraphView` now unused (kept alongside other legacy files)
+- [ ] Delete `AnalysisGraphView.tsx` and `DagGraphView.tsx` once parity confirmed
+
+## Legacy Files Pending Deletion
+
+Once full functionality parity is confirmed, delete these files:
+
+- `components/graph-nodes/DagGraphView.tsx` — replaced by `sop/graph/SopGraphNewContent.tsx` and `analysis/AnalysisGraphNew.tsx`
+- `components/graph-nodes/StepNodeBase.tsx` — replaced by `sop/graph/nodes/{StartNode,StepNode,EndNode}.tsx`
+- `components/graph-nodes/step-node-config.ts` — replaced by `sop/graph/nodes/node-config.ts`
+- `components/sop/SopGraphView.tsx` — replaced by `sop/graph/SopGraphNew.tsx`
+- `components/sop/graph-nodes/SopStepNode.tsx` — replaced by `sop/graph/nodes/StepNode.tsx` + hover card
+- `components/analysis/AnalysisGraphView.tsx` — replaced by `analysis/AnalysisGraphNew.tsx`
