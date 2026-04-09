@@ -357,3 +357,89 @@ Targeted UX/UI improvements for usability and consistency.
 
 - Polished existing pages for better user experience
 - Focused on form validation, loading states, error handling
+
+---
+
+### Event Categories Management
+
+- **Slug**: `event-categories-management`
+- **Added**: 2026-04-09
+- **Status**: backlog
+
+Build CRUD UI for event categories (`/api/event-categories`) — list, create, edit, delete event categories that define the cross-platform taxonomy for classifying audit log events.
+
+**Context**:
+
+- Backend has 6 endpoints: list all, create, delete all, get by ID, get by name, update
+- `EventCategory` enum already used in frontend: `lib/api-client.ts`, query builder, activity event settings, log line helpers
+- No frontend integration exists yet — no API client methods for `/api/event-categories`
+- Could integrate into Settings page alongside existing `ActivityEventManagementTab`
+
+---
+
+### Reference Data Management
+
+- **Slug**: `reference-data-management`
+- **Added**: 2026-04-09
+- **Status**: backlog
+
+Build UI for managing pillars (`/api/pillars`) and role titles (`/api/role-titles`) — CRUD operations for organizational pillars and the global role title taxonomy.
+
+**Context**:
+
+- Backend has 3 pillar endpoints (list, create, delete all) and 5 role title endpoints (list, create, delete all, get/update by ID)
+- `RoleTitle` enum is hardcoded in frontend (`lib/api-client.ts`, ~60 values) — backend now manages these dynamically
+- No frontend integration exists yet — no API client methods for `/api/pillars` or `/api/role-titles`
+- Natural fit in Settings page or a dedicated admin Reference Data tab
+
+---
+
+### Audit Event Viewer
+
+- **Slug**: `audit-event-viewer`
+- **Added**: 2026-04-09
+- **Status**: backlog
+
+Build admin page for querying audit events (`/api/audit`) — search by category, company, date range, entity, or user with a filterable table and date range picker.
+
+**Context**:
+
+- Backend has 5 query endpoints: by-category, by-company, by-date-range, by-entity, by-user
+- No frontend integration exists — no API client methods, no UI, no route
+- Could reuse existing `@tanstack/react-table` patterns from log lines page
+- Admin-only feature; would need new route under `/admin/audit`
+
+---
+
+### System Statistics Dashboard
+
+- **Slug**: `statistics-dashboard`
+- **Added**: 2026-04-09
+- **Status**: backlog
+
+Build statistics overview page using `/api/statistics` endpoints (overview, sop, log, analysis, async, db/tables, db/indexes). Rich dashboard with charts showing system metrics.
+
+**Context**:
+
+- Backend has 8 endpoints: overview, sop metrics, log metrics, analysis metrics, async metrics, table sizes, index usage, sync counts
+- Frontend `getLogLineStatistics()` currently points to non-existent `/api/log/lines/statistics` — needs migration to `/api/statistics/log`
+- `LogStatisticsWidget` on home page (`components/dashboard/LogStatisticsWidget.tsx`) currently uses the broken endpoint
+- `recharts` already installed for data visualization; `/health` page pattern can be extended
+- `syncDbCounts` already fixed to point to `/api/statistics/db/sync-counts`
+
+---
+
+### Analysis Results Admin
+
+- **Slug**: `analysis-results-admin`
+- **Added**: 2026-04-09
+- **Status**: backlog
+
+Build admin UI for viewing and managing analysis results (`/api/admin/analysis-results`) — view results per SOP/step, delete stale results, bulk clear all.
+
+**Context**:
+
+- Backend has 6 endpoints: get/delete by SOP, get/delete by step, delete by activity event, delete all
+- Frontend cache methods already updated to point to `/api/admin/analysis-results/*` URLs
+- `components/analysis/SopCacheStatus.tsx` uses `getSopCacheInfo`/`invalidateSopCache` — already wired to new URLs
+- Could build as a tab within the SOP detail page or as a standalone admin page

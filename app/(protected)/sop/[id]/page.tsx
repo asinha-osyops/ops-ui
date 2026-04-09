@@ -64,7 +64,6 @@ export default function SopDetailPage() {
   const sopId = getStringParam(params.id)
 
   const [editingSop, setEditingSop] = useState<SopDto | null>(null)
-  const [isMigrating, setIsMigrating] = useState(false)
   const [addStepModalOpen, setAddStepModalOpen] = useState(false)
 
   const {
@@ -151,36 +150,6 @@ export default function SopDetailPage() {
     fetchSop()
   }, [fetchSop])
 
-  // Check if this is a legacy SOP that needs migration
-  const needsMigration =
-    sop && (!sop.edges || sop.edges.length === 0) && sop.steps.length > 1
-
-  // Handle migration to DAG
-  const handleMigrate = useCallback(async () => {
-    if (!sop) return
-
-    setIsMigrating(true)
-    try {
-      const result = await apiClient.migrateToDag(sop.id)
-      if (result.valid) {
-        toast.success('SOP migrated to DAG successfully')
-      } else if (result.errors.length > 0) {
-        toast.warning(
-          'Migration completed with errors. Please review the graph.'
-        )
-      } else {
-        toast.success('Migration completed with warnings. Review recommended.')
-      }
-      fetchSop()
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : 'Failed to migrate SOP'
-      toast.error(message)
-    } finally {
-      setIsMigrating(false)
-    }
-  }, [sop, fetchSop])
-
   if (loading) {
     return (
       <PageLayout
@@ -255,24 +224,23 @@ export default function SopDetailPage() {
             Created: {new Date(sop.createdAt).toLocaleDateString()}
           </span>
           {/* Validation status badge */}
-          {!needsMigration &&
-            (sop.dagValid ? (
-              <Badge
-                variant="outline"
-                className="border-green-500 text-green-600 dark:text-green-400 flex items-center gap-1"
-              >
-                <CheckCircle className="h-3 w-3" />
-                DAG Valid
-              </Badge>
-            ) : (
-              <Badge
-                variant="outline"
-                className="border-red-500 text-red-600 dark:text-red-400 flex items-center gap-1"
-              >
-                <XCircle className="h-3 w-3" />
-                DAG Invalid
-              </Badge>
-            ))}
+          {sop.dagValid ? (
+            <Badge
+              variant="outline"
+              className="border-green-500 text-green-600 dark:text-green-400 flex items-center gap-1"
+            >
+              <CheckCircle className="h-3 w-3" />
+              DAG Valid
+            </Badge>
+          ) : (
+            <Badge
+              variant="outline"
+              className="border-red-500 text-red-600 dark:text-red-400 flex items-center gap-1"
+            >
+              <XCircle className="h-3 w-3" />
+              DAG Invalid
+            </Badge>
+          )}
           {isAnalyzing && (
             <Badge variant="secondary" className="flex items-center gap-1">
               <Loader2 className="h-3 w-3 animate-spin" />
@@ -281,81 +249,49 @@ export default function SopDetailPage() {
           )}
         </div>
 
-        {/* Migration Banner for Legacy SOPs */}
-        {needsMigration && (
-          <Alert className="mb-6 border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20">
-            <AlertTriangle className="h-4 w-4 text-yellow-600" />
-            <AlertDescription className="flex items-center justify-between">
-              <span className="text-yellow-700 dark:text-yellow-300">
-                This SOP was created before DAG support. Migrate to enable graph
-                view and workflow editing.
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleMigrate}
-                disabled={isMigrating}
-                className="ml-4"
-              >
-                {isMigrating ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Migrating...
-                  </>
-                ) : (
-                  'Migrate to DAG'
-                )}
-              </Button>
+        {/* DAG Validation Status Banner */}
+        {sop.validationErrors && sop.validationErrors.length > 0 && (
+          <Alert className="mb-6 border-red-500 bg-red-50 dark:bg-red-900/20">
+            <XCircle className="h-4 w-4 text-red-600" />
+            <AlertDescription>
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-medium text-red-700 dark:text-red-300">
+                    DAG Invalid - {sop.validationErrors.length} error
+                    {sop.validationErrors.length !== 1 ? 's' : ''} must be fixed
+                    before analysis
+                  </span>
+                  {sop.lastValidatedAt && (
+                    <span className="text-xs text-red-600 dark:text-red-400">
+                      Last validated:{' '}
+                      {new Date(sop.lastValidatedAt).toLocaleString()}
+                    </span>
+                  )}
+                </div>
+                <ul className="list-disc list-inside text-sm text-red-700 dark:text-red-300 space-y-1">
+                  {sop.validationErrors.map((error, index) => (
+                    <li key={index}>
+                      <span className="font-mono text-xs mr-2">
+                        [{error.code}]
+                      </span>
+                      {error.message}
+                      {error.affectedNodeIds &&
+                        error.affectedNodeIds.length > 0 && (
+                          <span className="text-xs ml-1">
+                            (affects {error.affectedNodeIds.length} node
+                            {error.affectedNodeIds.length !== 1 ? 's' : ''})
+                          </span>
+                        )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </AlertDescription>
           </Alert>
         )}
 
-        {/* DAG Validation Status Banner */}
-        {!needsMigration &&
-          sop.validationErrors &&
-          sop.validationErrors.length > 0 && (
-            <Alert className="mb-6 border-red-500 bg-red-50 dark:bg-red-900/20">
-              <XCircle className="h-4 w-4 text-red-600" />
-              <AlertDescription>
-                <div className="flex flex-col gap-2">
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium text-red-700 dark:text-red-300">
-                      DAG Invalid - {sop.validationErrors.length} error
-                      {sop.validationErrors.length !== 1 ? 's' : ''} must be
-                      fixed before analysis
-                    </span>
-                    {sop.lastValidatedAt && (
-                      <span className="text-xs text-red-600 dark:text-red-400">
-                        Last validated:{' '}
-                        {new Date(sop.lastValidatedAt).toLocaleString()}
-                      </span>
-                    )}
-                  </div>
-                  <ul className="list-disc list-inside text-sm text-red-700 dark:text-red-300 space-y-1">
-                    {sop.validationErrors.map((error, index) => (
-                      <li key={index}>
-                        <span className="font-mono text-xs mr-2">
-                          [{error.code}]
-                        </span>
-                        {error.message}
-                        {error.affectedNodeIds &&
-                          error.affectedNodeIds.length > 0 && (
-                            <span className="text-xs ml-1">
-                              (affects {error.affectedNodeIds.length} node
-                              {error.affectedNodeIds.length !== 1 ? 's' : ''})
-                            </span>
-                          )}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </AlertDescription>
-            </Alert>
-          )}
-
         {/* DAG Validation Warnings Banner (only show if valid but has warnings) */}
-        {!needsMigration &&
-          sop.dagValid &&
+        {sop.dagValid &&
           sop.validationWarnings &&
           sop.validationWarnings.length > 0 && (
             <Alert className="mb-6 border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20">

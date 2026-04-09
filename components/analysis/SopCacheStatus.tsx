@@ -48,7 +48,6 @@ export function SopCacheStatus({
       setCacheInfo(info)
     } catch (error) {
       console.error('Failed to fetch cache info:', error)
-      // Don't show error toast - cache info is supplementary
     } finally {
       setLoading(false)
     }
@@ -65,20 +64,19 @@ export function SopCacheStatus({
     setInvalidating(true)
     try {
       await apiClient.invalidateSopCache(sopId)
-      toast.success('Cache invalidated successfully')
+      toast.success('Analysis results cleared')
       setCacheInfo(null)
       onCacheInvalidated?.()
     } catch (error) {
-      toast.error('Failed to invalidate cache')
+      toast.error('Failed to clear analysis results')
       console.error('Failed to invalidate cache:', error)
     } finally {
       setInvalidating(false)
     }
   }
 
-  const hasCachedData =
-    cacheInfo &&
-    (cacheInfo.stepsWithCache > 0 || cacheInfo.totalLogLineCaches > 0)
+  const hasResults = cacheInfo && cacheInfo.stepsWithResults > 0
+  const totalLogLineTasks = cacheInfo?.progress?.totalLogLineTasks ?? 0
 
   return (
     <Card className={cn('', className)}>
@@ -88,11 +86,11 @@ export function SopCacheStatus({
             <div className="flex items-center gap-2">
               <Database className="h-4 w-4 text-muted-foreground" />
               <CardTitle className="text-sm font-medium">
-                Cache Status
+                Analysis Results
               </CardTitle>
-              {hasCachedData && (
+              {hasResults && (
                 <Badge variant="secondary" className="text-xs">
-                  {cacheInfo.totalLogLineCaches} log line caches
+                  {cacheInfo.stepsWithResults}/{cacheInfo.totalSteps} steps
                 </Badge>
               )}
             </div>
@@ -105,8 +103,8 @@ export function SopCacheStatus({
           </CollapsibleTrigger>
           <CardDescription className="text-xs">
             {sopName
-              ? `Cache info for ${sopName}`
-              : 'View and manage analysis cache'}
+              ? `Stored results for ${sopName}`
+              : 'View and manage stored analysis results'}
           </CardDescription>
         </CardHeader>
 
@@ -116,7 +114,7 @@ export function SopCacheStatus({
               <div className="flex items-center justify-center py-4">
                 <RefreshCw className="h-4 w-4 animate-spin text-muted-foreground" />
                 <span className="ml-2 text-sm text-muted-foreground">
-                  Loading cache info...
+                  Loading results...
                 </span>
               </div>
             ) : cacheInfo ? (
@@ -125,10 +123,10 @@ export function SopCacheStatus({
                 <div className="grid grid-cols-3 gap-4">
                   <div className="text-center">
                     <div className="text-2xl font-bold">
-                      {cacheInfo.stepsWithCache}
+                      {cacheInfo.stepsWithResults}
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      Cached Steps
+                      Steps w/ Results
                     </div>
                   </div>
                   <div className="text-center">
@@ -141,23 +139,23 @@ export function SopCacheStatus({
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-bold">
-                      {cacheInfo.totalLogLineCaches}
+                      {totalLogLineTasks}
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      Log Line Caches
+                      Log Line Tasks
                     </div>
                   </div>
                 </div>
 
                 {/* Step Details */}
-                {cacheInfo.stepCacheDetails.length > 0 && (
+                {cacheInfo.stepResults && cacheInfo.stepResults.length > 0 && (
                   <div className="space-y-2">
                     <div className="text-xs font-medium text-muted-foreground uppercase">
-                      Step Cache Details
+                      Step Results
                     </div>
                     <ScrollArea className="h-48">
                       <div className="space-y-1 pr-4">
-                        {cacheInfo.stepCacheDetails.map((step) => (
+                        {cacheInfo.stepResults.map((step) => (
                           <div
                             key={step.stepId}
                             className="flex items-center justify-between text-xs p-2 rounded bg-muted/50"
@@ -169,20 +167,35 @@ export function SopCacheStatus({
                               {step.stepName}
                             </span>
                             <div className="flex items-center gap-2">
-                              {step.hasCachedSelection && (
-                                <Badge
-                                  variant="outline"
-                                  className="text-[10px]"
-                                >
-                                  {step.cachedEventCount} AE
-                                </Badge>
-                              )}
-                              {step.logLineCacheCount > 0 && (
+                              <Badge variant="outline" className="text-[10px]">
+                                {step.activityEventCount} AE
+                              </Badge>
+                              {step.logLineResults.length > 0 && (
                                 <Badge
                                   variant="secondary"
                                   className="text-[10px]"
                                 >
-                                  {step.logLineCacheCount} log caches
+                                  {step.logLineResults.reduce(
+                                    (sum, r) => sum + r.matchingLogLineCount,
+                                    0
+                                  )}{' '}
+                                  log lines
+                                </Badge>
+                              )}
+                              {step.fullyComplete ? (
+                                <Badge
+                                  variant="outline"
+                                  className="text-[10px] border-green-500 text-green-600"
+                                >
+                                  Done
+                                </Badge>
+                              ) : (
+                                <Badge
+                                  variant="outline"
+                                  className="text-[10px] border-yellow-500 text-yellow-600"
+                                >
+                                  {step.completedLogLineTasks}/
+                                  {step.totalLogLineTasks}
                                 </Badge>
                               )}
                             </div>
@@ -207,7 +220,7 @@ export function SopCacheStatus({
                     />
                     Refresh
                   </Button>
-                  {hasCachedData && (
+                  {hasResults && (
                     <Button
                       variant="destructive"
                       size="sm"
@@ -221,14 +234,14 @@ export function SopCacheStatus({
                           invalidating && 'animate-pulse'
                         )}
                       />
-                      Clear Cache
+                      Clear Results
                     </Button>
                   )}
                 </div>
               </div>
             ) : (
               <div className="text-center py-4 text-sm text-muted-foreground">
-                No cache data available for this SOP
+                No analysis results stored for this SOP
               </div>
             )}
           </CardContent>

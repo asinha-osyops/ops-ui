@@ -963,6 +963,18 @@ export interface LogLineStatisticsDto {
   topServices: ServiceCount[]
 }
 
+// ===== Statistics DTOs =====
+
+export interface LogMetricsDto {
+  totalCount: number
+  totalLineCount: number
+  countByProcessingStatus: Record<string, number>
+  lineCountByPlatform: Record<string, number>
+  lineCountByService: Record<string, number>
+  topEventCategories: CategoryCount[]
+  calculatedAt: string
+}
+
 // ===== CSRF Response DTO =====
 
 export interface CsrfResponseDto {
@@ -1003,62 +1015,63 @@ export interface AsyncProcessingResponseDto {
 // ===== Cache Information DTOs =====
 
 /**
- * Cache entry metadata for log line matches
+ * @deprecated Legacy DTO — backend no longer returns this shape.
  */
-export interface LogLineCacheEntryDto {
-  cacheId: string
-  stepId: string
-  stepName: string
+export type ActivityEventCacheInfoDto = Record<string, unknown>
+
+/**
+ * SOP-level analysis results
+ */
+export interface AnalysisProgressDto {
   sopId: string
-  sopName: string
-  geminiResponseFilePath?: string
+  totalSteps: number
+  completedSteps: number
+  totalLogLineTasks: number
+  completedLogLineTasks: number
+  progressPercentage: number
+}
+
+export interface StepActivityEventLogLineResultDto {
+  id: string
+  stepActivityEventResultId: string
+  activityEventId: string
+  activityEventName: string
+  logFileId: string
   matchingLogLineCount: number
-  valid: boolean
+  matchingLogLineIds: string[]
+  earliestLogTimestamp?: string
+  latestLogTimestamp?: string
+  logTimestampDurationMs?: number
+  processingDurationMs?: number
   createdAt: string
   updatedAt: string
 }
 
-/**
- * Activity event cache information
- */
-export interface ActivityEventCacheInfoDto {
-  activityEventId: string
-  activityEventName: string
-  description?: string
-  cacheEntries: LogLineCacheEntryDto[]
-  totalLogLineCaches: number
-  validCacheCount: number
-  invalidatedCacheCount: number
-}
-
-/**
- * Step cache information
- */
-export interface StepCacheInfoDto {
+export interface StepActivityEventResultDto {
+  id: string
   stepId: string
   stepName: string
-  hasCachedSelection: boolean
-  cachedEventCount: number
-  cachedActivityEventNames: string[]
-  geminiResponseFilePath?: string
-  logLineCacheCount: number
-  cacheCreatedAt?: string
-  cacheUpdatedAt?: string
+  sopFileId: string
+  activityEventCount: number
+  selectedActivityEventNames: string[]
+  totalLogLineTasks: number
+  completedLogLineTasks: number
+  fullyComplete: boolean
+  logLineResults: StepActivityEventLogLineResultDto[]
+  processingDurationMs?: number
+  createdAt: string
+  updatedAt: string
 }
 
-/**
- * SOP-level cache information
- */
 export interface SopCacheInfoDto {
   sopId: string
   sopName: string
-  companyName?: string
+  companyId: string
+  companyName: string
   totalSteps: number
-  stepsWithCache: number
-  stepsWithoutCache: number
-  cachePercentage: number
-  totalLogLineCaches: number
-  stepCacheDetails: StepCacheInfoDto[]
+  stepsWithResults: number
+  stepResults: StepActivityEventResultDto[]
+  progress: AnalysisProgressDto
 }
 
 // ===== Health DTOs =====
@@ -1676,10 +1689,14 @@ export class APIClient {
   }
 
   /**
-   * Process SOP with Gemini AI (synchronous)
-   * Analyzes SOP document and extracts structured step data
+   * @deprecated Synchronous SOP processing no longer exists. The backend endpoint
+   * POST /api/sop/process/{id} now returns an async task response.
+   * Use processSopAsync() instead.
    */
   async processSop(id: string): Promise<SopProcessingResultDto | null> {
+    console.warn(
+      'processSop() is deprecated: POST /api/sop/process/{id} now returns async task. Use processSopAsync() instead.'
+    )
     return makeNullableRequest<SopProcessingResultDto>(
       `${this.baseURL}/api/sop/process/${id}`,
       {
@@ -1819,11 +1836,13 @@ export class APIClient {
   }
 
   /**
-   * Migrate a legacy SOP to DAG format
-   * Creates sequential edges between steps based on step order
-   * Returns validation result after migration
+   * @deprecated Backend endpoint POST /api/sop/{sopId}/migrate-to-dag has been removed.
+   * All SOPs are now DAG-native. This method will 404.
    */
   async migrateToDag(sopId: string): Promise<DagValidationResultDto> {
+    console.warn(
+      'migrateToDag() is deprecated: endpoint removed from backend. All SOPs are DAG-native.'
+    )
     return makeObjectRequest<DagValidationResultDto>(
       `${this.baseURL}/api/sop/${sopId}/migrate-to-dag`,
       {
@@ -2117,10 +2136,14 @@ export class APIClient {
   }
 
   /**
-   * Process Log with Gemini AI (synchronous)
-   * Analyzes log file and extracts structured data
+   * @deprecated Synchronous log processing no longer exists. The backend endpoint
+   * POST /api/log/process/{id} now returns an async task response.
+   * Use processLogAsync() instead.
    */
   async processLog(id: string): Promise<LogProcessingResultDto | null> {
+    console.warn(
+      'processLog() is deprecated: POST /api/log/process/{id} now returns async task. Use processLogAsync() instead.'
+    )
     return makeNullableRequest<LogProcessingResultDto>(
       `${this.baseURL}/api/log/process/${id}`,
       {
@@ -2388,9 +2411,16 @@ export class APIClient {
     )
   }
 
+  /**
+   * @deprecated Backend endpoint GET /api/log/lines/statistics does not exist.
+   * Statistics are now available via GET /api/statistics/log (requires integration).
+   */
   async getLogLineStatistics(
     companyId: string
   ): Promise<LogLineStatisticsDto | null> {
+    console.warn(
+      'getLogLineStatistics() is deprecated: /api/log/lines/statistics does not exist. Statistics are under /api/statistics/log.'
+    )
     const params = new URLSearchParams({ companyId })
     return makeNullableRequest<LogLineStatisticsDto>(
       `${this.baseURL}/api/log/lines/statistics?${params}`,
@@ -2767,8 +2797,14 @@ export class APIClient {
     return response
   }
 
-  // Gemini methods
+  /**
+   * @deprecated Backend endpoint POST /api/gemini/generate is not in the OpenAPI spec.
+   * This endpoint may have been removed. Use AI processing via processSopAsync/processLogAsync instead.
+   */
   async generateText(prompt: string): Promise<GenerateTextResponseDto | null> {
+    console.warn(
+      'generateText() is deprecated: /api/gemini/generate may not exist on current backend.'
+    )
     return makeNullableRequest<GenerateTextResponseDto>(
       `${this.baseURL}/api/gemini/generate`,
       {
@@ -2889,10 +2925,17 @@ export class APIClient {
     )
   }
 
+  /**
+   * @deprecated Backend endpoint PUT /api/activity-event/{id}/log-line-types does not exist.
+   * Use updateActivityEventEventCategories() or updateActivityEventLogLineEventTypes() instead.
+   */
   async updateActivityEventLogLineTypes(
     id: string,
     eventCategories: EventCategory[]
   ): Promise<ActivityEventDto | null> {
+    console.warn(
+      'updateActivityEventLogLineTypes() is deprecated: /log-line-types endpoint does not exist. Use updateActivityEventEventCategories() instead.'
+    )
     return makeNullableRequest<ActivityEventDto>(
       `${this.baseURL}/api/activity-event/${id}/log-line-types`,
       {
@@ -2949,9 +2992,16 @@ export class APIClient {
     )
   }
 
+  /**
+   * @deprecated Synchronous analysis endpoint no longer exists on the backend.
+   * Use analyzeSopOrchestrated() for async DAG-orchestrated analysis instead.
+   */
   async traceSopSteps(
     request: AnalyzeSopRequestDto
   ): Promise<TraceSopStepsResponseDto | null> {
+    console.warn(
+      'traceSopSteps() is deprecated: synchronous /api/analysis/analyze no longer exists. Use analyzeSopOrchestrated() instead.'
+    )
     return makeNullableRequest<TraceSopStepsResponseDto>(
       `${this.baseURL}/api/analysis/analyze`,
       {
@@ -2971,7 +3021,7 @@ export class APIClient {
    */
   async processSopAsync(id: string): Promise<AsyncProcessingResponseDto> {
     const response = await makeNullableRequest<AsyncProcessingResponseDto>(
-      `${this.baseURL}/api/sop/process/${id}/async`,
+      `${this.baseURL}/api/sop/process/${id}`,
       {
         method: 'POST',
         headers: this.getAuthHeaders(),
@@ -2995,7 +3045,7 @@ export class APIClient {
    */
   async processLogAsync(id: string): Promise<AsyncProcessingResponseDto> {
     const response = await makeNullableRequest<AsyncProcessingResponseDto>(
-      `${this.baseURL}/api/log/process/${id}/async`,
+      `${this.baseURL}/api/log/process/${id}`,
       {
         method: 'POST',
         headers: this.getAuthHeaders(),
@@ -3023,7 +3073,7 @@ export class APIClient {
     request: AnalyzeSopRequestDto
   ): Promise<AnalyzeSopAsyncResponseDto> {
     const response = await makeNullableRequest<AnalyzeSopAsyncResponseDto>(
-      `${this.baseURL}/api/analysis/analyze/orchestrated`,
+      `${this.baseURL}/api/analysis/analyze/async`,
       {
         method: 'POST',
         headers: this.getAuthHeaders(),
@@ -3096,103 +3146,114 @@ export class APIClient {
     return response
   }
 
-  // ===== Analysis Cache Methods =====
+  // ===== Analysis Results Methods (Admin) =====
 
   /**
-   * Get cache information for an SOP
-   * Returns cache status for all steps in the SOP
+   * Get analysis results for an SOP
+   * Returns results for all steps in the SOP
+   * Returns null if no results exist or user lacks admin access
    */
   async getSopCacheInfo(sopId: string): Promise<SopCacheInfoDto | null> {
-    return makeNullableRequest<SopCacheInfoDto>(
-      `${this.baseURL}/api/analysis/cache/sop/${sopId}`,
-      {
-        method: 'GET',
-        headers: this.getAuthHeaders(),
-      },
-      `fetching cache info for SOP ${sopId}`
-    )
+    try {
+      return await makeNullableRequest<SopCacheInfoDto>(
+        `${this.baseURL}/api/admin/analysis-results/sop/${sopId}`,
+        {
+          method: 'GET',
+          headers: this.getAuthHeaders(),
+        },
+        `fetching analysis results for SOP ${sopId}`
+      )
+    } catch {
+      return null
+    }
   }
 
   /**
-   * Get cache information for a specific step
-   * Returns cached activity events and log line matches for the step
+   * Get analysis result for a specific step
+   * Returns null if no results exist or user lacks admin access
    */
-  async getStepCacheInfo(stepId: string): Promise<StepCacheInfoDto | null> {
-    return makeNullableRequest<StepCacheInfoDto>(
-      `${this.baseURL}/api/analysis/cache/step/${stepId}`,
-      {
-        method: 'GET',
-        headers: this.getAuthHeaders(),
-      },
-      `fetching cache info for step ${stepId}`
-    )
+  async getStepCacheInfo(
+    stepId: string
+  ): Promise<StepActivityEventResultDto | null> {
+    try {
+      return await makeNullableRequest<StepActivityEventResultDto>(
+        `${this.baseURL}/api/admin/analysis-results/step/${stepId}`,
+        {
+          method: 'GET',
+          headers: this.getAuthHeaders(),
+        },
+        `fetching analysis result for step ${stepId}`
+      )
+    } catch {
+      return null
+    }
   }
 
   /**
-   * Get cache information for an activity event
-   * Returns cached log line matches for the activity event
+   * @deprecated Backend does not have a GET endpoint for activity event analysis results.
+   * Use getStepCacheInfo() to read results per step instead.
    */
   async getActivityEventCacheInfo(
-    activityEventId: string
+    _activityEventId: string
   ): Promise<ActivityEventCacheInfoDto | null> {
-    return makeNullableRequest<ActivityEventCacheInfoDto>(
-      `${this.baseURL}/api/analysis/cache/activity-event/${activityEventId}`,
-      {
-        method: 'GET',
-        headers: this.getAuthHeaders(),
-      },
-      `fetching cache info for activity event ${activityEventId}`
+    console.warn(
+      'getActivityEventCacheInfo() is deprecated: no GET endpoint exists at /api/admin/analysis-results/activity-event/.'
     )
+    return null
   }
 
   /**
-   * Invalidate cache for a specific step
+   * Delete analysis results for a specific step
    * Clears cached ActivityEvent selection and LogLine matches
    */
   async invalidateStepCache(
     stepId: string
   ): Promise<{ success: boolean; message?: string }> {
-    return makeSimpleRequest(
-      `${this.baseURL}/api/analysis/cache/step/${stepId}`,
-      {
-        method: 'DELETE',
-        headers: this.getAuthHeaders(),
-      },
-      `invalidating cache for step ${stepId}`
-    )
+    try {
+      return await makeSimpleRequest(
+        `${this.baseURL}/api/admin/analysis-results/step/${stepId}`,
+        {
+          method: 'DELETE',
+          headers: this.getAuthHeaders(),
+        },
+        `deleting analysis results for step ${stepId}`
+      )
+    } catch {
+      return { success: false, message: 'Failed to delete step results' }
+    }
   }
 
   /**
-   * Invalidate all caches for an SOP
+   * Delete all analysis results for an SOP
    * Clears all cached ActivityEvent selections and LogLine matches for all steps
    */
   async invalidateSopCache(
     sopId: string
   ): Promise<{ success: boolean; message?: string }> {
     return makeSimpleRequest(
-      `${this.baseURL}/api/analysis/cache/sop/${sopId}`,
+      `${this.baseURL}/api/admin/analysis-results/sop/${sopId}`,
       {
         method: 'DELETE',
         headers: this.getAuthHeaders(),
       },
-      `invalidating cache for SOP ${sopId}`
+      `deleting analysis results for SOP ${sopId}`
     )
   }
 
   /**
-   * Invalidate LogLine caches for an ActivityEvent
+   * Delete LogLine results for an ActivityEvent
    * Clears all cached LogLine matches that reference this ActivityEvent
    */
   async invalidateActivityEventCache(
     activityEventId: string
   ): Promise<{ success: boolean; message?: string }> {
     return makeSimpleRequest(
-      `${this.baseURL}/api/analysis/cache/activity-event/${activityEventId}`,
+      `${this.baseURL}/api/admin/analysis-results/activity-event/${activityEventId}`,
       {
         method: 'DELETE',
         headers: this.getAuthHeaders(),
       },
-      `invalidating cache for activity event ${activityEventId}`
+      `deleting analysis results for activity event ${activityEventId}`
     )
   }
 
@@ -3241,6 +3302,23 @@ export class APIClient {
       'fetching application health'
     )
     return response || { status: 'DOWN', database: 'DOWN' }
+  }
+
+  // ===== Statistics Methods =====
+
+  /**
+   * Get log metrics (GET /api/statistics/log)
+   * System-wide log statistics (not company-scoped)
+   */
+  async getLogMetrics(): Promise<LogMetricsDto | null> {
+    return makeNullableRequest<LogMetricsDto>(
+      `${this.baseURL}/api/statistics/log`,
+      {
+        method: 'GET',
+        headers: this.getAuthHeaders(),
+      },
+      'fetching log metrics'
+    )
   }
 
   // ===== Admin Methods =====
@@ -3293,7 +3371,7 @@ export class APIClient {
    */
   async syncDbCounts(): Promise<{ success: boolean; message?: string }> {
     return makeSimpleRequest(
-      `${this.baseURL}/api/admin/db/sync-counts`,
+      `${this.baseURL}/api/statistics/db/sync-counts`,
       {
         method: 'POST',
         headers: this.getAuthHeaders(),

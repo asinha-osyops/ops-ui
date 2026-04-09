@@ -171,7 +171,7 @@ function DagGraphViewContent<TStep, TEdge = EdgeDto>({
   className,
   showStats = true,
   emptyMessage = 'No steps defined. Add steps to visualize the workflow.',
-  graphHeight = 'h-[350px] md:h-[450px] lg:h-[500px]',
+  graphHeight = 'h-[525px] md:h-[675px] lg:h-[750px]',
   title = 'Graph View',
 }: DagGraphViewProps<TStep, TEdge>) {
   // Internal state (used when uncontrolled)

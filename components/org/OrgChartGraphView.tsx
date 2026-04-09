@@ -127,7 +127,7 @@ function OrgChartGraphViewInner({ companyId }: OrgChartGraphViewProps) {
 
   if (isInitialLoading) {
     return (
-      <div className="h-[400px] md:h-[500px] lg:h-[600px] flex flex-col items-center justify-center gap-3 bg-card rounded-lg border border-border">
+      <div className="h-[600px] md:h-[750px] lg:h-[900px] flex flex-col items-center justify-center gap-3 bg-card rounded-lg border border-border">
         <Spinner className="size-8" />
         <p className="text-sm text-muted-foreground">Loading org chart...</p>
       </div>
@@ -136,7 +136,7 @@ function OrgChartGraphViewInner({ companyId }: OrgChartGraphViewProps) {
 
   if (nodes.length === 0) {
     return (
-      <Empty className="h-[400px] md:h-[500px] lg:h-[600px] border">
+      <Empty className="h-[600px] md:h-[750px] lg:h-[900px] border">
         <EmptyHeader>
           <EmptyTitle>No employees in org chart</EmptyTitle>
           <EmptyDescription>
@@ -150,7 +150,7 @@ function OrgChartGraphViewInner({ companyId }: OrgChartGraphViewProps) {
   return (
     <FullscreenGraphModal
       title="Organization Chart"
-      desktopClassName="h-[400px] md:h-[500px] lg:h-[600px]"
+      desktopClassName="h-[600px] md:h-[750px] lg:h-[900px]"
     >
       <ErrorBoundary FallbackComponent={OrgChartErrorFallback}>
         <div className="w-full h-full border border-border rounded-lg overflow-hidden bg-background">

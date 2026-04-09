@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { apiClient, LogLineStatisticsDto } from '@/lib/api-client'
+import { apiClient, LogMetricsDto } from '@/lib/api-client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -13,29 +13,18 @@ import { formatEnumTitleCase } from '@/lib/utils/format-helpers'
 import { PLATFORM_LABELS } from '@/lib/config/logline-query-config'
 import { Platform } from '@/lib/api-client'
 
-interface LogStatisticsWidgetProps {
-  companyId: string | null
-}
-
-export function LogStatisticsWidget({ companyId }: LogStatisticsWidgetProps) {
+export function LogStatisticsWidget() {
   const router = useRouter()
-  const [statistics, setStatistics] = useState<LogLineStatisticsDto | null>(
-    null
-  )
-  const [loading, setLoading] = useState(false)
+  const [statistics, setStatistics] = useState<LogMetricsDto | null>(null)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!companyId) {
-      setStatistics(null)
-      return
-    }
-
     const fetchStatistics = async () => {
       setLoading(true)
       setError(null)
       try {
-        const data = await apiClient.getLogLineStatistics(companyId)
+        const data = await apiClient.getLogMetrics()
         setStatistics(data)
       } catch (err) {
         console.error('Failed to fetch log statistics:', err)
@@ -46,11 +35,7 @@ export function LogStatisticsWidget({ companyId }: LogStatisticsWidgetProps) {
     }
 
     fetchStatistics()
-  }, [companyId])
-
-  if (!companyId) {
-    return null
-  }
+  }, [])
 
   if (loading) {
     return (
@@ -100,14 +85,25 @@ export function LogStatisticsWidget({ companyId }: LogStatisticsWidgetProps) {
     )
   }
 
-  const { totalCount, topServices, topEventCategories, countByPlatform } =
-    statistics
+  const {
+    totalCount,
+    totalLineCount,
+    lineCountByPlatform,
+    lineCountByService,
+    topEventCategories,
+  } = statistics
 
   // Calculate total from platform counts
-  const platformTotal = Object.values(countByPlatform).reduce(
+  const platformTotal = Object.values(lineCountByPlatform).reduce(
     (sum, count) => sum + count,
     0
   )
+
+  // Convert service map to sorted array for display
+  const topServices = Object.entries(lineCountByService)
+    .map(([service, count]) => ({ service, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5)
 
   return (
     <Card className="shadow-accent">
@@ -129,9 +125,11 @@ export function LogStatisticsWidget({ companyId }: LogStatisticsWidgetProps) {
         {/* Total Count Header */}
         <div className="mb-6 text-center pb-4 border-b border-border">
           <div className="text-4xl font-bold text-foreground">
-            {totalCount.toLocaleString()}
+            {totalLineCount.toLocaleString()}
           </div>
-          <div className="text-sm text-muted-foreground">Total Log Lines</div>
+          <div className="text-sm text-muted-foreground">
+            Total Log Lines across {totalCount} log{totalCount !== 1 ? 's' : ''}
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -142,7 +140,7 @@ export function LogStatisticsWidget({ companyId }: LogStatisticsWidgetProps) {
               By Platform
             </h4>
             <div className="space-y-2">
-              {Object.entries(countByPlatform).map(([platform, count]) => {
+              {Object.entries(lineCountByPlatform).map(([platform, count]) => {
                 const percentage =
                   platformTotal > 0
                     ? Math.round((count / platformTotal) * 100)
@@ -169,7 +167,7 @@ export function LogStatisticsWidget({ companyId }: LogStatisticsWidgetProps) {
                   </div>
                 )
               })}
-              {Object.keys(countByPlatform).length === 0 && (
+              {Object.keys(lineCountByPlatform).length === 0 && (
                 <p className="text-sm text-muted-foreground italic">No data</p>
               )}
             </div>
@@ -181,10 +179,10 @@ export function LogStatisticsWidget({ companyId }: LogStatisticsWidgetProps) {
               Top Services
             </h4>
             <div className="space-y-2">
-              {topServices.slice(0, 5).map((item) => {
+              {topServices.map((item) => {
                 const percentage =
-                  totalCount > 0
-                    ? Math.round((item.count / totalCount) * 100)
+                  totalLineCount > 0
+                    ? Math.round((item.count / totalLineCount) * 100)
                     : 0
                 return (
                   <div

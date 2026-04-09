@@ -75,7 +75,7 @@ interface SopGraphNewContentProps {
 export function SopGraphNewContent({
   sop,
   className,
-  graphHeight = 'h-[600px]',
+  graphHeight = 'h-[900px]',
   isEditable = false,
   editing,
 }: SopGraphNewContentProps) {

@@ -151,7 +151,7 @@ export function AnalysisGraphView({
       onStepExpand={handleStepExpand}
       showStats={true}
       emptyMessage="No step analyses found for this SOP."
-      graphHeight="h-[600px]"
+      graphHeight="h-[900px]"
       title="SOP Analysis Results"
       className={className}
     />

@@ -303,7 +303,7 @@ export default function DashboardPage() {
 
       {/* Log Activity Analytics */}
       <div className="mt-6">
-        <LogStatisticsWidget companyId={selectedCompany?.id ?? null} />
+        <LogStatisticsWidget />
       </div>
     </PageLayout>
   )

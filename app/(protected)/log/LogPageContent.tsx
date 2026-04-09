@@ -1,9 +1,9 @@
 'use client'
 
-import { useCallback, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ColumnDef } from '@tanstack/react-table'
-import { apiClient, LogDto } from '@/lib/api-client'
+import { apiClient, LogDto, ProcessingStatus } from '@/lib/api-client'
 import { Route, Breadcrumbs } from '@/lib/routes'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
@@ -11,7 +11,7 @@ import { LoadableContent } from '@/components/ui/LoadableContent'
 import { DataTable } from '@/components/ui/data-table'
 import { PageLayout } from '@/components/PageLayout'
 import { useDeleteConfirmation } from '@/lib/hooks/useDeleteConfirmation'
-import { useAnalysis } from '@/lib/hooks/useAnalysis'
+import { useTaskPolling } from '@/hooks/use-task-polling'
 import { CONFIRMATIONS } from '@/lib/constants/ui-strings'
 import { useEntityColorScheme } from '@/lib/hooks/useColorScheme'
 import { useLogs } from '@/lib/hooks/useEntities'
@@ -50,11 +50,50 @@ export function LogPageContent() {
     breadcrumbs: Breadcrumbs.log.home,
   })
 
-  // Custom hooks
-  const { analyzingIds, analyze } = useAnalysis(
-    (id: string) => apiClient.processLog(id),
-    'Log'
+  // Track logs with active processing tasks (client-side, since LogDto has no taskId field)
+  const [processingTasks, setProcessingTasks] = useState<Map<string, string>>(
+    () => new Map()
   )
+
+  // Poll processing task statuses
+  const { statuses: taskStatuses, allComplete } = useTaskPolling(
+    processingTasks,
+    { enabled: processingTasks.size > 0 }
+  )
+
+  // Handle processing completion
+  useEffect(() => {
+    if (!allComplete || processingTasks.size === 0) return
+
+    const completedNames: string[] = []
+    const failedIds: string[] = []
+
+    taskStatuses.forEach((status, logId) => {
+      if (status.status === ProcessingStatus.COMPLETED) {
+        const log = logs.find((l) => l.id === logId)
+        completedNames.push(log?.name || logId)
+      } else if (status.status === ProcessingStatus.FAILED) {
+        failedIds.push(logId)
+      }
+    })
+
+    refreshLogs().then(() => {
+      if (completedNames.length > 0) {
+        toast.success(
+          `Processing completed for ${completedNames.length} log(s)`
+        )
+      }
+      failedIds.forEach((logId) => {
+        const status = taskStatuses.get(logId)
+        toast.error(
+          `Processing failed: ${status?.errorMessage || 'Unknown error'}`
+        )
+      })
+    })
+
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Clearing tasks after completion is intentional
+    setProcessingTasks(new Map())
+  }, [allComplete, processingTasks.size, taskStatuses, logs, refreshLogs])
 
   const {
     confirmAndDelete: confirmAndDeleteLog,
@@ -73,28 +112,34 @@ export function LogPageContent() {
     getConfirmMessage: (log) => CONFIRMATIONS.deleteEntity('log', log.name),
   })
 
-  // Analyze handler
-  const handleAnalyze = useCallback(
-    async (log: LogDto) => {
-      await analyze(
-        log.id,
-        async () => {
-          await refreshLogs()
-          toast.success(`Analysis for "${log.name}" completed successfully.`)
-        },
-        (error) => {
-          toast.error(`Analysis failed: ${error}`)
-        }
+  // Analyze handler (async)
+  const handleAnalyze = useCallback(async (log: LogDto) => {
+    try {
+      const response = await apiClient.processLogAsync(log.id)
+      setProcessingTasks((prev) => {
+        const next = new Map(prev)
+        next.set(log.id, response.taskId)
+        return next
+      })
+      toast.success(`Processing started for "${log.name}"`)
+    } catch (err) {
+      toast.error(
+        `Failed to start processing: ${err instanceof Error ? err.message : 'Unknown error'}`
       )
-    },
-    [analyze, refreshLogs]
-  )
+    }
+  }, [])
 
   // Enrich rows with analyzing state
   const rows: LogRowData[] = useMemo(
     () =>
-      logs.map((log) => ({ ...log, isAnalyzing: analyzingIds.has(log.id) })),
-    [logs, analyzingIds]
+      logs.map((log) => ({
+        ...log,
+        isAnalyzing:
+          processingTasks.has(log.id) ||
+          log.processingStatus === ProcessingStatus.PENDING ||
+          log.processingStatus === ProcessingStatus.PROCESSING,
+      })),
+    [logs, processingTasks]
   )
 
   // Navigate to detail page

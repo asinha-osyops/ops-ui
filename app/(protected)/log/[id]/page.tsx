@@ -1,6 +1,13 @@
 'use client'
 
-import { useEffect, useState, lazy, Suspense } from 'react'
+import {
+  useEffect,
+  useState,
+  useMemo,
+  useCallback,
+  lazy,
+  Suspense,
+} from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import {
   apiClient,
@@ -11,6 +18,7 @@ import {
 import { Route, Breadcrumbs } from '@/lib/routes'
 import { getStringParam } from '@/lib/utils/route-params'
 import { useEntityDetail } from '@/lib/hooks/useEntityDetail'
+import { useTaskPolling } from '@/hooks/use-task-polling'
 import { Button } from '@/components/ui/button'
 import { FileInfoCard } from '@/components/ui/FileInfoCard'
 import { EntityActions } from '@/components/ui/EntityActions'
@@ -42,7 +50,7 @@ export default function LogDetailPage() {
   const params = useParams()
   const logId = getStringParam(params.id)
 
-  const [analyzing, setAnalyzing] = useState(false)
+  const [processingTaskId, setProcessingTaskId] = useState<string | null>(null)
 
   const { classes: logClasses, buttonClasses: logButtonClasses } =
     useEntityColorScheme('Log')
@@ -59,23 +67,49 @@ export default function LogDetailPage() {
     entityTypeName: 'Log',
   })
 
-  // Handle analyze
-  const handleAnalyze = async () => {
+  // Task polling for async log processing
+  const processingTasks = useMemo(() => {
+    const tasks = new Map<string, string>()
+    if (processingTaskId && log) {
+      tasks.set(log.id, processingTaskId)
+    }
+    return tasks
+  }, [processingTaskId, log])
+
+  const { statuses: taskStatuses, allComplete } = useTaskPolling(
+    processingTasks,
+    { enabled: processingTasks.size > 0 }
+  )
+
+  useEffect(() => {
+    if (allComplete && processingTasks.size > 0 && log) {
+      const status = taskStatuses.get(log.id)
+      if (status?.status === ProcessingStatus.COMPLETED) {
+        toast.success('Log processing completed')
+        fetchLog()
+      } else if (status?.status === ProcessingStatus.FAILED) {
+        toast.error(
+          `Processing failed: ${status?.errorMessage || 'Unknown error'}`
+        )
+      }
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Clearing task ID after completion is intentional
+      setProcessingTaskId(null)
+    }
+  }, [allComplete, processingTasks.size, taskStatuses, log, fetchLog])
+
+  // Handle analyze (async)
+  const handleAnalyze = useCallback(async () => {
     if (!log) return
-    setAnalyzing(true)
     try {
-      await apiClient.processLog(log.id)
-      toast.success('Analysis started')
-      // Refetch to get updated status
-      setTimeout(fetchLog, 1000)
+      const response = await apiClient.processLogAsync(log.id)
+      setProcessingTaskId(response.taskId)
+      toast.success('Processing started')
     } catch (err) {
       toast.error(
-        err instanceof Error ? err.message : 'Failed to start analysis'
+        err instanceof Error ? err.message : 'Failed to start processing'
       )
-    } finally {
-      setAnalyzing(false)
     }
-  }
+  }, [log])
 
   // Download hooks
   const { handleDownloadJSON, handleDownloadText } = useLogDownload()
@@ -101,6 +135,7 @@ export default function LogDetailPage() {
     useFileDownload((fileId) => apiClient.downloadLogFile(fileId))
 
   const isProcessing =
+    !!processingTaskId ||
     log?.processingStatus === ProcessingStatus.PENDING ||
     log?.processingStatus === ProcessingStatus.PROCESSING
 
@@ -300,7 +335,7 @@ export default function LogDetailPage() {
               entityName="Log"
               showAnalyze={true}
               showEdit={false}
-              analyzing={analyzing || isProcessing}
+              analyzing={isProcessing}
               onAnalyze={(e) => {
                 e.stopPropagation()
                 handleAnalyze()
