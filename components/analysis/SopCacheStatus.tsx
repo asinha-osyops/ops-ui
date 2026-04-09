@@ -170,12 +170,12 @@ export function SopCacheStatus({
                               <Badge variant="outline" className="text-[10px]">
                                 {step.activityEventCount} AE
                               </Badge>
-                              {step.logLineResults.length > 0 && (
+                              {(step.logLineResults?.length ?? 0) > 0 && (
                                 <Badge
                                   variant="secondary"
                                   className="text-[10px]"
                                 >
-                                  {step.logLineResults.reduce(
+                                  {step.logLineResults!.reduce(
                                     (sum, r) => sum + r.matchingLogLineCount,
                                     0
                                   )}{' '}

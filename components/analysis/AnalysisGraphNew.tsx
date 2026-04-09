@@ -236,7 +236,7 @@ export function AnalysisGraphNew({
         {/* Graph */}
         <div
           ref={graphContainerRef}
-          className="h-[600px] flex-1 rounded-lg border border-border bg-background overflow-hidden relative"
+          className="h-[900px] flex-1 rounded-lg border border-border bg-background overflow-hidden relative"
         >
           <ReactFlow
             nodes={nodes}
@@ -290,7 +290,7 @@ export function AnalysisGraphNew({
                   stepDuration={getStepTotals(expandedStep.id).stepDuration}
                 />
               </div>
-              <ScrollArea className="h-[520px]">
+              <ScrollArea className="h-[820px]">
                 <div className="p-3">
                   <AnalysisStepExpandedContent
                     step={expandedStep}

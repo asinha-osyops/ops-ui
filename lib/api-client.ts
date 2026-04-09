@@ -1057,7 +1057,7 @@ export interface StepActivityEventResultDto {
   totalLogLineTasks: number
   completedLogLineTasks: number
   fullyComplete: boolean
-  logLineResults: StepActivityEventLogLineResultDto[]
+  logLineResults?: StepActivityEventLogLineResultDto[]
   processingDurationMs?: number
   createdAt: string
   updatedAt: string
