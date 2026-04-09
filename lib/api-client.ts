@@ -1061,6 +1061,68 @@ export interface SopCacheInfoDto {
   stepCacheDetails: StepCacheInfoDto[]
 }
 
+// ===== Health DTOs =====
+
+/**
+ * Public application health check (GET /api/health)
+ */
+export interface AppHealthDto {
+  status: 'UP' | 'DOWN'
+  database: 'UP' | 'DOWN'
+  timestamp?: string
+}
+
+/**
+ * Thread pool statistics (nested in AdminHealthDto)
+ */
+export interface ThreadPoolInfoDto {
+  name?: string
+  activeCount?: number
+  maxPoolSize?: number
+  queueSize?: number
+  completedTaskCount?: number
+  utilizationPercent?: number
+}
+
+/**
+ * Admin health overview (GET /api/admin/health)
+ */
+export interface AdminHealthDto {
+  status?: 'UP' | 'DOWN'
+  uptime?: string
+  database?: 'UP' | 'DOWN'
+  heapUsed?: string
+  heapMax?: string
+  heapUtilizationPercent?: number
+  nonHeapUsed?: string
+  gcPauseCount?: number
+  gcPauseTimeMs?: number
+  availableProcessors?: number
+  systemLoadAverage?: number
+  processLoad?: number
+  csvExecutor?: ThreadPoolInfoDto
+  geminiExecutor?: ThreadPoolInfoDto
+  auditExecutor?: ThreadPoolInfoDto
+  taskCountByStatus?: Record<string, number>
+  totalTaskCount?: number
+  timestamp?: string
+}
+
+/**
+ * Database connection pool health (GET /api/admin/db/health)
+ */
+export interface DbHealthDto {
+  status?: 'UP' | 'DOWN'
+  responseTimeMs?: number
+  activeConnections?: number
+  idleConnections?: number
+  totalConnections?: number
+  maxConnections?: number
+  poolUtilizationPercent?: number
+  pendingThreads?: number
+  timestamp?: string
+}
+
 // ===== Admin DTOs =====
 
 /**
@@ -1087,36 +1149,16 @@ export interface IndexUsageDto {
 }
 
 /**
- * Database health information
+ * Database statistics (GET /api/admin/db/stats)
  */
-export interface DbHealthDto {
+export interface DbStatsDto {
   totalTables?: number
   totalIndexes?: number
   totalDbSize?: string
   largestTables?: TableSizeDto[]
   unusedIndexes?: IndexUsageDto[]
   logCountMismatches?: number
-}
-
-/**
- * Database index information
- */
-export interface DbIndexInfoDto {
-  tableName: string
-  indexName: string
-  columns: string[]
-  isUnique: boolean
-  isPrimary: boolean
-}
-
-/**
- * Database table information
- */
-export interface DbTableInfoDto {
-  tableName: string
-  rowCount: number
-  sizeBytes?: number
-  indexes?: DbIndexInfoDto[]
+  calculatedAt?: string
 }
 
 // ===== Pagination DTOs =====
@@ -3184,11 +3226,41 @@ export class APIClient {
     )
   }
 
+  // ===== Health Check Methods =====
+
+  /**
+   * Get public application health (GET /api/health)
+   */
+  async getAppHealth(): Promise<AppHealthDto> {
+    const response = await makeNullableRequest<AppHealthDto>(
+      `${this.baseURL}/api/health`,
+      {
+        method: 'GET',
+        headers: this.getAuthHeaders(),
+      },
+      'fetching application health'
+    )
+    return response || { status: 'DOWN', database: 'DOWN' }
+  }
+
   // ===== Admin Methods =====
 
   /**
-   * Get database health information
-   * Includes connection pool stats and response time
+   * Get admin system health overview (GET /api/admin/health)
+   */
+  async getAdminHealth(): Promise<AdminHealthDto | null> {
+    return makeNullableRequest<AdminHealthDto>(
+      `${this.baseURL}/api/admin/health`,
+      {
+        method: 'GET',
+        headers: this.getAuthHeaders(),
+      },
+      'fetching admin health'
+    )
+  }
+
+  /**
+   * Get database connection pool health (GET /api/admin/db/health)
    */
   async getDbHealth(): Promise<DbHealthDto | null> {
     return makeNullableRequest<DbHealthDto>(
@@ -3202,32 +3274,16 @@ export class APIClient {
   }
 
   /**
-   * Get database index information
-   * Returns list of indexes for all tables
+   * Get database statistics (GET /api/admin/db/stats)
    */
-  async getDbIndexes(): Promise<DbIndexInfoDto[]> {
-    return makeArrayRequest<DbIndexInfoDto>(
-      `${this.baseURL}/api/admin/db/indexes`,
+  async getDbStats(): Promise<DbStatsDto | null> {
+    return makeNullableRequest<DbStatsDto>(
+      `${this.baseURL}/api/admin/db/stats`,
       {
         method: 'GET',
         headers: this.getAuthHeaders(),
       },
-      'fetching database indexes'
-    )
-  }
-
-  /**
-   * Get database table information
-   * Returns list of tables with row counts and sizes
-   */
-  async getDbTables(): Promise<DbTableInfoDto[]> {
-    return makeArrayRequest<DbTableInfoDto>(
-      `${this.baseURL}/api/admin/db/tables`,
-      {
-        method: 'GET',
-        headers: this.getAuthHeaders(),
-      },
-      'fetching database tables'
+      'fetching database stats'
     )
   }
 
@@ -3244,24 +3300,6 @@ export class APIClient {
       },
       'synchronizing database counts'
     )
-  }
-
-  // ===== Health Check Methods =====
-
-  /**
-   * Get service health status
-   * Simple health check for monitoring/load balancers
-   */
-  async getServiceHealth(): Promise<{ status: string }> {
-    const response = await makeNullableRequest<{ status: string }>(
-      `${this.baseURL}/api/health`,
-      {
-        method: 'GET',
-        headers: this.getAuthHeaders(),
-      },
-      'fetching service health'
-    )
-    return response || { status: 'unknown' }
   }
 }
 

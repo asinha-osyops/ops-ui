@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ReactNode } from 'react'
+import React, { ReactNode } from 'react'
 import { Route, Breadcrumb } from '@/lib/routes'
 import { cn } from '@/lib/utils'
 import {
@@ -76,16 +76,18 @@ export function PageLayout({
         <BreadcrumbNav className="mb-3 md:mb-4">
           <BreadcrumbList className="text-xs md:text-sm">
             {fullBreadcrumbs.map((crumb, index) => (
-              <BreadcrumbItem key={index}>
+              <React.Fragment key={index}>
                 {index > 0 && <BreadcrumbSeparator />}
-                {crumb.route ? (
-                  <BreadcrumbLink asChild>
-                    <Link href={crumb.route}>{crumb.label}</Link>
-                  </BreadcrumbLink>
-                ) : (
-                  <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
-                )}
-              </BreadcrumbItem>
+                <BreadcrumbItem>
+                  {crumb.route ? (
+                    <BreadcrumbLink asChild>
+                      <Link href={crumb.route}>{crumb.label}</Link>
+                    </BreadcrumbLink>
+                  ) : (
+                    <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
+                  )}
+                </BreadcrumbItem>
+              </React.Fragment>
             ))}
           </BreadcrumbList>
         </BreadcrumbNav>

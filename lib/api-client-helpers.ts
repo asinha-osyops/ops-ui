@@ -123,7 +123,18 @@ export async function makeArrayRequest<T>(
       return []
     }
 
-    return JSON.parse(text)
+    const parsed = JSON.parse(text)
+
+    // Handle Spring Boot Page responses (e.g. { content: [...], totalElements: N })
+    if (
+      !Array.isArray(parsed) &&
+      parsed?.content &&
+      Array.isArray(parsed.content)
+    ) {
+      return parsed.content
+    }
+
+    return Array.isArray(parsed) ? parsed : []
   } catch (error) {
     console.error(`Error ${errorContext}:`, error)
     if (config?.throwOnError) throw error

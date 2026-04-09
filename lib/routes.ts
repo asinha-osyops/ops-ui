@@ -50,7 +50,9 @@ export const Route = {
 
   // Admin Routes
   ADMIN_USERS: '/admin/users',
-  ADMIN_HEALTH: '/admin/health',
+
+  // Health
+  HEALTH: '/health',
 
   // Info Routes
   ABOUT: '/about',
@@ -152,5 +154,8 @@ export const Breadcrumbs = {
   },
   admin: {
     users: [{ label: 'Admin' }, { label: 'Users' }] as Breadcrumb[],
+  },
+  health: {
+    home: [{ label: 'Health' }] as Breadcrumb[],
   },
 } as const
