@@ -1,0 +1,865 @@
+⏺ Perfect! I've created a comprehensive plan for the complete UI redesign of ops-ui using shadcn components from example-design.
+
+  Plan Summary
+
+  The plan covers 8 sequential phases over ~30 days:
+
+  1. Foundation & Setup - Install 40+ dependencies, configure Tailwind v4, set up CSS variables
+  2. Component Library - Copy all 57 shadcn components from example-design
+  3. Infrastructure - Build sidebar navigation, theme provider, update root layout
+  4. Dashboard - Create new metrics-based home page
+  5. Component Replacement - Replace 29 custom components with shadcn equivalents
+  6. Form Migration - Migrate to React Hook Form + Zod validation (6 major forms)
+  7. Page Redesign - Rebuild all 16 pages with new components and layouts
+  8. Testing & Cleanup - Comprehensive testing, delete old components, update docs
+
+  Key Decisions Based on Your Input
+
+  ✅ Orange/slate color scheme (#ea580c primary, slate grays)
+  ✅ Collapsible sidebar navigation (replaces header)
+  ✅ Complete redesign (all pages/components)
+  ✅ Dark mode support with theme toggle
+  ✅ Dashboard home page with metrics and visualization
+  ✅ React Hook Form integration
+  ❌ No command palette (excluded per your preference)
+
+  Critical Files Identified
+
+  Top 5 most critical:
+  1. /app/layout.tsx - Core layout restructure
+  2. /app/globals.css - Complete theming system
+  3. /components/app-sidebar.tsx - New navigation
+  4. /lib/utils.ts - Required by all shadcn components
+  5. /components/ui/form.tsx - React Hook Form integration
+
+  The plan is ready for your review. When approved, I'll proceed with implementation starting from Phase 1.
+
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ Ready to code?
+
+ Here is Claude's plan:
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+ Complete UI Redesign with shadcn/ui Components
+
+ Executive Summary
+
+ Objective: Complete redesign of ops-ui using shadcn/ui components and design patterns from example-design
+
+ Scope:
+ - 16 pages across 8 features
+ - 29 custom components → 57+ shadcn components
+ - Complete visual redesign (warm earth tones → orange/slate minimalist)
+ - New navigation (header → collapsible sidebar)
+ - New features (dark mode, dashboard, React Hook Form)
+
+ Approach: Big-bang migration (not gradual)
+
+ Timeline: ~30 days (8 phases)
+
+ Risk Level: High - complete UI overhaul with breaking changes
+
+ ---
+ User Requirements (Confirmed)
+
+ 1. ✅ Color Scheme: Adopt example-design colors (orange #ea580c primary, slate grays)
+ 2. ✅ Navigation: Implement collapsible sidebar navigation
+ 3. ✅ Approach: Complete redesign (all pages/components)
+ 4. ✅ Dark Mode: Full support with theme toggle
+ 5. ✅ Dashboard: New home page with metrics and visualization
+ 6. ✅ React Hook Form: Replace current useState form patterns
+ 7. ❌ Command Palette: NOT needed (excluded per user)
+
+ ---
+ Implementation Phases
+
+ PHASE 1: Foundation & Setup (Day 1-2)
+
+ Objective: Install dependencies and configure project for shadcn
+
+ 1.1 Install Radix UI Dependencies (30+ packages)
+
+ npm install @radix-ui/react-accordion@1.2.2 \
+   @radix-ui/react-alert-dialog@1.1.4 \
+   @radix-ui/react-dialog@1.1.4 \
+   @radix-ui/react-dropdown-menu@2.1.4 \
+   @radix-ui/react-select@2.1.4 \
+   @radix-ui/react-tabs@1.1.2 \
+   @radix-ui/react-tooltip@1.1.6
+ # ... (see full list in detailed plan)
+
+ 1.2 Install Supporting Libraries
+
+ npm install class-variance-authority@^0.7.1 \
+   clsx@^2.1.1 \
+   tailwind-merge@^2.5.5 \
+   react-hook-form@^7.60.0 \
+   @hookform/resolvers@^3.10.0 \
+   zod@3.25.76 \
+   next-themes@^0.4.6 \
+   lucide-react@^0.454.0 \
+   tailwindcss-animate@^1.0.7
+
+ 1.3 Upgrade Tailwind CSS to v4
+
+ npm install -D tailwindcss@^4.1.9 @tailwindcss/postcss@^4.1.9
+
+ 1.4 Create Configuration Files
+
+ Create: /components.json
+ {
+   "$schema": "https://ui.shadcn.com/schema.json",
+   "style": "new-york",
+   "rsc": true,
+   "tsx": true,
+   "tailwind": {
+     "config": "tailwind.config.ts",
+     "css": "app/globals.css",
+     "baseColor": "neutral",
+     "cssVariables": true
+   },
+   "aliases": {
+     "components": "@/components",
+     "utils": "@/lib/utils",
+     "ui": "@/components/ui"
+   }
+ }
+
+ Create: /lib/utils.ts
+ import { type ClassValue, clsx } from "clsx"
+ import { twMerge } from "tailwind-merge"
+
+ export function cn(...inputs: ClassValue[]) {
+   return twMerge(clsx(inputs))
+ }
+
+ Create: /hooks/use-mobile.tsx - Mobile detection hook
+
+ 1.5 Update Tailwind Configuration
+
+ Update: /tailwind.config.ts
+ - Add CSS variable-based color system
+ - Configure border radius (--radius: 0.25rem)
+ - Add tailwindcss-animate plugin
+ - Keep legacy colors temporarily for migration
+
+ 1.6 Update Global Styles
+
+ Update: /app/globals.css
+ - Replace custom utilities with CSS variables
+ - Add light mode theme (orange/slate)
+ - Add dark mode theme
+ - Remove old .card, .label-text, etc. utilities
+
+ Critical Files:
+ - /components.json (new)
+ - /lib/utils.ts (new)
+ - /hooks/use-mobile.tsx (new)
+ - /tailwind.config.ts (major update)
+ - /app/globals.css (major update)
+
+ ---
+ PHASE 2: Component Library Migration (Day 3-5)
+
+ Objective: Copy all 57 shadcn components from example-design
+
+ 2.1 Priority 1 - Essential Components (15 components)
+
+ Copy from example-design/components/ui/ to ops-ui/components/ui/:
+
+ 1. button.tsx - Replace custom Button.tsx
+ 2. card.tsx - Replace ExpandableCard
+ 3. input.tsx - Base for forms
+ 4. label.tsx - Form labels
+ 5. form.tsx - React Hook Form integration
+ 6. select.tsx - Dropdowns
+ 7. dialog.tsx - Modals
+ 8. alert.tsx - Replace Alert.tsx
+ 9. table.tsx - Data tables
+ 10. badge.tsx - Status indicators
+ 11. separator.tsx - Dividers
+ 12. skeleton.tsx - Replace LoadingState
+ 13. toast.tsx + toaster.tsx - Notifications
+ 14. dropdown-menu.tsx - Action menus
+ 15. sidebar.tsx - NEW navigation component
+
+ 2.2 Priority 2 - Feature Components (10 components)
+
+ 16. accordion.tsx - Expandable sections
+ 17. tabs.tsx - Bulk employee editors
+ 18. scroll-area.tsx - Long lists
+ 19. sheet.tsx - Mobile sidebar
+ 20. popover.tsx - Context menus
+ 21. checkbox.tsx - Multi-select
+ 22. textarea.tsx - Descriptions
+ 23. switch.tsx - Dark mode toggle
+ 24. tooltip.tsx - Hints
+ 25. progress.tsx - Upload progress
+
+ 2.3 Priority 3 - Advanced Components (10+ components)
+
+ 26. chart.tsx - Dashboard metrics
+ 27. calendar.tsx - Date filtering
+ 28. empty.tsx - Replace EmptyState
+ 29. Additional components as needed
+
+ 2.4 Copy All Remaining Components
+
+ - Copy all 57 component files from example-design
+ - Verify imports reference /lib/utils.ts
+ - Test each component builds successfully
+
+ Critical Files:
+ - /components/ui/button.tsx (replaces custom Button)
+ - /components/ui/sidebar.tsx (new navigation)
+ - /components/ui/form.tsx (React Hook Form integration)
+ - /components/ui/dialog.tsx (replaces modals)
+ - /components/ui/table.tsx (replaces custom tables)
+
+ ---
+ PHASE 3: Infrastructure & Layout (Day 6-7)
+
+ Objective: Set up theme provider, sidebar navigation, and root layout
+
+ 3.1 Theme Provider Setup
+
+ Create: /components/theme-provider.tsx
+ - Wrap next-themes for dark mode support
+ - Provide theme context to all components
+
+ Create: /components/theme-toggle.tsx
+ - Sun/Moon icon toggle button
+ - Switches between light/dark themes
+
+ 3.2 Sidebar Navigation Component
+
+ Create: /components/app-sidebar.tsx
+
+ Key features:
+ - Collapsible sidebar (256px → 0)
+ - Company selector dropdown at top
+ - Navigation items with active state (orange left border)
+ - Icons from lucide-react
+ - User profile section at bottom
+ - Dark mode toggle in footer
+
+ Navigation items:
+ - Dashboard (Home icon) → /
+ - SOPs (FileText icon) → /sop
+ - Logs (FileBox icon) → /log
+ - Companies (Building2 icon) → /company
+ - Roles (UserCircle icon) → /role
+ - Activity Events (Activity icon) → /activityevent
+ - Analysis (LineChart icon) → /analysis
+
+ 3.3 Root Layout Update
+
+ Update: /app/layout.tsx
+
+ New structure:
+ <ThemeProvider>
+   <AppProvider>
+     <SidebarProvider>
+       <AppSidebar />
+       <SidebarInset>
+         {children}
+       </SidebarInset>
+     </SidebarProvider>
+     <Toaster />
+   </AppProvider>
+ </ThemeProvider>
+
+ Delete:
+ - /components/Header.tsx (replaced by sidebar)
+ - /components/Footer.tsx (if exists)
+
+ Critical Files:
+ - /components/theme-provider.tsx (new)
+ - /components/theme-toggle.tsx (new)
+ - /components/app-sidebar.tsx (new - most critical)
+ - /app/layout.tsx (major update)
+
+ ---
+ PHASE 4: Dashboard Home Page (Day 8-9)
+
+ Objective: Create new dashboard-style home page
+
+ Update: /app/page.tsx
+
+ Replace simple portal links with:
+
+ 1. Metric Cards Grid (3 columns):
+   - Total SOPs (with link)
+   - Log Files (with link)
+   - Active Roles (with link)
+   - Large values (text-3xl font-semibold)
+ 2. Recent SOPs Table:
+   - Columns: Name, Company, Created Date
+   - First 10 SOPs
+   - shadcn Table component
+   - Click to navigate
+ 3. Layout:
+   - Breadcrumb: "Home"
+   - Page title: "Dashboard"
+   - max-w-7xl container
+   - p-8 padding
+
+ Data fetching:
+ - useEffect to fetch SOPs, Logs, Roles
+ - Display counts in metric cards
+ - Show recent SOPs in table
+
+ Critical Files:
+ - /app/page.tsx (complete rewrite)
+
+ ---
+ PHASE 5: Component Replacement (Day 10-14)
+
+ Objective: Replace custom components with shadcn equivalents
+
+ 5.1 Component Migration Mapping
+
+ | Custom Component            | shadcn Replacement         | Strategy                                   |
+ |-----------------------------|----------------------------|--------------------------------------------|
+ | Button.tsx                  | button.tsx                 | REPLACE - Update all imports, map variants |
+ | Alert.tsx                   | alert.tsx                  | REPLACE                                    |
+ | LoadingState.tsx            | skeleton.tsx               | REPLACE                                    |
+ | EmptyState.tsx              | empty.tsx                  | REPLACE                                    |
+ | ExpandableCard.tsx          | accordion.tsx              | REFACTOR - Update all list pages           |
+ | CharacterLimitedInput.tsx   | input.tsx + wrapper        | MERGE - Keep char counter                  |
+ | CompanySelector.tsx         | Moved to sidebar           | DELETE - Logic moves to app-sidebar        |
+ | PageHeader.tsx              | Custom with shadcn Button  | REFACTOR                                   |
+ | MultiSelect.tsx             | checkbox.tsx + popover.tsx | REFACTOR                                   |
+ | LogLinesTable.tsx           | table.tsx                  | REFACTOR - Keep logic                      |
+ | ActivityEventEditModal.tsx  | dialog.tsx                 | REFACTOR                                   |
+ | BulkEmployeeTableEditor.tsx | table.tsx + dialog.tsx     | REFACTOR                                   |
+
+ 5.2 Button Migration (Priority 1)
+
+ Find and Replace:
+ - import { Button } from '@/components/ui/Button' → import { Button } from '@/components/ui/button'
+ - Update variant props:
+   - variant="primary" → variant="default"
+   - variant="danger" → variant="destructive"
+   - variant="download" → variant="secondary"
+   - variant="upload" → variant="secondary"
+   - variant="clear" → variant="ghost"
+
+ Affected Files: All 16 pages + components (40+ import statements)
+
+ 5.3 Card/Accordion Migration (Priority 2)
+
+ Replace ExpandableCard pattern in:
+ - /app/sop/page.tsx
+ - /app/log/page.tsx
+ - /app/company/page.tsx
+ - /app/role/page.tsx
+ - /app/activityevent/page.tsx
+
+ New pattern:
+ <Accordion type="single" collapsible>
+   <AccordionItem value={item.id}>
+     <AccordionTrigger>{item.name}</AccordionTrigger>
+     <AccordionContent>
+       {/* Details */}
+     </AccordionContent>
+   </AccordionItem>
+ </Accordion>
+
+ 5.4 Table Migration (Priority 3)
+
+ Update tables to use shadcn Table:
+ - LogLinesTable.tsx - Keep employee name resolution
+ - LogLinesQueryTable.tsx - Keep color-coding logic
+ - ActivityEventList.tsx
+ - EmployeeList.tsx - Convert from cards to table
+ - RoleList.tsx
+
+ Preserve:
+ - Expandable rows functionality
+ - Color-coding for log types
+ - Employee name resolution
+ - Action buttons (edit, delete)
+
+ 5.5 Modal Migration (Priority 4)
+
+ Convert modals to Dialog:
+ - ActivityEventEditModal.tsx
+ - BulkEmployeeModal.tsx (if separate file)
+
+ New pattern:
+ <Dialog open={isOpen} onOpenChange={setIsOpen}>
+   <DialogContent>
+     <DialogHeader>
+       <DialogTitle>Edit Activity Event</DialogTitle>
+     </DialogHeader>
+     {/* Form content */}
+     <DialogFooter>
+       <Button variant="ghost">Cancel</Button>
+       <Button>Save</Button>
+     </DialogFooter>
+   </DialogContent>
+ </Dialog>
+
+ Critical Files:
+ - All 16 pages (button imports)
+ - 5 list pages (Accordion)
+ - 5 table components (Table)
+ - 2 modal components (Dialog)
+
+ ---
+ PHASE 6: Form Migration to React Hook Form (Day 15-18)
+
+ Objective: Replace useState form patterns with React Hook Form + Zod validation
+
+ 6.1 Create Zod Schemas
+
+ Create: /lib/schemas/sop.ts
+ import * as z from "zod"
+
+ export const sopSchema = z.object({
+   companyId: z.string().uuid("Please select a company"),
+   sopName: z.string().min(1, "Required").max(255),
+   basicDescription: z.string().min(1, "Required").max(1000),
+   steps: z.array(z.object({
+     stepNumber: z.number(),
+     title: z.string().max(255),
+     description: z.string().max(1000),
+   })),
+ })
+
+ Create schemas for:
+ - /lib/schemas/company.ts - Company validation
+ - /lib/schemas/employee.ts - Employee validation
+ - /lib/schemas/role.ts - Role validation
+ - /lib/schemas/activityevent.ts - Activity event validation
+ - /lib/schemas/log.ts - Log validation
+
+ 6.2 Forms to Migrate (Priority Order)
+
+ 1. SOP Create (/app/sop/create/page.tsx)
+   - Most complex - drag-drop steps + roles
+   - Use sopSchema
+   - Preserve @dnd-kit integration
+ 2. Company Create (/app/company/create/page.tsx)
+   - Use companySchema
+   - Phone/email validation
+ 3. Role Create (/app/role/create/page.tsx)
+   - Use roleSchema
+   - RoleTitle enum selector
+ 4. Activity Event Create (/app/activityevent/create/page.tsx)
+   - Use activityEventSchema
+   - Multi-select for roles/log types
+ 5. Log Create (/app/log/create/page.tsx)
+   - Use logSchema
+   - File upload integration
+ 6. AddEmployeeForm (/components/ui/AddEmployeeForm.tsx)
+   - Use employeeSchema
+   - Phone validation with libphonenumber-js
+
+ 6.3 React Hook Form Pattern
+
+ Old Pattern (useState):
+ const [formData, setFormData] = useState({ ... })
+ const handleSubmit = () => { ... }
+
+ New Pattern (React Hook Form):
+ import { useForm } from "react-hook-form"
+ import { zodResolver } from "@hookform/resolvers/zod"
+ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form"
+
+ const form = useForm({
+   resolver: zodResolver(sopSchema),
+   defaultValues: { sopName: "", ... }
+ })
+
+ const onSubmit = async (data) => {
+   await apiClient.createSOP(data)
+ }
+
+ return (
+   <Form {...form}>
+     <form onSubmit={form.handleSubmit(onSubmit)}>
+       <FormField
+         control={form.control}
+         name="sopName"
+         render={({ field }) => (
+           <FormItem>
+             <FormLabel>SOP Name</FormLabel>
+             <FormControl>
+               <Input {...field} />
+             </FormControl>
+             <FormMessage />
+           </FormItem>
+         )}
+       />
+     </form>
+   </Form>
+ )
+
+ Critical Files:
+ - /lib/schemas/*.ts (6 new schema files)
+ - /app/sop/create/page.tsx (most complex migration)
+ - /app/company/create/page.tsx
+ - /app/role/create/page.tsx
+ - /app/activityevent/create/page.tsx
+ - /app/log/create/page.tsx
+ - /components/ui/AddEmployeeForm.tsx
+
+ ---
+ PHASE 7: Page Redesign (Day 19-25)
+
+ Objective: Rebuild all pages with shadcn components and new layouts
+
+ 7.1 Standard Page Layout Pattern
+
+ All pages follow this structure:
+ <div className="flex-1 p-8 overflow-auto">
+   <div className="max-w-7xl mx-auto">
+     {/* Breadcrumb */}
+     <nav className="mb-4 text-sm text-muted-foreground">
+       <span>Home</span> / <span>Feature</span>
+     </nav>
+
+     {/* Header */}
+     <div className="flex items-center justify-between mb-8">
+       <h1 className="text-3xl font-bold">Feature Name</h1>
+       <div className="flex gap-2">
+         <Button variant="outline">Secondary</Button>
+         <Button>Primary Action</Button>
+       </div>
+     </div>
+
+     {/* Content */}
+     <div className="space-y-6">
+       {/* Cards, Tables, etc. */}
+     </div>
+   </div>
+ </div>
+
+ 7.2 Feature Pages (Week 1)
+
+ Update:
+
+ 1. SOP Home (/app/sop/page.tsx)
+   - Accordion for SOP list
+   - Upload button (secondary variant)
+   - Action buttons (Analyze, Download, Delete)
+   - Preserve file upload logic
+ 2. Log Home (/app/log/page.tsx)
+   - Same pattern as SOP Home
+   - LogLinesTable with shadcn Table
+ 3. Company Home (/app/company/page.tsx)
+   - Accordion for companies
+   - Employee section with Cards
+   - Bulk employee modals with Dialog
+ 4. Role Home (/app/role/page.tsx)
+   - Table or Card layout
+   - Role assignment display
+ 5. Activity Event Home (/app/activityevent/page.tsx)
+   - Table with filters
+   - Edit modal with Dialog
+ 6. Analysis Home (/app/analysis/page.tsx)
+   - Card-based layout
+   - Preserve analysis display logic
+
+ 7.3 Create Pages (Week 2)
+
+ Update:
+
+ 7. SOP Create (/app/sop/create/page.tsx)
+   - React Hook Form implementation
+   - Drag-drop with @dnd-kit (unchanged)
+   - Input/Textarea from shadcn
+   - Multi-step flow preserved
+ 8. Company Create (/app/company/create/page.tsx)
+   - React Hook Form
+   - Select for CEO/POC
+ 9. Role Create (/app/role/create/page.tsx)
+   - React Hook Form
+   - RoleTitle selector
+ 10. Activity Event Create (/app/activityevent/create/page.tsx)
+   - React Hook Form
+   - Multi-select components
+ 11. Log Create (/app/log/create/page.tsx)
+   - React Hook Form
+   - File upload
+
+ 7.4 Specialized Pages
+
+ 12. Log Lines Query (/app/log/lines/page.tsx)
+   - LogLinesQueryPanel (refactored with Select)
+   - LogLinesQueryTable (shadcn Table)
+   - Preserve 9 query types
+   - Preserve color-coding
+
+ Critical Files:
+ - All 16 pages require updates
+ - 6 main feature pages (SOP, Log, Company, Role, ActivityEvent, Analysis)
+ - 5 create pages
+ - 1 specialized query page
+
+ ---
+ PHASE 8: Testing & Cleanup (Day 26-30)
+
+ Objective: Validate all features, clean up old code, finalize dark mode
+
+ 8.1 Functional Testing Checklist
+
+ Navigation:
+ - Sidebar navigation works
+ - Sidebar collapse/expand works
+ - Company selector in sidebar populates
+ - Active route highlighting works
+ - Mobile sidebar becomes Sheet
+ - Breadcrumbs display correctly
+
+ SOP Features:
+ - Create SOP with form
+ - Upload SOP file
+ - View SOP list (Accordion)
+ - Analyze SOP
+ - Download SOP (JSON/text)
+ - Delete SOP
+ - Drag-drop steps works
+
+ Log Features:
+ - Create Log
+ - Upload Log file
+ - View Log list
+ - Query log lines (all 9 types)
+ - Employee names resolve correctly
+ - Color-coding works
+ - Expandable rows work
+ - Analyze Log
+ - Delete Log
+
+ Company/Employee Features:
+ - Create Company
+ - Assign CEO/POC
+ - Create single Employee
+ - Bulk create Employees (JSON editor)
+ - Bulk create Employees (Table editor)
+ - Bulk update Employees
+ - Manager assignment works
+ - Phone validation works
+ - Delete Company/Employee
+
+ Role/Activity Event Features:
+ - Create Role
+ - Assign employees to roles
+ - Create Activity Event
+ - Edit Activity Event (Dialog)
+ - Associate roles/log types
+ - Delete Role/Activity Event
+
+ Form Validation:
+ - React Hook Form validation works
+ - Error messages display
+ - Character limits enforced
+ - Phone validation works
+ - Email validation works
+
+ UI/Theme:
+ - Dark mode toggle works
+ - All colors use CSS variables
+ - Orange primary color throughout
+ - Slate grays for backgrounds
+ - Hover states work
+ - Focus states work
+ - Loading skeletons display
+ - Empty states display
+ - Toasts appear correctly
+
+ Responsive:
+ - Mobile sidebar works
+ - Tables scroll horizontally
+ - Forms work on mobile
+ - Dialogs center on mobile
+
+ 8.2 Cleanup Tasks
+
+ Delete Old Components:
+ # Already replaced by shadcn
+ rm components/ui/Button.tsx
+ rm components/ui/Alert.tsx
+ rm components/ui/CharacterLimitedInput.tsx
+ rm components/ui/LoadingState.tsx
+ rm components/ui/EmptyState.tsx
+ rm components/ui/ExpandableCard.tsx
+ rm components/ui/CompanySelector.tsx  # Logic moved to sidebar
+ rm components/Header.tsx
+ rm components/Footer.tsx  # if exists
+
+ Update globals.css:
+ Remove old utility classes:
+ /* DELETE these */
+ .card-base { ... }
+ .card-padding { ... }
+ .card { ... }
+ .label-text { ... }
+ .body-text { ... }
+ .section-title { ... }
+ .page-title { ... }
+
+ Remove Legacy Colors from tailwind.config.ts:
+ // DELETE after confirming all references updated
+ 'white-smoke': '#f6f5f4',
+ 'hunter-green': '#3f5a36',
+ 'burnt-umber': '#7C3626',
+ 'khaki': '#aea098',
+ 'sage': '#a8ba9a',
+
+ 8.3 Update Documentation
+
+ Update: /CLAUDE.md
+
+ Document:
+ - New shadcn component architecture (57 components)
+ - Orange/slate color scheme
+ - CSS variable theming system
+ - Dark mode usage
+ - Sidebar navigation pattern
+ - React Hook Form patterns
+ - Zod schema patterns
+ - Component inventory update
+ - Removed custom components list
+
+ Add sections:
+ - "Shadcn Component Library"
+ - "Theme System & Dark Mode"
+ - "Form Validation with Zod"
+ - "Sidebar Navigation"
+
+ 8.4 Performance Validation
+
+ Bundle Analysis:
+ npm install -D @next/bundle-analyzer
+ ANALYZE=true npm run build
+
+ Check:
+ - Total bundle size
+ - Component tree-shaking working
+ - No duplicate dependencies
+ - Lazy loading applied where needed
+
+ Critical Files:
+ - /CLAUDE.md (documentation update)
+
+ ---
+ Critical Files Summary
+
+ Top 5 Most Critical:
+
+ 1. /app/layout.tsx - Core layout restructure, sidebar integration, theme provider
+ 2. /app/globals.css - Complete CSS variable system for theming
+ 3. /components/app-sidebar.tsx - New navigation paradigm
+ 4. /lib/utils.ts - Required by all shadcn components
+ 5. /components/ui/form.tsx - React Hook Form integration
+
+ Additional Critical Files:
+
+ 6. /tailwind.config.ts - Color system overhaul
+ 7. /components/ui/button.tsx - Most used component
+ 8. /app/page.tsx - Dashboard sets design tone
+ 9. /lib/schemas/ (directory) - Form validation
+ 10. /components/theme-provider.tsx - Dark mode support
+
+ ---
+ Migration Risks & Mitigation
+
+ Risk 1: Breaking Changes to Features
+ - Severity: HIGH
+ - Mitigation: Test each page individually, keep old components temporarily until verified
+
+ Risk 2: Form Validation Differences
+ - Severity: MEDIUM
+ - Mitigation: Validate Zod schemas match existing validation logic
+
+ Risk 3: Drag-Drop Compatibility
+ - Severity: MEDIUM
+ - Mitigation: @dnd-kit is UI-independent, test thoroughly in SOP create
+
+ Risk 4: Log Line Color-Coding
+ - Severity: MEDIUM
+ - Mitigation: Preserve color utility functions, apply to shadcn Table rows
+
+ Risk 5: Tailwind v4 Breaking Changes
+ - Severity: HIGH
+ - Mitigation: Follow Tailwind v4 migration guide, test CSS variables
+
+ Risk 6: Employee Name Resolution Performance
+ - Severity: LOW
+ - Mitigation: Existing caching should work, monitor API calls
+
+ Risk 7: Dark Mode CSS Conflicts
+ - Severity: MEDIUM
+ - Mitigation: Ensure all custom styles use CSS variables
+
+ ---
+ Rollback Strategy
+
+ If Migration Fails:
+
+ 1. Revert dependencies:
+ git checkout package.json package-lock.json
+ npm install
+ 2. Revert configuration:
+ git checkout tailwind.config.ts app/globals.css components.json
+ 3. Revert layout:
+ git checkout app/layout.tsx
+ 4. Restore old components:
+ rm -rf components/ui/*
+ git checkout components/
+
+ Incremental Rollback:
+ - Commit after each phase completion
+ - Tag successful phases
+ - Can rollback to any phase
+
+ ---
+ Success Criteria
+
+ - All 16 pages render without errors
+ - All features work (create, read, update, delete)
+ - Forms validate with React Hook Form + Zod
+ - Dark mode works throughout app
+ - Sidebar navigation works (collapse, active states)
+ - Dashboard displays metrics correctly
+ - All buttons use orange primary color
+ - Mobile responsive (sidebar becomes sheet)
+ - TypeScript compilation: 0 errors
+ - Linter: Clean or only minor warnings
+ - Bundle size acceptable (<500kb increase)
+ - Documentation updated (CLAUDE.md)
+
+ ---
+ Timeline Estimate
+
+ Single Developer:
+ - Phase 1-2: 5 days (setup + components)
+ - Phase 3-4: 4 days (infrastructure + dashboard)
+ - Phase 5-6: 9 days (component replacement + forms)
+ - Phase 7: 7 days (page redesign)
+ - Phase 8: 5 days (testing + cleanup)
+ - Total: ~30 days
+
+ 2 Developers (Parallel):
+ - Phase 1-2: 3 days (sequential)
+ - Phase 3-4: 3 days (parallel)
+ - Phase 5-6: 6 days (parallel by feature)
+ - Phase 7: 5 days (parallel by page)
+ - Phase 8: 3 days (sequential testing)
+ - Total: ~20 days
+
+ ---
+ Next Steps
+
+ After plan approval, implementation order:
+ 1. Phase 1: Dependencies & configuration
+ 2. Phase 2: Copy shadcn components
+ 3. Phase 3: Sidebar & layout
+ 4. Phase 4: Dashboard
+ 5. Phase 5: Replace components
+ 6. Phase 6: Migrate forms
+ 7. Phase 7: Redesign pages
+ 8. Phase 8: Test & cleanup

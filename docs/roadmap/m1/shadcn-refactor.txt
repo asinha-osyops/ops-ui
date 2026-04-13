@@ -1,0 +1,345 @@
+Refactoring Plan: Migrate Custom Components to shadcn Components
+
+ Overview
+
+ This plan outlines a comprehensive refactoring effort to migrate 20+ custom UI components to use
+  shadcn/ui primitives. The goal is to reduce custom code, improve consistency, enhance
+ accessibility, and leverage the shadcn ecosystem.
+
+ Estimated Effort: 15-20 development days
+ Risk Level: Medium-High (due to widely-used components and complex business logic)
+
+ ---
+ Component Analysis Summary
+
+ After exploring the codebase, I identified:
+ - 57+ shadcn/ui components available in the library
+ - 30+ custom components in the codebase
+ - 20+ components that should be refactored to use shadcn primitives
+ - 4 components that should remain as-is (infrastructure/already using shadcn)
+
+ ---
+ Refactoring Strategy
+
+ Category 1: Complete Replacement (Delete Custom, Use shadcn)
+
+ 1. EmptyState.tsx → shadcn Empty component
+ - File: /components/ui/EmptyState.tsx
+ - Usage: 3 files (app/sop/page.tsx, app/company/page.tsx, app/log/page.tsx)
+ - Complexity: SIMPLE
+ - Action: Replace with shadcn Empty component pattern
+ - After: Delete EmptyState.tsx
+
+ 2. LoadingState.tsx → shadcn Spinner component
+ - File: /components/ui/LoadingState.tsx
+ - Usage: 3 files (same pages as EmptyState)
+ - Complexity: SIMPLE
+ - Action: Replace with Spinner + wrapper
+ - After: Delete LoadingState.tsx or refactor to use Spinner primitive
+
+ ---
+ Category 2: Refactor to shadcn Primitives (Keep Business Logic)
+
+ 3. DetailField.tsx → Use shadcn Label + Typography
+ - File: /components/ui/DetailField.tsx
+ - Usage: 47 instances across the codebase (CRITICAL - most widely used!)
+ - Complexity: MEDIUM
+ - Current: Custom div with p tags
+ - Refactor: Use shadcn Label component + styled div for value
+ - Business Logic to Keep: Label-value pairing, monospace font option, custom className support
+ - Risk: HIGH - Must maintain exact same API (label, value, className, valueClassName, mono
+ props)
+
+ 4. DetailsCard.tsx → Use shadcn Card
+ - File: /components/ui/DetailsCard.tsx
+ - Usage: 2 files
+ - Complexity: SIMPLE
+ - Refactor: Use Card, CardHeader, CardTitle, CardContent
+ - Business Logic to Keep: Conditional rendering of detail items
+
+ 5. FileInfoCard.tsx → Use shadcn Card + ScrollArea
+ - File: /components/ui/FileInfoCard.tsx
+ - Usage: 1 file (app/sop/page.tsx)
+ - Complexity: MEDIUM
+ - Refactor: Use Card, CardHeader, CardContent, ScrollArea, Separator
+ - Business Logic to Keep: Word counting, date formatting, KB conversion, error display
+
+ 6. CharacterLimitedInput.tsx → Extend shadcn Input/Textarea
+ - File: /components/ui/CharacterLimitedInput.tsx
+ - Usage: Form fields throughout the app
+ - Complexity: MEDIUM
+ - Refactor: Extend shadcn Input and Textarea with character counter display
+ - Business Logic to Keep: Character count, max length enforcement
+ - Note: Good custom component - refactor to use shadcn primitives internally
+
+ 7. CompanySelector.tsx → Use shadcn Command + Popover
+ - File: /components/ui/CompanySelector.tsx
+ - Usage: 4 files + integrates with global app context
+ - Complexity: HIGH
+ - Current: Custom dropdown with button and absolute positioned div
+ - Refactor: Use Command (for search) + Popover + Button (trigger)
+ - Business Logic to Keep: Global state integration (useAppContext), lazy loading, persistence
+ - Benefits: Search functionality, keyboard navigation, better UX
+ - Risk: HIGH - Global state integration must be preserved
+
+ 8. MultiSelect.tsx → Use shadcn Command + Popover + Badge
+ - File: /components/ui/MultiSelect.tsx
+ - Complexity: HIGH
+ - Refactor: Use Command, Popover, Badge for selected items
+ - Business Logic to Keep: Multi-selection, tag display, keyboard navigation
+
+ 9. EmployeeList.tsx → Use shadcn Card + Button + Badge + Avatar
+ - File: /components/ui/EmployeeList.tsx
+ - Complexity: HIGH
+ - Refactor: Use Card (CardHeader, CardTitle, CardContent, CardFooter), Button, Badge, Avatar
+ - Business Logic to Keep: Employee operations, download (JSON/text), deletion, formatting
+ - Enhancement: Add Avatar with employee initials
+
+ 10. RoleList.tsx → Use shadcn Card + Button + Badge
+ - File: /components/ui/RoleList.tsx
+ - Complexity: HIGH
+ - Refactor: Same pattern as EmployeeList (Card, Button, Badge)
+
+ 11. ActivityEventList.tsx → Use shadcn Card + Button + Badge
+ - File: /components/ui/ActivityEventList.tsx
+ - Complexity: HIGH
+ - Refactor: Same pattern as EmployeeList
+
+ 12. LogLinesTable.tsx → Use shadcn Table primitives
+ - File: /components/ui/LogLinesTable.tsx
+ - Complexity: VERY HIGH
+ - Current: Custom table HTML with thead/tbody/tr/td
+ - Refactor: Use Table, TableHeader, TableBody, TableRow, TableCell, TableHead
+ - Business Logic to Keep ALL:
+   - Employee name resolution (fetches from API)
+   - Name caching and loading states
+   - Expandable rows with useExpandableRows hook
+   - Type-specific badge colors
+   - DetailField usage in expanded rows
+ - Risk: VERY HIGH - Complex business logic, critical functionality
+
+ 13. LogLinesQueryTable.tsx → Use shadcn Table primitives
+ - File: /components/ui/LogLinesQueryTable.tsx
+ - Complexity: VERY HIGH
+ - Refactor: Use shadcn Table primitives (same as LogLinesTable)
+ - Business Logic to Keep: Type-specific details, color coding, expansion, employee name
+ resolution
+ - Risk: VERY HIGH
+
+ 14. LogLinesQueryPanel.tsx → Use shadcn Form components
+ - File: /components/ui/LogLinesQueryPanel.tsx
+ - Complexity: MEDIUM
+ - Refactor: Use Form, FormField, FormItem, FormLabel, FormControl, Select, Input
+ - Business Logic to Keep: Query type switching, dynamic form fields
+ - Benefits: Consistent form styling, better validation support
+
+ 15. BulkEmployeeTableEditor.tsx → Use shadcn Table + Input + Button
+ - File: /components/ui/BulkEmployeeTableEditor.tsx
+ - Complexity: VERY HIGH
+ - Refactor: Use Table, Input, Button
+ - Business Logic to Keep: Validation, character limits, row management, spreadsheet editing
+
+ 16. EmployeeTableView.tsx → Use shadcn Table
+ - File: /components/ui/EmployeeTableView.tsx
+ - Complexity: HIGH
+ - Refactor: Use shadcn Table primitives
+
+ 17. ActivityEventEditModal.tsx → Use shadcn Dialog + Form
+ - File: /components/ui/ActivityEventEditModal.tsx
+ - Complexity: HIGH
+ - Refactor: Use Dialog, DialogContent, DialogHeader, DialogTitle, Form components
+ - Business Logic to Keep: Edit operations, validation
+
+ ---
+ Category 3: Analysis Components
+
+ 18. GeminiResponseFileCard.tsx → Use shadcn Card
+ - File: /components/analysis/GeminiResponseFileCard.tsx
+ - Complexity: MEDIUM
+ - Refactor: Use Card, CardHeader, CardContent, Separator
+ - Business Logic to Keep: Generic parsing, render function delegation
+
+ 19. SopAnalysisDisplay.tsx → Use shadcn Card + Accordion
+ - File: /components/analysis/SopAnalysisDisplay.tsx
+ - Complexity: MEDIUM
+ - Refactor: Use Card, Accordion for structured display
+
+ 20. LogAnalysisDisplay.tsx → Use shadcn Card + Accordion
+ - File: /components/analysis/LogAnalysisDisplay.tsx
+ - Complexity: MEDIUM
+ - Refactor: Use Card, Accordion
+
+ ---
+ Category 4: Keep As-Is (Infrastructure/Already shadcn)
+
+ 21. PageLayout.tsx - KEEP (good abstraction)
+ 22. theme-provider.tsx - KEEP (infrastructure)
+ 23. theme-toggle.tsx - KEEP (uses shadcn patterns)
+ 24. app-sidebar.tsx - KEEP (uses shadcn Sidebar)
+ 25. Alert.tsx - KEEP (already IS shadcn Alert component)
+
+ ---
+ Implementation Phases
+
+ Phase 1: Simple Replacements (1-2 days)
+
+ Objective: Replace simple components with direct shadcn equivalents
+
+ 1. Replace EmptyState with shadcn Empty component
+   - Update: app/sop/page.tsx, app/company/page.tsx, app/log/page.tsx
+   - Delete: components/ui/EmptyState.tsx
+ 2. Replace LoadingState with Spinner + wrapper
+   - Update same 3 files
+   - Delete or refactor: components/ui/LoadingState.tsx
+
+ Testing: Verify empty and loading states display correctly
+
+ ---
+ Phase 2: Card-Based Components (2-3 days)
+
+ Objective: Refactor components to use shadcn Card
+
+ 3. Refactor DetailsCard to use Card components
+ 4. Refactor FileInfoCard to use Card + ScrollArea
+ 5. Refactor GeminiResponseFileCard to use Card
+ 6. Refactor SopAnalysisDisplay to use Card + Accordion
+ 7. Refactor LogAnalysisDisplay to use Card + Accordion
+
+ Testing: Verify all card layouts, file info, analysis displays
+
+ ---
+ Phase 3: Critical Form Components (2-3 days)
+
+ Objective: Refactor widely-used form components (HIGH RISK)
+
+ 8. CRITICAL: Refactor DetailField to use Label + typography
+   - 47 usages across codebase
+   - Must maintain exact same API
+   - Test thoroughly before proceeding
+   - All other components depend on this
+ 9. Refactor CharacterLimitedInput to extend Input/Textarea
+ 10. Refactor LogLinesQueryPanel to use Form components
+
+ Testing: Verify all 47 DetailField usages, character limits, query panel
+
+ ---
+ Phase 4: List Components (3-4 days)
+
+ Objective: Refactor list components to use Card primitives
+
+ 11. Refactor EmployeeList to use Card + Button + Badge + Avatar
+ 12. Refactor RoleList (same pattern)
+ 13. Refactor ActivityEventList (same pattern)
+
+ Testing: Verify list operations (view, delete, download)
+
+ ---
+ Phase 5: Selection Components (3-4 days)
+
+ Objective: Refactor dropdowns and selectors (HIGH RISK)
+
+ 14. CRITICAL: Refactor CompanySelector to use Command + Popover
+   - Global state integration
+   - Used in 4 files
+   - Test thoroughly with app context
+ 15. Refactor MultiSelect to use Command + Popover + Badge
+
+ Testing: Verify company selection, global state persistence, multi-select
+
+ ---
+ Phase 6: Table Components (4-5 days)
+
+ Objective: Refactor complex tables (VERY HIGH RISK)
+
+ 16. CRITICAL: Refactor LogLinesTable to use Table primitives
+   - Keep ALL business logic (employee resolution, expansion, etc.)
+   - Most complex component
+ 17. CRITICAL: Refactor LogLinesQueryTable (similar complexity)
+ 18. Refactor BulkEmployeeTableEditor to use Table + Input
+ 19. Refactor EmployeeTableView to use Table
+
+ Testing: Extensive testing of table rendering, expansion, editing, employee name resolution
+
+ ---
+ Phase 7: Modals & Cleanup (2-3 days)
+
+ Objective: Complete remaining components and cleanup
+
+ 20. Refactor ActivityEventEditModal to use Dialog + Form
+ 21. Delete unused/deprecated components
+ 22. Update CLAUDE.md documentation
+ 23. Create component usage guidelines
+
+ ---
+ Critical Files Reference
+
+ High-Priority Files (Refactor First)
+
+ - /components/ui/DetailField.tsx - 47 usages, dependency for other components
+ - /components/ui/EmptyState.tsx - Simple, good starting point
+ - /components/ui/LoadingState.tsx - Simple, good starting point
+ - /components/ui/DetailsCard.tsx - Establishes Card pattern
+
+ High-Risk Files (Requires Extra Care)
+
+ - /components/ui/CompanySelector.tsx - Global state, 4 usages
+ - /components/ui/LogLinesTable.tsx - Complex business logic, employee resolution
+ - /components/ui/LogLinesQueryTable.tsx - Similar complexity to LogLinesTable
+ - /components/ui/BulkEmployeeTableEditor.tsx - Spreadsheet editing
+
+ Files to Update (Imports)
+
+ - /app/sop/page.tsx - Uses EmptyState, LoadingState, FileInfoCard, CompanySelector
+ - /app/company/page.tsx - Uses EmptyState, LoadingState, DetailsCard, EmployeeList
+ - /app/log/page.tsx - Uses EmptyState, LoadingState, CompanySelector, LogLinesTable
+ - /app/log/lines/page.tsx - Uses LogLinesQueryTable, LogLinesQueryPanel
+ - Plus 43+ other files using DetailField
+
+ ---
+ Risk Mitigation
+
+ High-Risk Components
+
+ 1. DetailField (47 usages) - Refactor component first, test all call sites
+ 2. CompanySelector (global state) - Test global state integration thoroughly
+ 3. LogLinesTable (complex logic) - Incremental refactor, extensive manual testing
+ 4. BulkEmployeeTableEditor (editing) - Test all validation rules
+
+ API Compatibility Requirements
+
+ - DetailField: Must maintain label, value, className, valueClassName, mono props
+ - CompanySelector: Must maintain useAppContext integration
+ - List components: Must maintain onDelete, onDownload callbacks
+ - Table components: Must maintain expandable row functionality
+
+ Breaking Changes to Avoid
+
+ - Do NOT change component APIs without updating all call sites
+ - Do NOT remove business logic (employee resolution, validation, etc.)
+ - Do NOT break global state integration
+ - Preserve all existing functionality
+
+ ---
+ Success Criteria
+
+ 1. Code Reduction: 30-40% reduction in custom component code
+ 2. Consistency: 100% of UI uses shadcn primitives
+ 3. Accessibility: All components pass ARIA checks (shadcn is accessible)
+ 4. No Regressions: All existing functionality works identically
+ 5. Maintainability: New developers can reference shadcn docs
+
+ ---
+ Recommended Approach
+
+ Execute in phases as outlined above:
+ 1. Start with Phase 1-2 (simple replacements, cards) to establish patterns
+ 2. Tackle Phase 3 (DetailField) - critical dependency
+ 3. Then Phases 4-5 (lists, selectors) using established patterns
+ 4. Finally Phase 6 (complex tables) with extensive testing
+ 5. Cleanup in Phase 7
+
+ Alternative: Could refactor incrementally during feature work, but this spreads risk over longer
+  timeline.
+
+ Recommendation: Phased approach with dedicated focus ensures consistency and allows for thorough
+  testing.

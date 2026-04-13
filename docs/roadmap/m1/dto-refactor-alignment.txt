@@ -1,0 +1,321 @@
+API Client OpenAPI Migration Plan
+
+ Overview
+
+ Update the API client (lib/api-client.ts) to match the new OpenAPI specification in openapi.json. This involves updating 1,243 lines of API client code and 20 consuming files across pages and
+ components.
+
+ Implementation Approach: Single comprehensive PR with all changes (user confirmed)
+ Backend Status: Already updated and ready (user confirmed)
+ CIO Role: No existing usage, safe to remove (user confirmed)
+ Backward Compatibility: Single breaking change, no compatibility layer needed (user confirmed)
+
+ Key Changes Required
+
+ 1. RoleTitle Enum - BREAKING CHANGE (HIGH IMPACT)
+
+ - Current: 36 role values (CEO, CFO, COO, CTO, CIO, CMO, DIRECTOR, MANAGER, etc.)
+ - New: 60+ role values including hierarchical structure and medical roles
+ - Breaking Changes:
+   - CIO removed (needs migration to CTO or CPO)
+   - Generic roles renamed (e.g., DIRECTOR → ENGINEERING_DIRECTOR)
+   - New medical roles added (DENTIST, PHYSICIAN, NURSE_PRACTITIONER, etc.)
+ - Affected Files: 4 files directly reference RoleTitle values
+
+ 2. Request DTO Pattern Changes (HIGH IMPACT)
+
+ - Current: Pass objects directly or wrapped (e.g., { sop: sopData })
+ - New: Use specific Request DTOs (CreateSopRequestDto, UpdateSopRequestDto, etc.)
+ - Impact: All create/update methods need DTO wrappers removed
+
+ 3. File Upload Structure Changes (MEDIUM IMPACT)
+
+ - Current: FormData with separate fields (file, companyId, sopId)
+ - New: FormData with requestDto (JSON) + file
+ - Affected Files: 2 files (SOP create, Log create)
+
+ 4. Batch → Bulk Renaming (MEDIUM IMPACT)
+
+ - Type Names: BatchCreateEmployeesRequestDto → BulkCreateEmployeesRequestDto
+ - Endpoint URLs: /employee/batch → /employee/bulk
+ - Method Names: Already correct (bulkCreateEmployees)
+ - Affected Files: 3 files (Employee components)
+
+ 5. Response Type Changes (MEDIUM IMPACT)
+
+ - Current: Many return { success, message } wrapper objects
+ - New: Return entities directly or void
+ - Impact: Error handling changes from checking response.success to try/catch
+
+ 6. New Update Endpoints (LOW-MEDIUM IMPACT)
+
+ - Add PUT /api/sop/{id} - Update SOP
+ - Add PUT /api/log/{id} - Update Log
+ - Verify existing Company, Employee, Role, ActivityEvent update endpoints
+
+ 7. StepDto Changes (LOW IMPACT)
+
+ - Remove actorRoleId field (likely unused, nullable)
+ - Keep actorRoleTitle field only
+
+ Implementation Phases
+
+ Phase 1: Core Type Updates (api-client.ts)
+
+ Step 1.1: Update RoleTitle Enum
+ - Replace entire enum with 60+ value version from OpenAPI
+ - Add JSDoc documentation noting breaking changes
+ - Location: Lines 10-36
+
+ Step 1.2: Update StepDto Interface
+ - Remove actorRoleId: string | null field
+ - Keep only actorRoleTitle field
+ - Location: Lines 361-371
+
+ Step 1.3: Add Request DTO Interfaces
+ - Add all Create*RequestDto interfaces (9 total)
+ - Add all Update*RequestDto interfaces (7 total)
+ - Add file upload DTOs (2 total)
+ - Location: After existing interfaces
+
+ Step 1.4: Rename Batch → Bulk Types
+ - Rename to BulkCreateEmployeesRequestDto, BulkUpdateEmployeesRequestDto, BulkEmployeeResponseDto
+ - No deprecated aliases needed (single PR approach)
+ - Location: Lines 485-511
+
+ Phase 2: API Client Method Updates (api-client.ts)
+
+ Update methods by entity category in this order:
+
+ Step 2.1: SOP Methods
+ - Update createSOP() - Use CreateSopRequestDto, return SopDto directly
+ - Add updateSOP() - New PUT endpoint
+ - Update uploadSopFile() - Use UploadSopFileRequestDto in FormData
+
+ Step 2.2: Company Methods
+ - Update createCompany() - Use CreateCompanyRequestDto, no wrapper
+ - Verify updateCompany() - Should match UpdateCompanyRequestDto
+
+ Step 2.3: Employee Methods
+ - Update createEmployee() - Use CreateEmployeeRequestDto
+ - Verify updateEmployee() - Should match UpdateEmployeeRequestDto
+ - Update bulkCreateEmployees() - Change endpoint to /employee/bulk
+ - Update bulkUpdateEmployees() - Change endpoint to /employee/bulk
+
+ Step 2.4: Log Methods
+ - Update createLog() - Use CreateLogRequestDto, return LogDto directly
+ - Add updateLog() - New PUT endpoint
+ - Update uploadLogFile() - Use UploadLogFileRequestDto in FormData
+
+ Step 2.5: Role Methods
+ - Update createRole() - Use CreateRoleRequestDto, return RoleDto directly
+ - Update updateRole() - Use UpdateRoleRequestDto, return RoleDto directly
+
+ Step 2.6: ActivityEvent Methods
+ - Update createActivityEvent() - Use CreateActivityEventRequestDto, return ActivityEventDto directly
+ - Update updateActivityEvent() - Use UpdateActivityEventRequestDto, return ActivityEventDto directly
+
+ Phase 3: Update Consuming Code
+
+ Update files to use new API client signatures and handle new response types:
+
+ Step 3.1: SOP Pages (2 files)
+ - app/sop/page.tsx - Handle direct entity responses
+ - app/sop/create/page.tsx - Use new DTOs, update file upload call
+
+ Step 3.2: Log Pages (3 files)
+ - app/log/page.tsx - Handle direct entity responses
+ - app/log/create/page.tsx - Use new DTOs, update file upload call
+ - app/log/lines/page.tsx - Verify query methods still work
+
+ Step 3.3: Company Pages (2 files)
+ - app/company/page.tsx - Update to new DTOs
+ - app/company/create/page.tsx - Use CreateCompanyRequestDto
+
+ Step 3.4: Employee Components (3 files)
+ - components/ui/AddEmployeeForm.tsx - Use CreateEmployeeRequestDto
+ - components/ui/BulkEmployeeTableEditor.tsx - Update type names (Batch→Bulk)
+ - components/ui/EmployeeTableView.tsx - Update bulk operation calls
+
+ Step 3.5: Role Pages (2 files)
+ - app/role/page.tsx - Update RoleTitle enum references
+ - app/role/create/page.tsx - Use new role values, CreateRoleRequestDto
+
+ Step 3.6: ActivityEvent Pages (2 files)
+ - app/activityevent/page.tsx - Update RoleTitle enum references
+ - app/activityevent/create/page.tsx - Use CreateActivityEventRequestDto
+
+ Step 3.7: ActivityEvent Components (2 files)
+ - components/ui/ActivityEventList.tsx - Update type references
+ - components/ui/ActivityEventEditModal.tsx - Use UpdateActivityEventRequestDto
+
+ Step 3.8: Other Pages (2 files)
+ - app/analysis/page.tsx - Verify RoleTitle usage
+ - lib/utils/logline-styles.ts - No changes needed (only uses LogLineType)
+
+ Phase 4: Cleanup and Validation
+
+ Step 4.1: Verify No Legacy Code
+ - Verify no unused legacy response types remain
+ - Ensure all Batch* references updated to Bulk*
+
+ Step 4.2: Update Documentation
+ - Update CLAUDE.md with new API patterns
+ - Document breaking changes and migration notes
+ - Add RoleTitle enum documentation
+
+ Step 4.3: Final Validation
+ - Run TypeScript compilation: npm run build or tsc --noEmit
+ - Run linter: npm run lint
+ - Execute smoke test checklist (see below)
+
+ Critical Files to Modify
+
+ 1. lib/api-client.ts (1,242 lines) - Core API client, all changes originate here
+ 2. app/sop/create/page.tsx - File upload pattern changes
+ 3. components/ui/BulkEmployeeTableEditor.tsx - Batch→Bulk migration
+ 4. app/company/page.tsx - Complex page with multiple entity interactions
+ 5. app/role/create/page.tsx - Direct RoleTitle enum usage
+
+ Files Requiring Updates (20 Total)
+
+ Pages (11 files):
+ - app/sop/page.tsx, app/sop/create/page.tsx
+ - app/log/page.tsx, app/log/create/page.tsx, app/log/lines/page.tsx
+ - app/company/page.tsx, app/company/create/page.tsx
+ - app/activityevent/page.tsx, app/activityevent/create/page.tsx
+ - app/role/page.tsx, app/role/create/page.tsx
+ - app/analysis/page.tsx
+
+ Components (8 files):
+ - components/ui/AddEmployeeForm.tsx
+ - components/ui/BulkEmployeeTableEditor.tsx
+ - components/ui/EmployeeTableView.tsx
+ - components/ui/ActivityEventList.tsx
+ - components/ui/ActivityEventEditModal.tsx
+ - components/ui/RoleList.tsx
+
+ Utilities (1 file):
+ - lib/utils/logline-styles.ts (minimal/no changes)
+
+ Testing Strategy
+
+ After Phase 1
+
+ - TypeScript compilation (expect errors in consuming files - document them)
+ - Verify new types are correctly defined
+
+ After Phase 2
+
+ - Test each updated API method individually
+ - Verify request payloads match OpenAPI spec
+ - Verify response parsing works correctly
+ - Test error handling
+
+ After Phase 3
+
+ - Test each updated page/component end-to-end
+ - Verify form submissions work
+ - Check file uploads work
+ - Validate error messages display correctly
+
+ Smoke Test Checklist (Phase 4)
+
+ SOP:
+ - Create SOP with manual data
+ - Create SOP with file upload
+ - View SOPs list
+ - Update SOP (new feature)
+ - Analyze SOP
+ - Delete SOP
+
+ Company:
+ - Create Company
+ - View Companies list
+ - Update Company
+ - Delete Company
+
+ Employee:
+ - Create single Employee
+ - Bulk create Employees
+ - Bulk update Employees
+ - Assign role with new RoleTitle values
+ - Update single Employee
+ - Delete Employee
+
+ Log:
+ - Create Log with manual data
+ - Create Log with file upload
+ - View Logs list
+ - Update Log (new feature)
+ - Query log lines (all 9 query types)
+ - Analyze Log
+ - Delete Log
+
+ Role:
+ - Create Role with new RoleTitle values
+ - Test medical role titles (DENTIST, PHYSICIAN, etc.)
+ - View Roles list
+ - Update Role
+ - Delete Role
+
+ ActivityEvent:
+ - Create ActivityEvent
+ - Associate with new role titles
+ - Update ActivityEvent
+ - Get associations
+ - Delete ActivityEvent
+
+ Breaking Changes Summary
+
+ 1. RoleTitle Enum: Complete replacement, CIO removed (no existing usage), 24+ new values
+ 2. Response Types: Direct entity returns instead of { success, message } wrappers
+ 3. Request Unwrapping: No more { sop: sopData } wrapper objects
+ 4. File Upload Structure: requestDto field instead of separate parameters
+ 5. Endpoint URLs: /employee/batch → /employee/bulk
+
+ Note: All breaking changes deploy atomically in single PR - no migration period needed.
+
+ Risk Assessment
+
+ - HIGH RISK: RoleTitle enum changes, Response type changes
+ - MEDIUM RISK: File upload structure, Batch→Bulk renaming, Request DTO unwrapping
+ - LOW RISK: StepDto changes, New update endpoints
+
+ Estimated Timeline
+
+ - Single Developer: 4-5 days (29-40 hours)
+   - Phase 1: 4-6 hours
+   - Phase 2: 8-12 hours
+   - Phase 3: 12-16 hours
+   - Phase 4: 4-6 hours
+ - 2-3 Developers (Parallel): 5-7 days
+   - Phase 1: 1 day (sequential)
+   - Phase 2: 1-2 days (parallelize by entity)
+   - Phase 3: 2-3 days (parallelize by page/component)
+   - Phase 4: 1 day (final validation)
+
+ Rollback Strategy
+
+ Since this is a single PR approach:
+ - If issues found during PR review: Fix issues and re-test before merge
+ - If issues found after merge: Revert entire PR as single atomic change
+ - No partial rollback needed: All changes deploy together
+
+ Success Criteria
+
+ - All TypeScript compilation errors resolved
+ - All smoke tests pass
+ - No legacy code remains
+ - Documentation updated
+ - All 20 consuming files updated and tested
+ - Single PR ready for review with comprehensive testing
+
+ Implementation Notes
+
+ Since this is a single comprehensive PR:
+ 1. Work through all 4 phases sequentially in one session
+ 2. Test thoroughly after each phase before proceeding
+ 3. Commit regularly with descriptive messages (can squash before PR)
+ 4. Run full smoke test suite before creating PR
+ 5. Backend is already compatible - no coordination needed

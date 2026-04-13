@@ -1,0 +1,595 @@
+{
+  "id": "776d9f50-fc9f-4fb0-b7dd-d8baa88ad032",
+  "companyId": "f4618e86-60d6-497e-962b-331d2bf6471d",
+  "companyName": "Company 11",
+  "name": "New Hire Onboarding SOP",
+  "basicDescription": "Standard onboarding process for all full-time, part-time, and long-term contractors.",
+  "stepCount": 10,
+  "dagValid": true,
+  "lastValidatedAt": "2026-03-26T01:27:55.965186Z",
+  "validationErrors": [],
+  "validationWarnings": [],
+  "sopFile": null,
+  "geminiResponseFiles": [],
+  "createdAt": "2026-03-26T01:27:22.097471Z",
+  "steps": [
+    {
+      "id": "8057922b-ab3b-4454-97f5-0c74bb638c95",
+      "name": "Perform first-day access verification",
+      "details": "The Operations Specialist facilitates the technical access check on the morning of Day 1. This involves confirming that the new hire can successfully log into their email and access their calendar. If any login failures or permission issues occur, the specialist must immediately flag these problems to the CTO for rapid remediation to ensure the hire's schedule is not delayed.",
+      "postStepDocumentation": "",
+      "monitoringRequirements": "Successful login to Google Workspace verified by hire",
+      "actorRoleTitle": "OPERATIONS_SPECIALIST",
+      "matchingEmployeesForRoleTitle": [
+        {
+          "id": "9b1f8648-a43e-4d2f-99a0-d0f18843c4b7",
+          "companyId": "f4618e86-60d6-497e-962b-331d2bf6471d",
+          "name": "Patricia Hill",
+          "email": "patricia.hill@company11.com",
+          "roleTitle": "OPERATIONS_SPECIALIST",
+          "managerId": null,
+          "managerName": null,
+          "roleId": "2b52bb5b-bc0e-4f04-8ca8-1b62a9636747"
+        }
+      ],
+      "nodeType": "STEP",
+      "isFork": false,
+      "isJoin": true,
+      "matchingActivityEvents": [
+        {
+          "activityEvent": {
+            "id": "ff099421-edbc-45be-9127-b080782ab0da",
+            "name": "Operations Process Management",
+            "description": "Operations team monitors processes, tracks tasks, and manages workflow improvements"
+          },
+          "matchingLogCount": 10
+        }
+      ],
+      "firstLogTimestamp": "2025-11-10T19:37:25Z",
+      "lastLogTimestamp": "2025-11-11T01:59:34Z",
+      "stepDuration": 22929
+    },
+    {
+      "id": "9b14b5a5-112c-4d83-9beb-0f536b508297",
+      "name": "Conduct initial manager 1:1",
+      "details": "The Operations Manager conducts the first formal one-on-one meeting with the new hire. The agenda includes a discussion of role expectations, specific objectives for the first week, and individual communication preferences. The manager also walks the hire through the previously created 30-day onboarding plan and establishes a recurring cadence for future check-ins to monitor progress and provide support.",
+      "postStepDocumentation": "1:1 meeting notes logged; recurring check-ins added to calendar",
+      "monitoringRequirements": "",
+      "actorRoleTitle": "OPERATIONS_MANAGER",
+      "matchingEmployeesForRoleTitle": [
+        {
+          "id": "d2564ba0-4fae-42fa-b96c-cc2a796f01aa",
+          "companyId": "f4618e86-60d6-497e-962b-331d2bf6471d",
+          "name": "Diana Baker",
+          "email": "diana.baker@company11.com",
+          "roleTitle": "OPERATIONS_MANAGER",
+          "managerId": null,
+          "managerName": null,
+          "roleId": "bcfc5d1e-f8a2-4077-bfd4-6665de45b6ef"
+        }
+      ],
+      "nodeType": "STEP",
+      "isFork": false,
+      "isJoin": false,
+      "matchingActivityEvents": [
+        {
+          "activityEvent": {
+            "id": "ff099421-edbc-45be-9127-b080782ab0da",
+            "name": "Operations Process Management",
+            "description": "Operations team monitors processes, tracks tasks, and manages workflow improvements"
+          },
+          "matchingLogCount": 10
+        }
+      ],
+      "firstLogTimestamp": "2025-11-11T01:14:23Z",
+      "lastLogTimestamp": "2025-11-11T04:30:02Z",
+      "stepDuration": 11739
+    },
+    {
+      "id": "9e9779d3-cbf4-4eb2-a4f3-f7b7df94b507",
+      "name": "Initiate hiring documentation",
+      "details": "The HR Manager initiates the onboarding workflow by sending the official offer letter, Non-Disclosure Agreements (NDAs), and all mandatory tax paperwork including W-4, I-9, and direct deposit forms through an electronic signature platform. During this stage, the HR Manager must also confirm the new hire's legal name, preferred name, and personal email address, which are critical for the subsequent creation of system accounts and equipment shipping.",
+      "postStepDocumentation": "Digital copies of signed forms stored in /People/New Hires/YYYY folder",
+      "monitoringRequirements": "Confirmation of document delivery to candidate personal email",
+      "actorRoleTitle": "HR_MANAGER",
+      "matchingEmployeesForRoleTitle": [
+        {
+          "id": "d1a55916-fa18-4fd0-8f73-d7c6483003f0",
+          "companyId": "f4618e86-60d6-497e-962b-331d2bf6471d",
+          "name": "Laura Wright",
+          "email": "laura.wright@company11.com",
+          "roleTitle": "HR_MANAGER",
+          "managerId": null,
+          "managerName": null,
+          "roleId": "25489999-f663-41b9-a755-b541d6f7ba0d"
+        }
+      ],
+      "nodeType": "START",
+      "isFork": true,
+      "isJoin": false,
+      "matchingActivityEvents": [
+        {
+          "activityEvent": {
+            "id": "2ed6568c-78c9-4a9d-a4e8-f4ace8ccf987",
+            "name": "HR Policy and Employee Relations",
+            "description": "HR team manages policies, employee records, and organizational changes"
+          },
+          "matchingLogCount": 10
+        }
+      ],
+      "firstLogTimestamp": "2025-11-10T15:13:17Z",
+      "lastLogTimestamp": "2025-11-11T04:37:35Z",
+      "stepDuration": 48258
+    },
+    {
+      "id": "5b59111d-2f87-499c-a37a-6d236a3366ad",
+      "name": "Send Welcome Kit email",
+      "details": "The CTO sends a comprehensive 'Welcome Kit' email to the new hire's personal email address. This email provides the hire with their new professional credentials, hardware setup instructions, and a clear agenda for their first day. This step is designed to bridge the gap between recruitment and the first day of work, ensuring the hire feels prepared and informed about their initial schedule.",
+      "postStepDocumentation": "Copy of Welcome Kit email saved to HR candidate file",
+      "monitoringRequirements": "",
+      "actorRoleTitle": "CTO",
+      "matchingEmployeesForRoleTitle": [
+        {
+          "id": "64d09989-3095-4602-a3f1-36328a7e66b2",
+          "companyId": "f4618e86-60d6-497e-962b-331d2bf6471d",
+          "name": "Emily Davis",
+          "email": "emily.davis@company11.com",
+          "roleTitle": "CTO",
+          "managerId": null,
+          "managerName": null,
+          "roleId": "59e86a66-cc39-47d0-98f9-02c8c321e80f"
+        }
+      ],
+      "nodeType": "STEP",
+      "isFork": false,
+      "isJoin": true,
+      "matchingActivityEvents": [
+        {
+          "activityEvent": {
+            "id": "e43b1399-5bf9-458e-b522-864768c33b70",
+            "name": "HR Onboarding and Compliance",
+            "description": "HR processes for onboarding, document management, and compliance tracking"
+          },
+          "matchingLogCount": 9
+        },
+        {
+          "activityEvent": {
+            "id": "d81446d0-6ad5-448b-8cde-8cd5c583bfda",
+            "name": "IT Provisioning and Access Setup",
+            "description": "IT provisions accounts, ships hardware, and verifies system access"
+          },
+          "matchingLogCount": 4
+        }
+      ],
+      "firstLogTimestamp": "2025-11-10T19:03:03Z",
+      "lastLogTimestamp": "2025-11-11T01:12:38Z",
+      "stepDuration": 22175
+    },
+    {
+      "id": "e4388847-7817-4ea9-b94c-d10dabd6fa9c",
+      "name": "Verify completed employment paperwork",
+      "details": "The HR Manager conducts a final review of the submitted employment paperwork, including the W-4, I-9, direct deposit authorization, and NDA. The manager must verify that all fields are completed correctly and that electronic signatures are valid. Once verified, these digital documents must be moved and filed securely in the employee's permanent HR folder within the People directory.",
+      "postStepDocumentation": "Files uploaded to secure HR folder",
+      "monitoringRequirements": "Audit of required document completeness",
+      "actorRoleTitle": "HR_MANAGER",
+      "matchingEmployeesForRoleTitle": [
+        {
+          "id": "d1a55916-fa18-4fd0-8f73-d7c6483003f0",
+          "companyId": "f4618e86-60d6-497e-962b-331d2bf6471d",
+          "name": "Laura Wright",
+          "email": "laura.wright@company11.com",
+          "roleTitle": "HR_MANAGER",
+          "managerId": null,
+          "managerName": null,
+          "roleId": "25489999-f663-41b9-a755-b541d6f7ba0d"
+        }
+      ],
+      "nodeType": "STEP",
+      "isFork": false,
+      "isJoin": false,
+      "matchingActivityEvents": [
+        {
+          "activityEvent": {
+            "id": "2ed6568c-78c9-4a9d-a4e8-f4ace8ccf987",
+            "name": "HR Policy and Employee Relations",
+            "description": "HR team manages policies, employee records, and organizational changes"
+          },
+          "matchingLogCount": 10
+        }
+      ],
+      "firstLogTimestamp": "2025-11-10T19:39:54Z",
+      "lastLogTimestamp": "2025-11-11T04:37:35Z",
+      "stepDuration": 32261
+    },
+    {
+      "id": "1af8bb47-b5b4-490a-99eb-52afc3ca5bc7",
+      "name": "Facilitate team introductions",
+      "details": "The Operations Manager concludes the formal first-day activities by sending a team introduction email and coordinating social 'coffee chats.' These interactions are intended to integrate the new hire into the broader team culture and provide cross-organizational visibility beyond their immediate department. The manager should encourage team members to welcome the hire and celebrate small wins as the onboarding progresses.",
+      "postStepDocumentation": "",
+      "monitoringRequirements": "Schedule of coffee chats confirmed",
+      "actorRoleTitle": "OPERATIONS_MANAGER",
+      "matchingEmployeesForRoleTitle": [
+        {
+          "id": "d2564ba0-4fae-42fa-b96c-cc2a796f01aa",
+          "companyId": "f4618e86-60d6-497e-962b-331d2bf6471d",
+          "name": "Diana Baker",
+          "email": "diana.baker@company11.com",
+          "roleTitle": "OPERATIONS_MANAGER",
+          "managerId": null,
+          "managerName": null,
+          "roleId": "bcfc5d1e-f8a2-4077-bfd4-6665de45b6ef"
+        }
+      ],
+      "nodeType": "END",
+      "isFork": false,
+      "isJoin": false,
+      "matchingActivityEvents": [
+        {
+          "activityEvent": {
+            "id": "ff099421-edbc-45be-9127-b080782ab0da",
+            "name": "Operations Process Management",
+            "description": "Operations team monitors processes, tracks tasks, and manages workflow improvements"
+          },
+          "matchingLogCount": 10
+        }
+      ],
+      "firstLogTimestamp": "2025-11-11T01:29:29Z",
+      "lastLogTimestamp": "2025-11-11T04:47:54Z",
+      "stepDuration": 11905
+    },
+    {
+      "id": "5c352fb8-1ac4-4e0b-b62e-282da35a668b",
+      "name": "Provision system accounts",
+      "details": "The CTO creates all required professional accounts for the incoming hire. This primary task involves setting up the company email address and access within Google Workspace. This ensures the new hire has a functional digital identity within the organization's infrastructure, allowing for calendar invites and internal communications to be established prior to their arrival.",
+      "postStepDocumentation": "",
+      "monitoringRequirements": "Verification of active Google Workspace account",
+      "actorRoleTitle": "CTO",
+      "matchingEmployeesForRoleTitle": [
+        {
+          "id": "64d09989-3095-4602-a3f1-36328a7e66b2",
+          "companyId": "f4618e86-60d6-497e-962b-331d2bf6471d",
+          "name": "Emily Davis",
+          "email": "emily.davis@company11.com",
+          "roleTitle": "CTO",
+          "managerId": null,
+          "managerName": null,
+          "roleId": "59e86a66-cc39-47d0-98f9-02c8c321e80f"
+        }
+      ],
+      "nodeType": "STEP",
+      "isFork": false,
+      "isJoin": false,
+      "matchingActivityEvents": [
+        {
+          "activityEvent": {
+            "id": "d81446d0-6ad5-448b-8cde-8cd5c583bfda",
+            "name": "IT Provisioning and Access Setup",
+            "description": "IT provisions accounts, ships hardware, and verifies system access"
+          },
+          "matchingLogCount": 3
+        },
+        {
+          "activityEvent": {
+            "id": "e43b1399-5bf9-458e-b522-864768c33b70",
+            "name": "HR Onboarding and Compliance",
+            "description": "HR processes for onboarding, document management, and compliance tracking"
+          },
+          "matchingLogCount": 5
+        },
+        {
+          "activityEvent": {
+            "id": "2ed6568c-78c9-4a9d-a4e8-f4ace8ccf987",
+            "name": "HR Policy and Employee Relations",
+            "description": "HR team manages policies, employee records, and organizational changes"
+          },
+          "matchingLogCount": 6
+        },
+        {
+          "activityEvent": {
+            "id": "ff099421-edbc-45be-9127-b080782ab0da",
+            "name": "Operations Process Management",
+            "description": "Operations team monitors processes, tracks tasks, and manages workflow improvements"
+          },
+          "matchingLogCount": 5
+        }
+      ],
+      "firstLogTimestamp": "2025-11-10T19:03:03Z",
+      "lastLogTimestamp": "2025-11-11T01:59:34Z",
+      "stepDuration": 24991
+    },
+    {
+      "id": "772f9000-5522-48ed-b37e-e4e06c9aa8ac",
+      "name": "Prepare hardware equipment",
+      "details": "The CTO prepares or ships the necessary hardware for the desk-based environment, which typically includes a laptop, monitor, and any required accessories. All hardware must be inspected for functionality. Serial numbers and the assigned user must be meticulously logged in the company's Asset Tracker sheet to maintain accurate inventory control. For remote or hybrid hires, shipping must be timed to ensure arrival at least three days before the start date.",
+      "postStepDocumentation": "Asset Tracker sheet updated with serial numbers and assigned user",
+      "monitoringRequirements": "Hardware functionality test and shipping tracking number confirmation",
+      "actorRoleTitle": "CTO",
+      "matchingEmployeesForRoleTitle": [
+        {
+          "id": "64d09989-3095-4602-a3f1-36328a7e66b2",
+          "companyId": "f4618e86-60d6-497e-962b-331d2bf6471d",
+          "name": "Emily Davis",
+          "email": "emily.davis@company11.com",
+          "roleTitle": "CTO",
+          "managerId": null,
+          "managerName": null,
+          "roleId": "59e86a66-cc39-47d0-98f9-02c8c321e80f"
+        }
+      ],
+      "nodeType": "STEP",
+      "isFork": false,
+      "isJoin": false,
+      "matchingActivityEvents": [
+        {
+          "activityEvent": {
+            "id": "d81446d0-6ad5-448b-8cde-8cd5c583bfda",
+            "name": "IT Provisioning and Access Setup",
+            "description": "IT provisions accounts, ships hardware, and verifies system access"
+          },
+          "matchingLogCount": 10
+        },
+        {
+          "activityEvent": {
+            "id": "ff099421-edbc-45be-9127-b080782ab0da",
+            "name": "Operations Process Management",
+            "description": "Operations team monitors processes, tracks tasks, and manages workflow improvements"
+          },
+          "matchingLogCount": 10
+        },
+        {
+          "activityEvent": {
+            "id": "2ed6568c-78c9-4a9d-a4e8-f4ace8ccf987",
+            "name": "HR Policy and Employee Relations",
+            "description": "HR team manages policies, employee records, and organizational changes"
+          },
+          "matchingLogCount": 10
+        },
+        {
+          "activityEvent": {
+            "id": "e43b1399-5bf9-458e-b522-864768c33b70",
+            "name": "HR Onboarding and Compliance",
+            "description": "HR processes for onboarding, document management, and compliance tracking"
+          },
+          "matchingLogCount": 10
+        },
+        {
+          "activityEvent": {
+            "id": "3dc72f97-ef6f-431e-9078-0aa7e88b42c2",
+            "name": "Financial Review and Reconciliation",
+            "description": "Finance team reviews reports, reconciles records, and approves payments"
+          },
+          "matchingLogCount": 10
+        }
+      ],
+      "firstLogTimestamp": "2025-11-10T18:16:33Z",
+      "lastLogTimestamp": "2025-11-11T04:42:31Z",
+      "stepDuration": 37558
+    },
+    {
+      "id": "ea846632-76c0-4f64-aea5-ccdeb2720b22",
+      "name": "Manage internal start logistics",
+      "details": "The HR Manager handles internal preparations to integrate the new hire into the team's operations. This involves adding the hire's start date to the team calendar, sending a company-wide or department-specific email announcement introducing the new hire and their role, and assigning a specific 'buddy' or point of contact. This buddy will serve as an informal mentor to assist with cultural and logistical questions during the first week.",
+      "postStepDocumentation": "Team calendar updated; internal announcement email sent",
+      "monitoringRequirements": "",
+      "actorRoleTitle": "HR_MANAGER",
+      "matchingEmployeesForRoleTitle": [
+        {
+          "id": "d1a55916-fa18-4fd0-8f73-d7c6483003f0",
+          "companyId": "f4618e86-60d6-497e-962b-331d2bf6471d",
+          "name": "Laura Wright",
+          "email": "laura.wright@company11.com",
+          "roleTitle": "HR_MANAGER",
+          "managerId": null,
+          "managerName": null,
+          "roleId": "25489999-f663-41b9-a755-b541d6f7ba0d"
+        }
+      ],
+      "nodeType": "STEP",
+      "isFork": false,
+      "isJoin": false,
+      "matchingActivityEvents": [
+        {
+          "activityEvent": {
+            "id": "e43b1399-5bf9-458e-b522-864768c33b70",
+            "name": "HR Onboarding and Compliance",
+            "description": "HR processes for onboarding, document management, and compliance tracking"
+          },
+          "matchingLogCount": 10
+        },
+        {
+          "activityEvent": {
+            "id": "2ed6568c-78c9-4a9d-a4e8-f4ace8ccf987",
+            "name": "HR Policy and Employee Relations",
+            "description": "HR team manages policies, employee records, and organizational changes"
+          },
+          "matchingLogCount": 10
+        },
+        {
+          "activityEvent": {
+            "id": "ff099421-edbc-45be-9127-b080782ab0da",
+            "name": "Operations Process Management",
+            "description": "Operations team monitors processes, tracks tasks, and manages workflow improvements"
+          },
+          "matchingLogCount": 9
+        },
+        {
+          "activityEvent": {
+            "id": "d81446d0-6ad5-448b-8cde-8cd5c583bfda",
+            "name": "IT Provisioning and Access Setup",
+            "description": "IT provisions accounts, ships hardware, and verifies system access"
+          },
+          "matchingLogCount": 10
+        }
+      ],
+      "firstLogTimestamp": "2025-11-10T17:09:51Z",
+      "lastLogTimestamp": "2025-11-11T04:37:35Z",
+      "stepDuration": 41264
+    },
+    {
+      "id": "40d2697f-f93f-48a9-889a-2ea6ebd2ae60",
+      "name": "Develop 30-day ramp plan",
+      "details": "The Operations Manager develops a comprehensive 30-day ramp plan specifically tailored to the new hire's role. This plan must outline concrete goals, key projects, and scheduled training sessions. By defining success for the first month, the manager provides the new hire with clarity and direction. This plan should be shared with the hire shortly before their start date to set expectations early.",
+      "postStepDocumentation": "Ramp plan document shared in Notion or ClickUp",
+      "monitoringRequirements": "Manager review of plan milestones",
+      "actorRoleTitle": "OPERATIONS_MANAGER",
+      "matchingEmployeesForRoleTitle": [
+        {
+          "id": "d2564ba0-4fae-42fa-b96c-cc2a796f01aa",
+          "companyId": "f4618e86-60d6-497e-962b-331d2bf6471d",
+          "name": "Diana Baker",
+          "email": "diana.baker@company11.com",
+          "roleTitle": "OPERATIONS_MANAGER",
+          "managerId": null,
+          "managerName": null,
+          "roleId": "bcfc5d1e-f8a2-4077-bfd4-6665de45b6ef"
+        }
+      ],
+      "nodeType": "STEP",
+      "isFork": false,
+      "isJoin": false,
+      "matchingActivityEvents": [
+        {
+          "activityEvent": {
+            "id": "ff099421-edbc-45be-9127-b080782ab0da",
+            "name": "Operations Process Management",
+            "description": "Operations team monitors processes, tracks tasks, and manages workflow improvements"
+          },
+          "matchingLogCount": 8
+        },
+        {
+          "activityEvent": {
+            "id": "e43b1399-5bf9-458e-b522-864768c33b70",
+            "name": "HR Onboarding and Compliance",
+            "description": "HR processes for onboarding, document management, and compliance tracking"
+          },
+          "matchingLogCount": 5
+        },
+        {
+          "activityEvent": {
+            "id": "2ed6568c-78c9-4a9d-a4e8-f4ace8ccf987",
+            "name": "HR Policy and Employee Relations",
+            "description": "HR team manages policies, employee records, and organizational changes"
+          },
+          "matchingLogCount": 6
+        },
+        {
+          "activityEvent": {
+            "id": "3dc72f97-ef6f-431e-9078-0aa7e88b42c2",
+            "name": "Financial Review and Reconciliation",
+            "description": "Finance team reviews reports, reconciles records, and approves payments"
+          },
+          "matchingLogCount": 5
+        },
+        {
+          "activityEvent": {
+            "id": "d81446d0-6ad5-448b-8cde-8cd5c583bfda",
+            "name": "IT Provisioning and Access Setup",
+            "description": "IT provisions accounts, ships hardware, and verifies system access"
+          },
+          "matchingLogCount": 4
+        }
+      ],
+      "firstLogTimestamp": "2025-11-10T15:14:42Z",
+      "lastLogTimestamp": "2025-11-11T04:49:42Z",
+      "stepDuration": 48900
+    }
+  ],
+  "edges": [
+    {
+      "id": "5991c496-98e3-45ac-abf3-e96b19be4ffb",
+      "from": "9e9779d3-cbf4-4eb2-a4f3-f7b7df94b507",
+      "to": "5c352fb8-1ac4-4e0b-b62e-282da35a668b",
+      "transitionDuration": {
+        "seconds": 34472
+      }
+    },
+    {
+      "id": "04a44cfd-920d-41fe-873f-8787799cf167",
+      "from": "9e9779d3-cbf4-4eb2-a4f3-f7b7df94b507",
+      "to": "772f9000-5522-48ed-b37e-e4e06c9aa8ac",
+      "transitionDuration": {
+        "seconds": 37262
+      }
+    },
+    {
+      "id": "4905c6c6-d211-4d9a-8250-aff7e8363b9f",
+      "from": "9e9779d3-cbf4-4eb2-a4f3-f7b7df94b507",
+      "to": "ea846632-76c0-4f64-aea5-ccdeb2720b22",
+      "transitionDuration": {
+        "seconds": 41264
+      }
+    },
+    {
+      "id": "8be29c33-668e-4009-bc94-3f0c90631ed3",
+      "from": "9e9779d3-cbf4-4eb2-a4f3-f7b7df94b507",
+      "to": "40d2697f-f93f-48a9-889a-2ea6ebd2ae60",
+      "transitionDuration": {
+        "seconds": 48173
+      }
+    },
+    {
+      "id": "8584d203-b1b1-46a8-9444-c1b02c1559d3",
+      "from": "5c352fb8-1ac4-4e0b-b62e-282da35a668b",
+      "to": "5b59111d-2f87-499c-a37a-6d236a3366ad",
+      "transitionDuration": {
+        "seconds": 24991
+      }
+    },
+    {
+      "id": "f38e21ec-2009-464e-abbe-eaf188b97cbd",
+      "from": "772f9000-5522-48ed-b37e-e4e06c9aa8ac",
+      "to": "5b59111d-2f87-499c-a37a-6d236a3366ad",
+      "transitionDuration": {
+        "seconds": 34768
+      }
+    },
+    {
+      "id": "2618365f-69f2-4069-8222-40fe470c97ff",
+      "from": "5b59111d-2f87-499c-a37a-6d236a3366ad",
+      "to": "8057922b-ab3b-4454-97f5-0c74bb638c95",
+      "transitionDuration": {
+        "seconds": 20113
+      }
+    },
+    {
+      "id": "24d38179-7fa7-454e-9d6c-c4a083b265fe",
+      "from": "ea846632-76c0-4f64-aea5-ccdeb2720b22",
+      "to": "8057922b-ab3b-4454-97f5-0c74bb638c95",
+      "transitionDuration": {
+        "seconds": 32410
+      }
+    },
+    {
+      "id": "64aa8a1b-4617-433b-8938-7bf35ae946a9",
+      "from": "40d2697f-f93f-48a9-889a-2ea6ebd2ae60",
+      "to": "8057922b-ab3b-4454-97f5-0c74bb638c95",
+      "transitionDuration": {
+        "seconds": 33137
+      }
+    },
+    {
+      "id": "43f9b0ce-9b43-486d-ae3a-3a75d5dab816",
+      "from": "8057922b-ab3b-4454-97f5-0c74bb638c95",
+      "to": "e4388847-7817-4ea9-b94c-d10dabd6fa9c",
+      "transitionDuration": {
+        "seconds": 22780
+      }
+    },
+    {
+      "id": "7058b590-b2b1-43a7-b6e8-cd1d7728a0eb",
+      "from": "e4388847-7817-4ea9-b94c-d10dabd6fa9c",
+      "to": "9b14b5a5-112c-4d83-9beb-0f536b508297",
+      "transitionDuration": {
+        "seconds": 12192
+      }
+    },
+    {
+      "id": "b2986db9-c4cf-44bf-8c97-2b233f43f372",
+      "from": "9b14b5a5-112c-4d83-9beb-0f536b508297",
+      "to": "1af8bb47-b5b4-490a-99eb-52afc3ca5bc7",
+      "transitionDuration": {
+        "seconds": 10833
+      }
+    }
+  ]
+}
