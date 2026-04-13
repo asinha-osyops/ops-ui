@@ -143,11 +143,14 @@ export async function makeArrayRequest<T>(
 }
 
 // Simpler request wrapper for single object responses (nullable)
+// `silent: true` skips the console.error on failure — use for best-effort
+// endpoints where the caller handles null gracefully and we don't want
+// backend outages to fill the Next.js dev overlay with console errors.
 export async function makeNullableRequest<T>(
   url: string,
   options: RequestOptions,
   errorContext: string,
-  config?: { throwOnError?: boolean }
+  config?: { throwOnError?: boolean; silent?: boolean }
 ): Promise<T | null> {
   try {
     const response = await fetch(url, options)
@@ -167,7 +170,9 @@ export async function makeNullableRequest<T>(
 
     return JSON.parse(text)
   } catch (error) {
-    console.error(`Error ${errorContext}:`, error)
+    if (!config?.silent) {
+      console.error(`Error ${errorContext}:`, error)
+    }
     if (config?.throwOnError) throw error
     return null
   }

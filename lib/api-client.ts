@@ -3017,7 +3017,10 @@ export class APIClient {
 
   /**
    * Get log metrics (GET /api/statistics/log)
-   * System-wide log statistics (not company-scoped)
+   * System-wide log statistics (not company-scoped).
+   * Best-effort — widget degrades to empty state on failure, so we silence
+   * the console.error to avoid polluting the Next.js dev overlay when the
+   * backend statistics endpoint is unavailable.
    */
   async getLogMetrics(): Promise<LogMetricsDto | null> {
     return makeNullableRequest<LogMetricsDto>(
@@ -3026,7 +3029,8 @@ export class APIClient {
         method: 'GET',
         headers: this.getAuthHeaders(),
       },
-      'fetching log metrics'
+      'fetching log metrics',
+      { silent: true }
     )
   }
 
